@@ -16,6 +16,10 @@ const useIOSimulator = () => {
 
 	// text inputs
 	const [initialPosition, setInitialPosition] = useState<number>(0);
+	useEffect(() => {
+		simulator.current.initialPosition = initialPosition;
+	}, [initialPosition]);
+	
 	const [requestTrack, setRequestTrack] = useState<number>(0);
 
 	// request list
@@ -40,12 +44,38 @@ const useIOSimulator = () => {
 	const [processedRequests, setProcessedRequests] = useState<ProcessedRequest[]>([]);
 
 	// simulator control
+	const [isRunning, setRunning] = useState(false);
+	const [hasNext, setHasNext] = useState(false);
+	const [hasPrevious, setHasPrevious] = useState(false);
+
 	const step = () => {
+		// simulator is running
+		setRunning(true);
+
 		// get next request
-		console.log(simulator.current)
 		let nextRequest: ProcessedRequest = simulator.current.processRequest();
 		setProcessedRequests([...processedRequests, nextRequest]);
 	};
+
+	const stop = () => {
+		// reset to simulation initial state
+		setProcessedRequests([]);
+		setRunning(false);
+		simulator.current.reset();
+	};
+
+	const reset = () => {
+		// removes all requests
+		setProcessedRequests([]);
+		setRequests([]);
+		setRunning(false);
+		simulator.current.clear();
+	};
+
+	useEffect(() => {
+		console.log("hasNext=" + simulator.current.hasNextStep());
+		setHasNext(simulator.current.hasNextStep());
+	}, [requests, processedRequests]);
 
 	return {
 		selectedAlgorithm, setSelectedAlgorithm,
@@ -54,7 +84,9 @@ const useIOSimulator = () => {
 		requestTrack, setRequestTrack,
 		onSubmitForm,
 		processedRequests,
-		step
+		isRunning,
+		step, reset, stop,
+		hasNext, hasPrevious
 	};
 };
 

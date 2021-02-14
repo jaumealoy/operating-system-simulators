@@ -26,6 +26,8 @@ class IOSimulator extends Simulator {
 	// simulation settings
 	private currentTrack: number;
 	private currentSector: number;
+	private _initialPosition: number;
+	private running: boolean;
 
 	// request list
 	private requests: Request[];
@@ -41,11 +43,14 @@ class IOSimulator extends Simulator {
 		this.tracks = 0;
 		this.currentTrack = 0;
 		this.currentSector = 0;
+		this._initialPosition = 0;
 
 		this.requests = [];
 		this.pendingRequests = [];
 
 		this._algorithm = "fifo";
+
+		this.running = false;
 	}
 
 	/**
@@ -63,6 +68,11 @@ class IOSimulator extends Simulator {
 	}
 
 	private getNextRequest() : NextRequest {
+		if(!this.running){
+			this.running = true;
+			this.currentTrack = this._initialPosition;
+		}
+
 		let ALGORITHM_MAP: {[key: string]: () => number} = {
 			"fifo": this.FIFO,
 			"sstf": this.SSTF.bind(this)
@@ -132,6 +142,37 @@ class IOSimulator extends Simulator {
 
 	set algorithm(id: string) {
 		this._algorithm = id;
+	}
+
+	set initialPosition(value: number) {
+		this._initialPosition = value;
+	}
+
+	/**
+	 * Resets the pending requests to its initial state
+	 */
+	public reset() : void {
+		// make a copy as we want to keep the original list of requests
+		this.pendingRequests = [...this.requests];
+
+		// set the initial position as the current position
+		this.currentTrack = this._initialPosition;
+
+		this.running = false;
+	}
+
+	public clear() : void {
+		this.requests = [];
+		this.pendingRequests = [];
+		this.running = false;
+	}
+
+	public hasNextStep() : boolean {
+		return this.pendingRequests.length > 0;
+	}
+
+	public hasPreviousStep() : boolean {
+		return false;
 	}
 }
 

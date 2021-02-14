@@ -14,6 +14,7 @@ import { FiDelete } from "react-icons/fi";
 
 import useIOSimulator from "./useIOSimulator";
 import { IOSimulator, ProcessedRequest } from "./IOSimulator";
+import useInterval from "../../helpers/useInterval";
 
 function IOSimulatorPage() {
 	const {
@@ -24,7 +25,9 @@ function IOSimulatorPage() {
 		onSubmitForm,
 		selectedAlgorithm, setSelectedAlgorithm,
 		processedRequests,
-		step
+		isRunning, 
+		step, reset, stop,
+		hasNext, hasPrevious
 	} = useIOSimulator();
 
 	const [chartRequests, setChartRequests] = useState<number[]>([]);
@@ -36,6 +39,12 @@ function IOSimulatorPage() {
 
 		setChartRequests(tmp);
 	}, [initialPosition, processedRequests]);
+
+	// calculate sum of displacement
+	let sum = 0;
+	processedRequests.map(request => {
+		sum += Math.abs(request.finalTrack - request.initialTrack);
+	});
 
 	return (
 		<>
@@ -70,6 +79,7 @@ function IOSimulatorPage() {
 									<FormControl
 										required
 										min={0}
+										disabled={isRunning}
 										value={requestTrack}
 										onChange={(e) => setRequestTrack(parseInt(e.target.value))}
 										type="number" />
@@ -87,6 +97,7 @@ function IOSimulatorPage() {
 								<FormControl 
 									value={initialPosition}
 									min={0}
+									disabled={isRunning}
 									onChange={(e) => setInitialPosition(parseInt(e.target.value))}
 									type="number" />
 							</FormGroup>
@@ -97,9 +108,11 @@ function IOSimulatorPage() {
 								<span className="badge rounded-pill pill-md bg-secondary px-2 mr-1">
 									{value}
 
-									<FiDelete
-										onClick={() => removeRequest(index)}
-										className="pointer ml-sm-1" />
+									{!isRunning &&	
+										<FiDelete
+											onClick={() => removeRequest(index)}
+											className="pointer ml-sm-1" />
+									}
 								</span>
 							)}
 						</Col>
@@ -111,7 +124,7 @@ function IOSimulatorPage() {
 			<Row>
 				<RequestChart 
 					tracks={3}
-					maxTrack={Math.max(...requests)}
+					maxTrack={Math.max(...requests, initialPosition)}
 					requests={chartRequests} />
 			</Row>
 
@@ -138,22 +151,32 @@ function IOSimulatorPage() {
 									<td>{Math.abs(request.finalTrack - request.initialTrack)}</td>
 								</tr>
 							)}
-							<tr>
-								<td></td>
-								<td></td>
-								<td>Total</td>
-								<td>
-									-
-								</td>
-							</tr>
+
+							{processedRequests.length == 0 ?
+								<tr>
+									<td colSpan={4}>No se ha completado ningua petición</td>
+								</tr>
+								:
+								<tr>
+									<td></td>
+									<td></td>
+									<td>Total</td>
+									<td>
+										{sum}
+									</td>
+								</tr>
+							}
+							
 						</tbody>
 					</table>
 				</Col>
 			</Row>
 
-			
-
 			<SimulatorControl 
+				reset={reset}
+				stop={stop}
+				hasNext={hasNext}
+				hasPrevious={hasPrevious}
 				next={step} />
 		</>
 	)
