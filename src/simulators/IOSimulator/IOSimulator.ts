@@ -63,9 +63,9 @@ class IOSimulator extends Simulator {
 	}
 
 	private getNextRequest() : NextRequest {
-		const ALGORITHM_MAP: {[key: string]: () => number} = {
+		let ALGORITHM_MAP: {[key: string]: () => number} = {
 			"fifo": this.FIFO,
-			"sstf": this.SSTF
+			"sstf": this.SSTF.bind(this)
 		};
 
 		let nextIndex = ALGORITHM_MAP[this._algorithm]();
@@ -102,6 +102,9 @@ class IOSimulator extends Simulator {
 	private SSTF() : number {
 		// calculates the distance between the current track and a target
 		let calculateDistance = (track: number) : number => Math.abs(track - this.currentTrack);
+
+		console.log(this)
+		console.log(this.pendingRequests)
 
 		// find the request that minimizes this distance
 		let index: number = 0;

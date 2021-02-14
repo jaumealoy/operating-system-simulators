@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import RequestChart from "./RequestChart";
 import SimulatorControl from "./../../components/SimulatorControl";
 
@@ -13,7 +13,7 @@ import {
 import { FiDelete } from "react-icons/fi";
 
 import useIOSimulator from "./useIOSimulator";
-import { IOSimulator } from "./IOSimulator";
+import { IOSimulator, ProcessedRequest } from "./IOSimulator";
 
 function IOSimulatorPage() {
 	const {
@@ -26,6 +26,16 @@ function IOSimulatorPage() {
 		processedRequests,
 		step
 	} = useIOSimulator();
+
+	const [chartRequests, setChartRequests] = useState<number[]>([]);
+	useEffect(() => {
+		let tmp: number[] = [initialPosition];
+		for(let i = 0; i < processedRequests.length; i++){
+			tmp.push(processedRequests[i].finalTrack);
+		}
+
+		setChartRequests(tmp);
+	}, [initialPosition, processedRequests]);
 
 	return (
 		<>
@@ -100,9 +110,9 @@ function IOSimulatorPage() {
 
 			<Row>
 				<RequestChart 
-					tracks={1}
+					tracks={3}
 					maxTrack={Math.max(...requests)}
-					requests={requests} />
+					requests={chartRequests} />
 			</Row>
 
 			<Row>
