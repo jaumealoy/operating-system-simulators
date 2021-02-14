@@ -2,20 +2,36 @@ import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import Menu from './components/Menu';
-import RequestChart from './simulators/IOSimulator/RequestChart';
+
+import { 
+	BrowserRouter as Router, 
+	Route, 
+	Switch 
+} from "react-router-dom"; 
+
+import "./common/css/App.scss";
+
+import IOSimulatorPage from './simulators/IOSimulator/IOSimulatorPage';
+
 
 function App() {
 	const [counter, setCounter] = useState(0);
 
 	return (
-		<div className="App">
-			<Menu />
+		<div className="">
+			<Router>
+				<Menu />
 
-			<div className="container">
-				<RequestChart 
-					tracks={counter}
-					requests={[220, 40, 100, 50, 20, 10, 1, 60, 300]} />
-			</div>
+				<div className="container">
+					<Switch>
+
+						<Route path="/io" exact={true}>
+							<IOSimulatorPage />
+						</Route>
+						
+					</Switch>
+				</div>
+			</Router>
 		</div>
 	);
 }

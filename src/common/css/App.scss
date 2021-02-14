@@ -1,0 +1,42 @@
+@import "bootstrap/scss/bootstrap.scss";
+
+$control-bar-background: $gray-800;
+$control-bar-height: 50px;
+
+label {
+    font-weight: bold;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.pill-md {
+    font-size: 14px;
+}
+
+.control-bar {
+    width: 100%;
+    height: $control-bar-height;
+    background-color: $control-bar-background;
+    position: fixed;
+    left: 0px;
+    bottom: 0px;
+    color: $white;
+    display: flex;
+    align-items: center;
+}
+
+.control-bar .control-button {
+    background: transparent;
+    border: none;
+    color: $white;
+}
+
+.control-bar .control-button:disabled{
+    color: $gray-500;
+}
+
+body {
+    margin-bottom: $control-bar-height;
+}

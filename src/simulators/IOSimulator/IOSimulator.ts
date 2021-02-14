@@ -1,9 +1,17 @@
-import Simulator from "../Simulator";
+import { 
+	Simulator, 
+	Algorithm
+} from "../Simulator";
 
 interface Request {
 	track: number;
 	sector: number;
 };
+
+interface ProcessedRequest {
+	initialTrack: number;
+	finalTrack: number;
+}
 
 interface NextRequest {
 	index: number;
@@ -21,6 +29,10 @@ class IOSimulator extends Simulator {
 
 	// request list
 	private requests: Request[];
+	private pendingRequests: Request[];
+
+	// selected algorithm
+	private _algorithm: string;
 
 	constructor(){
 		super();
@@ -31,6 +43,9 @@ class IOSimulator extends Simulator {
 		this.currentSector = 0;
 
 		this.requests = [];
+		this.pendingRequests = [];
+
+		this._algorithm = "fifo";
 	}
 
 	/**
@@ -38,19 +53,43 @@ class IOSimulator extends Simulator {
 	 * @param sector 
 	 */
 	public addRequest(track: number, sector: number) : void {
-		this.requests.push({
+		let request: Request = {
 			track,
 			sector
-		});
+		};
+
+		this.requests.push(request);
+		this.pendingRequests.push(request);
 	}
 
 	private getNextRequest() : NextRequest {
-		let nextIndex = this.FIFO();
+		const ALGORITHM_MAP: {[key: string]: () => number} = {
+			"fifo": this.FIFO,
+			"sstf": this.SSTF
+		};
+
+		let nextIndex = ALGORITHM_MAP[this._algorithm]();
 
 		return {
 			index: nextIndex,
-			request: this.requests[nextIndex]
+			request: this.pendingRequests[nextIndex]
 		};
+	}
+
+	public processRequest() : ProcessedRequest {
+		let nextRequest: NextRequest = this.getNextRequest();
+
+		let processedRequest: ProcessedRequest = {
+			initialTrack: this.currentTrack,
+			finalTrack: nextRequest.request.track
+		};
+
+		this.currentTrack = processedRequest.finalTrack;
+
+		// removing this request from the pending list
+		this.pendingRequests.splice(nextRequest.index, 1);
+
+		return processedRequest;
 	}
 
 	private FIFO() : number {
@@ -66,9 +105,9 @@ class IOSimulator extends Simulator {
 
 		// find the request that minimizes this distance
 		let index: number = 0;
-		let dist: number = calculateDistance(this.requests[index].track);
-		for (let i = 1; i < this.requests.length; i++) {
-			let tmp = calculateDistance(this.requests[i].track);
+		let dist: number = calculateDistance(this.pendingRequests[index].track);
+		for (let i = 1; i < this.pendingRequests.length; i++) {
+			let tmp = calculateDistance(this.pendingRequests[i].track);
 			if (tmp < dist) {
 				index = i;
 				dist = tmp;
@@ -77,6 +116,20 @@ class IOSimulator extends Simulator {
 
 		return index;
 	}
+
+	/**
+	 * Returns a list of available algorithms for this simulator
+	 */
+	public static getAvailableAlgorithms() : Algorithm[] {
+		return [
+			{ id: "fifo", name: "First In First Served (FIFO)" },
+			{ id: "sstf", name: "Shortest Seek Time First (SSTF)" }
+		];
+	}
+
+	set algorithm(id: string) {
+		this._algorithm = id;
+	}
 }
 
 export {
@@ -84,5 +137,6 @@ export {
 };
 
 export type { 
-	Request
+	Request,
+	ProcessedRequest
 };
