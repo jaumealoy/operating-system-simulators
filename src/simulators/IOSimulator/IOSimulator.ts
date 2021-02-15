@@ -11,6 +11,7 @@ interface Request {
 interface ProcessedRequest {
 	initialTrack: number;
 	finalTrack: number;
+	fast: boolean;
 }
 
 interface NextRequest {
@@ -21,12 +22,14 @@ interface NextRequest {
 class IOSimulator extends Simulator {
 	// hard drive settings
 	private sectors: number;
-	private tracks: number;
+	private _tracks: number;
+	public static MIN: number = 0;
 
 	// simulation settings
 	private currentTrack: number;
 	private currentSector: number;
 	private _initialPosition: number;
+	private isUp: boolean;
 	private running: boolean;
 
 	// request list
@@ -40,7 +43,7 @@ class IOSimulator extends Simulator {
 		super();
 
 		this.sectors = 0;
-		this.tracks = 0;
+		this._tracks = 0;
 		this.currentTrack = 0;
 		this.currentSector = 0;
 		this._initialPosition = 0;
@@ -49,6 +52,7 @@ class IOSimulator extends Simulator {
 		this.pendingRequests = [];
 
 		this._algorithm = "fifo";
+		this.isUp = true;
 
 		this.running = false;
 	}
@@ -75,10 +79,30 @@ class IOSimulator extends Simulator {
 
 		let ALGORITHM_MAP: {[key: string]: () => number} = {
 			"fifo": this.FIFO,
-			"sstf": this.SSTF.bind(this)
+			"sstf": this.SSTF.bind(this),
+			"scan": this.SCAN.bind(this)
 		};
 
 		let nextIndex = ALGORITHM_MAP[this._algorithm]();
+
+		if(nextIndex < 0){
+			// there is no request in this direction
+			// let's add a fake request
+			this.pendingRequests.push({ 
+				track: (this.isUp ? this.tracks : IOSimulator.MIN), 
+				sector: 0 
+			});
+
+			// and reverse the direction for the next request
+			this.isUp = !this.isUp;
+
+			console.log("There is no request in this direction");
+
+			return {
+				index: this.pendingRequests.length - 1,
+				request: this.pendingRequests[this.pendingRequests.length - 1]
+			};
+		}
 
 		return {
 			index: nextIndex,
@@ -91,7 +115,8 @@ class IOSimulator extends Simulator {
 
 		let processedRequest: ProcessedRequest = {
 			initialTrack: this.currentTrack,
-			finalTrack: nextRequest.request.track
+			finalTrack: nextRequest.request.track,
+			fast: false
 		};
 
 		this.currentTrack = processedRequest.finalTrack;
@@ -113,9 +138,6 @@ class IOSimulator extends Simulator {
 		// calculates the distance between the current track and a target
 		let calculateDistance = (track: number) : number => Math.abs(track - this.currentTrack);
 
-		console.log(this)
-		console.log(this.pendingRequests)
-
 		// find the request that minimizes this distance
 		let index: number = 0;
 		let dist: number = calculateDistance(this.pendingRequests[index].track);
@@ -131,12 +153,38 @@ class IOSimulator extends Simulator {
 	}
 
 	/**
+	 * Elevator algorithm. 
+	 * If there isn't any request on this direction, it returns -1
+	 */
+	private SCAN() : number {
+		let index: number = -1;
+		
+		for (let i = 0; i < this.pendingRequests.length; i++) {
+			if(this.isUp 
+				&& this.pendingRequests[i].track >= this.currentTrack 
+				&& (index < 0 || index >= 0 && this.pendingRequests[i].track < this.pendingRequests[index].track)){
+				index = i;
+			}else if(!this.isUp 
+				&& this.pendingRequests[i].track <= this.currentTrack
+				&& (index < 0 || index >= -1 && this.pendingRequests[i].track > this.pendingRequests[index].track)){
+				index = i;
+			}
+		}
+
+		return index;
+	}
+
+	/**
 	 * Returns a list of available algorithms for this simulator
 	 */
 	public static getAvailableAlgorithms() : Algorithm[] {
 		return [
 			{ id: "fifo", name: "First In First Served (FIFO)" },
-			{ id: "sstf", name: "Shortest Seek Time First (SSTF)" }
+			{ id: "sstf", name: "Shortest Seek Time First (SSTF)" },
+			{ id: "scan", name: "SCAN" },
+			{ id: "cscan", name: "C-SCAN" },
+			{ id: "look", name: "LOOK" },
+			{ id: "clook", name: "C-LOOK" },
 		];
 	}
 
@@ -174,6 +222,14 @@ class IOSimulator extends Simulator {
 	public hasPreviousStep() : boolean {
 		return false;
 	}
+
+	get tracks() : number {
+		return this._tracks;
+	}
+
+	set tracks(value: number) {
+		this._tracks = value;
+	}	
 }
 
 export {

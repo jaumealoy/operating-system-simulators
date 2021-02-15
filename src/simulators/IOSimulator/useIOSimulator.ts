@@ -1,6 +1,8 @@
 import { FormEvent, useState, useRef, useEffect } from "react";
 import { IOSimulator, ProcessedRequest } from "./IOSimulator";
 
+const MAX_TRACKS: number = 200;
+
 const useIOSimulator = () => {
     // simulator
 	const simulator = useRef<IOSimulator>(new IOSimulator());
@@ -15,12 +17,18 @@ const useIOSimulator = () => {
 	}, [selectedAlgorithm]);
 
 	// text inputs
-	const [initialPosition, setInitialPosition] = useState<number>(0);
+	const [initialPosition, setInitialPosition] = useState<number>(IOSimulator.MIN);
 	useEffect(() => {
 		simulator.current.initialPosition = initialPosition;
 	}, [initialPosition]);
 	
-	const [requestTrack, setRequestTrack] = useState<number>(0);
+	const [requestTrack, setRequestTrack] = useState<number>(NaN);
+	const [maxTracks, setMaxTracks] = useState<number>(MAX_TRACKS);
+	useEffect(() => {
+		simulator.current.tracks = maxTracks;
+	}, [maxTracks]);
+
+	const [direction, setDirection] = useState<boolean>(true);
 
 	// request list
 	const [requests, setRequests] = useState<number[]>([]);
@@ -37,6 +45,7 @@ const useIOSimulator = () => {
 
 		// adding request to simulator and UI list
 		simulator.current.addRequest(requestTrack, 0);
+		setRequestTrack(NaN);
 		addRequest(requestTrack);
 	};
 
@@ -82,6 +91,8 @@ const useIOSimulator = () => {
 		requests, removeRequest,
 		initialPosition, setInitialPosition,
 		requestTrack, setRequestTrack,
+		maxTracks, setMaxTracks,
+		direction, setDirection,
 		onSubmitForm,
 		processedRequests,
 		isRunning,

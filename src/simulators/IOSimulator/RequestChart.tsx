@@ -36,7 +36,7 @@ function RequestChart(props: RequestChartProps) {
 		// y axis
 		// calculate maximum text width
 		let digits: number = Math.ceil(Math.log10(highestTrack));
-		let textWidth: number = digits * TEXT_SIZE;
+		let textWidth: number = (digits + 1) * TEXT_SIZE;
 
 		const x = (time: number) : number => (((WIDTH - textWidth - AXIS_WIDTH) * time) / numberOfRequests) + textWidth;
 
