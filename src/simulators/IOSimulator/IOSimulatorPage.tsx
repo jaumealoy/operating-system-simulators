@@ -45,7 +45,9 @@ function IOSimulatorPage() {
 	// calculate sum of displacement
 	let sum = 0;
 	processedRequests.map(request => {
-		sum += Math.abs(request.finalTrack - request.initialTrack);
+		if (!request.fast) {
+			sum += Math.abs(request.finalTrack - request.initialTrack);
+		}
 	});
 
 	return (
@@ -195,7 +197,10 @@ function IOSimulatorPage() {
 									<td>{index + 1}</td>
 									<td>{request.initialTrack}</td>
 									<td>{request.finalTrack}</td>
-									<td>{Math.abs(request.finalTrack - request.initialTrack)}</td>
+									<td>
+										{Math.abs(request.finalTrack - request.initialTrack)}
+										{request.fast && <sup>*</sup>}
+									</td>
 								</tr>
 							)}
 

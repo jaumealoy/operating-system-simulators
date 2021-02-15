@@ -6,6 +6,7 @@ import {
 interface Request {
 	track: number;
 	sector: number;
+	fast?: boolean;
 };
 
 interface ProcessedRequest {
@@ -80,29 +81,13 @@ class IOSimulator extends Simulator {
 		let ALGORITHM_MAP: {[key: string]: () => number} = {
 			"fifo": this.FIFO,
 			"sstf": this.SSTF.bind(this),
-			"scan": this.SCAN.bind(this)
+			"scan": this.SCAN.bind(this),
+			"look": this.LOOK.bind(this),
+			"cscan": this.CSCAN.bind(this),
+			"clook": this.CLOOK.bind(this)
 		};
 
 		let nextIndex = ALGORITHM_MAP[this._algorithm]();
-
-		if(nextIndex < 0){
-			// there is no request in this direction
-			// let's add a fake request
-			this.pendingRequests.push({ 
-				track: (this.isUp ? this.tracks : IOSimulator.MIN), 
-				sector: 0 
-			});
-
-			// and reverse the direction for the next request
-			this.isUp = !this.isUp;
-
-			console.log("There is no request in this direction");
-
-			return {
-				index: this.pendingRequests.length - 1,
-				request: this.pendingRequests[this.pendingRequests.length - 1]
-			};
-		}
 
 		return {
 			index: nextIndex,
@@ -116,7 +101,7 @@ class IOSimulator extends Simulator {
 		let processedRequest: ProcessedRequest = {
 			initialTrack: this.currentTrack,
 			finalTrack: nextRequest.request.track,
-			fast: false
+			fast: nextRequest.request.fast || false
 		};
 
 		this.currentTrack = processedRequest.finalTrack;
@@ -154,11 +139,101 @@ class IOSimulator extends Simulator {
 
 	/**
 	 * Elevator algorithm. 
-	 * If there isn't any request on this direction, it returns -1
 	 */
 	private SCAN() : number {
+		let index: number = this.findNextRequest();
+
+		if (index < 0) {
+			// there isn't any available request on this direction
+			// the head must reach the maximum track and then change its direction
+			let next: number = this.isUp ? this._tracks : IOSimulator.MIN;
+
+			// and then change the direction
+			this.isUp = !this.isUp;
+
+			if (next == this.currentTrack) {
+				// the head is already on the disk's edge
+				// the next request is the actual next request
+				index = this.findNextRequest();	
+			} else {
+				// let's fake that movement
+				this.pendingRequests.push({ 
+					track: next, 
+					sector: 0 
+				});
+
+				index = this.pendingRequests.length - 1;
+			}
+		}
+
+		return index;
+	}
+
+	/**
+	 * Look algorithm
+	 */
+	private LOOK() : number {
+		let index: number = this.findNextRequest();
+		if (index < 0) {
+			// there isn't any pending request on this direction
+			// reverse the direction and find the nearest request
+			this.isUp = !this.isUp;
+			index = this.findNextRequest();
+		}
+
+		return index;
+	}
+
+	private CSCAN() : number {
+		let index: number = this.findNextRequest();
+
+		if (index < 0) {
+			// there isn't request more in this direction
+			// however, before going back to the other edge we must reach the edge
+			if (this.isUp && this.currentTrack == this.maxTrack || !this.isUp && this.currentTrack == IOSimulator.MIN) {
+				// this is one edge, we must go to the other one
+				// fake this request
+				this.pendingRequests.push({
+					track: (this.isUp ? IOSimulator.MIN : this.maxTrack),
+					sector: 0,
+					fast: true
+				});
+			} else {
+				// fake a request to the edge
+				this.pendingRequests.push({
+					track: (this.isUp ? this.maxTrack : IOSimulator.MIN),
+					sector: 0,
+				});
+			}
+
+			index = this.pendingRequests.length - 1;
+		}
+
+		return index;
+	}
+
+	private CLOOK() : number {
+		let index: number = this.findNextRequest();
+
+		if (index < 0) {
+			// there isn't any request more in this direction
+			// move the head to the nearest request to the other edge
+			let originalTrack: number = this.currentTrack;
+			this.currentTrack = IOSimulator.MIN;
+			index = this.findNextRequest();
+			this.currentTrack = originalTrack;
+		}
+
+		return index;
+	}
+
+	/**
+	 * Returns the nearest requests to the current head position according to its direction
+	 * If there isn't any available requests, it returns -1.
+	 */
+	private findNextRequest() : number {
 		let index: number = -1;
-		
+
 		for (let i = 0; i < this.pendingRequests.length; i++) {
 			if(this.isUp 
 				&& this.pendingRequests[i].track >= this.currentTrack 
@@ -166,7 +241,7 @@ class IOSimulator extends Simulator {
 				index = i;
 			}else if(!this.isUp 
 				&& this.pendingRequests[i].track <= this.currentTrack
-				&& (index < 0 || index >= -1 && this.pendingRequests[i].track > this.pendingRequests[index].track)){
+				&& (index < 0 || index >= 0 && this.pendingRequests[i].track > this.pendingRequests[index].track)){
 				index = i;
 			}
 		}
@@ -230,6 +305,18 @@ class IOSimulator extends Simulator {
 	set tracks(value: number) {
 		this._tracks = value;
 	}	
+
+	/**
+	 * Sets header direction.
+	 * True for UP, False for DOWN
+	 */
+	set direction(up: boolean) {
+		this.isUp = up;
+	}
+
+	private get maxTrack() : number {
+		return this._tracks;
+	}
 }
 
 export {

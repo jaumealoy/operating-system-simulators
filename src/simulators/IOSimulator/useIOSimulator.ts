@@ -59,7 +59,11 @@ const useIOSimulator = () => {
 
 	const step = () => {
 		// simulator is running
-		setRunning(true);
+		if(!isRunning){
+			simulator.current.direction = direction;
+			setRunning(true);
+		}
+
 
 		// get next request
 		let nextRequest: ProcessedRequest = simulator.current.processRequest();
