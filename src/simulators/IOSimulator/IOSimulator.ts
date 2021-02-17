@@ -1,7 +1,10 @@
 import { 
 	Simulator, 
-	Algorithm
+	Algorithm,
 } from "../Simulator";
+
+import State from "./../State";
+import IOState from "./IOState";
 
 interface Request {
 	track: number;
@@ -36,9 +39,15 @@ class IOSimulator extends Simulator {
 	// request list
 	private requests: Request[];
 	private pendingRequests: Request[];
+	private proceesedRequests: ProcessedRequest[];
 
 	// selected algorithm
 	private _algorithm: string;
+
+	// callbacks for state update
+	protected states: IOState[];
+	public onRequestsChange: (list: Request[]) => void;
+	public onProcessedRequestsChange: (list: ProcessedRequest[]) => void;
 
 	constructor(){
 		super();
@@ -51,14 +60,23 @@ class IOSimulator extends Simulator {
 
 		this.requests = [];
 		this.pendingRequests = [];
+		this.proceesedRequests = [];
 
 		this._algorithm = "fifo";
 		this.isUp = true;
 
 		this.running = false;
+
+		this.states = [];
+
+		// initial callback values
+		this.onRequestsChange = () => {};
+		this.onProcessedRequestsChange = () => {};
 	}
 
 	/**
+	 * Adds a request to the simulator
+	 * Requests can only be added BEFORE starting the simulation
 	 * @param track
 	 * @param sector 
 	 */
@@ -70,10 +88,35 @@ class IOSimulator extends Simulator {
 
 		this.requests.push(request);
 		this.pendingRequests.push(request);
+
+		// request array has changed
+		this.onRequestsChange(this.requests);
+	}
+
+	/**
+	 * Removes a request from the list.
+	 * Requests can only be removed BEFORE starting the simulation
+	 * @param index request to be removed
+	 */
+	public removeRequest(index: number) : void {
+		if (index >= this.requests.length) {
+			// this request does not exist
+			return;
+		}
+
+		// as the simulation has not started yet, index will be the same on 
+		// the requests list and the pending list
+		this.requests.splice(index, 1);
+		this.pendingRequests.splice(index, 1);
+
+		// request array has changed
+		this.onRequestsChange(this.requests);
 	}
 
 	private getNextRequest() : NextRequest {
 		if(!this.running){
+			// simulator might have been run before, make sure
+			// that the current track is the one set on the initial position input
 			this.running = true;
 			this.currentTrack = this._initialPosition;
 		}
@@ -96,6 +139,10 @@ class IOSimulator extends Simulator {
 	}
 
 	public processRequest() : ProcessedRequest {
+		// save current state
+		let currentState: IOState = new IOState(this.currentTrack, [...this.pendingRequests], [...this.proceesedRequests]);
+		this.states.push(currentState);
+
 		let nextRequest: NextRequest = this.getNextRequest();
 
 		let processedRequest: ProcessedRequest = {
@@ -108,6 +155,10 @@ class IOSimulator extends Simulator {
 
 		// removing this request from the pending list
 		this.pendingRequests.splice(nextRequest.index, 1);
+
+		// add this request to the processed list
+		this.proceesedRequests.push(processedRequest);
+		this.onProcessedRequestsChange(this.proceesedRequests);
 
 		return processedRequest;
 	}
@@ -281,13 +332,38 @@ class IOSimulator extends Simulator {
 		// set the initial position as the current position
 		this.currentTrack = this._initialPosition;
 
+		// clear the processed request list
+		this.proceesedRequests = [];
+		this.onProcessedRequestsChange(this.proceesedRequests);
+
+		this.states = [];
+
 		this.running = false;
 	}
 
 	public clear() : void {
 		this.requests = [];
 		this.pendingRequests = [];
+		this.proceesedRequests = [];
+		this.states = [];
 		this.running = false;
+
+		// notify request changes
+		this.onRequestsChange(this.requests);
+		this.onProcessedRequestsChange(this.proceesedRequests);
+	}
+
+	public previousStep() : void {
+		// fetch last state
+		let state: IOState | undefined = this.states.pop();
+
+		if(state !== undefined) {
+			this.pendingRequests = state.pendingRequests;
+			this.currentTrack = state.currentTrack;
+			this.proceesedRequests = state.processedRequests;
+
+			this.onProcessedRequestsChange(this.proceesedRequests);
+		}
 	}
 
 	public hasNextStep() : boolean {
@@ -295,7 +371,7 @@ class IOSimulator extends Simulator {
 	}
 
 	public hasPreviousStep() : boolean {
-		return false;
+		return this.states.length > 0;
 	}
 
 	get tracks() : number {

@@ -13,8 +13,7 @@ import {
 import { FiDelete } from "react-icons/fi";
 
 import useIOSimulator from "./useIOSimulator";
-import { IOSimulator, ProcessedRequest } from "./IOSimulator";
-import useInterval from "../../helpers/useInterval";
+import { IOSimulator, ProcessedRequest, Request } from "./IOSimulator";
 
 function IOSimulatorPage() {
 	const {
@@ -27,8 +26,8 @@ function IOSimulatorPage() {
 		onSubmitForm,
 		selectedAlgorithm, setSelectedAlgorithm,
 		processedRequests,
-		isRunning, 
-		step, reset, stop,
+		isRunning, isStarted,
+		step, reset, stop, previous, play, pause, timerCallback,
 		hasNext, hasPrevious
 	} = useIOSimulator();
 
@@ -50,6 +49,9 @@ function IOSimulatorPage() {
 		}
 	});
 
+	
+	let aux = (request: Request) => request.track;
+
 	return (
 		<>
 			<Row>
@@ -70,7 +72,7 @@ function IOSimulatorPage() {
 										<FormCheck 
 											name="selectedAlgorithm"
 											type="radio"
-											disabled={isRunning}
+											disabled={isStarted}
 											onChange={() => setSelectedAlgorithm(algorithm.id)}
 											checked={algorithm.id === selectedAlgorithm}
 											value={algorithm.id}
@@ -85,7 +87,7 @@ function IOSimulatorPage() {
 									<FormControl 
 										value={initialPosition}
 										min={0}
-										disabled={isRunning}
+										disabled={isStarted}
 										onChange={(e) => setInitialPosition(parseInt(e.target.value))}
 										type="number" />
 								</FormGroup>
@@ -94,7 +96,7 @@ function IOSimulatorPage() {
 									<label>Número de pistas</label>
 									<FormControl 
 										value={maxTracks}
-										disabled={isRunning}
+										disabled={isStarted}
 										min={1} 
 										onChange={(e) => setMaxTracks(parseInt(e.target.value))}
 										type="number" />
@@ -108,7 +110,7 @@ function IOSimulatorPage() {
 											label="Ascendente"
 											onChange={() => setDirection(true)}
 											checked={direction}
-											disabled={isRunning}
+											disabled={isStarted}
 											name="direction" />
 
 										<FormCheck 
@@ -116,7 +118,7 @@ function IOSimulatorPage() {
 											label="Descendente"
 											onChange={() => setDirection(false)}
 											checked={!direction}
-											disabled={isRunning}
+											disabled={isStarted}
 											name="direction" />
 									</FormGroup>
 								}
@@ -135,7 +137,7 @@ function IOSimulatorPage() {
 										<FormControl
 											required
 											min={0}
-											disabled={isRunning}
+											disabled={isStarted}
 											value={requestTrack}
 											onChange={(e) => setRequestTrack(parseInt(e.target.value))}
 											type="number" />
@@ -151,11 +153,11 @@ function IOSimulatorPage() {
 								{requests.length == 0 ?
 									<p>No se ha introducido ninguna petición.</p>
 									:
-									requests.map((value: number, index: number) => 
+									requests.map((value: Request, index: number) => 
 										<span className="badge rounded-pill pill-md bg-secondary px-2 mr-1">
-											{value}
+											{value.track}
 
-											{!isRunning &&	
+											{!isStarted &&	
 												<FiDelete
 													onClick={() => removeRequest(index)}
 													className="pointer ml-sm-1" />
@@ -173,7 +175,7 @@ function IOSimulatorPage() {
 			<Row>
 				<RequestChart 
 					tracks={3}
-					maxTrack={Math.max(...requests, initialPosition, maxTracks)}
+					maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
 					requests={chartRequests} />
 			</Row>
 
@@ -225,10 +227,15 @@ function IOSimulatorPage() {
 			</Row>
 
 			<SimulatorControl 
-				reset={reset}
-				stop={stop}
+				running={isRunning}
 				hasNext={hasNext}
 				hasPrevious={hasPrevious}
+				reset={reset}
+				stop={stop}
+				previous={previous}
+				start={play}
+				pause={pause}
+				timerCallback={timerCallback}
 				next={step} />
 		</>
 	)

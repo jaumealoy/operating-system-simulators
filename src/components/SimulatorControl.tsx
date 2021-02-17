@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { GiNextButton, GiPreviousButton, GiOpenFolder, GiPauseButton } from "react-icons/gi";
 import { BsFillStopFill, BsPlayFill, BsArrowCounterclockwise } from "react-icons/bs";
@@ -7,6 +7,8 @@ import { FaFileUpload } from "react-icons/fa";
 
 import { FormControl } from "react-bootstrap";
 
+import useInterval from "./../helpers/useInterval";
+
 interface SimulatorControlProps {
 	hasPrevious?: boolean;
 	hasNext?: boolean;
@@ -14,11 +16,26 @@ interface SimulatorControlProps {
 	reset?: () => void;
 	stop?: () => void;
 	start?: () => void;
+	pause?: () => void;
 	next?: () => void;
-	previous?: () => void
+	previous?: () => void;
+	onSpeedChange?: (speed: number) => void;
+	timerCallback?: () => void;
 };
 
+const MIN_SPEED: number = 100;
+const MAX_SPEED: number = 5000;
+const STEP_SPEED: number = 100;
+
 function SimulatorControl(props: SimulatorControlProps) {
+	// speed slider control
+	const [speed, setSpeed] = useState<number>(1000);
+	useInterval(
+		(props.timerCallback == undefined) ? (() => {}) : props.timerCallback, 
+		speed,
+		props.running
+	);
+
 	return (
 		<div className="control-bar">
 			<div className="container">
@@ -43,12 +60,13 @@ function SimulatorControl(props: SimulatorControlProps) {
 
 				{(props.running != undefined && props.running) ?
 					<button 
-						onClick={() => (props.start == undefined) ? null : props.start()}
+						onClick={() => (props.pause == undefined) ? null : props.pause()}
 						className="control-button">
 						<GiPauseButton />
 					</button>
 					:
 					<button 
+						disabled={!props.hasNext}
 						onClick={() => (props.start == undefined) ? null : props.start()}
 						className="control-button">
 						<BsPlayFill />
@@ -63,6 +81,11 @@ function SimulatorControl(props: SimulatorControlProps) {
 
 				<FormControl 
 					className="mt-sm-1"
+					value={speed}
+					step={STEP_SPEED}
+					min={MIN_SPEED}
+					max={MAX_SPEED}
+					onChange={(e) => setSpeed(parseInt(e.target.value))}
 					type="range"/>
 
 				<div className="float-right">

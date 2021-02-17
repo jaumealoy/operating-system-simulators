@@ -1,5 +1,5 @@
 import { FormEvent, useState, useRef, useEffect } from "react";
-import { IOSimulator, ProcessedRequest } from "./IOSimulator";
+import { IOSimulator, ProcessedRequest, Request } from "./IOSimulator";
 
 const MAX_TRACKS: number = 200;
 
@@ -31,20 +31,24 @@ const useIOSimulator = () => {
 	const [direction, setDirection] = useState<boolean>(true);
 
 	// request list
-	const [requests, setRequests] = useState<number[]>([]);
-	const addRequest = (track: number) => setRequests([...requests, track]);
-	const removeRequest = (index: number) => {
-		let tmp: number[] = [...requests];
-		tmp.splice(index, 1);
-		setRequests(tmp);
+	const [requests, setRequests] = useState<Request[]>([]);
+
+	simulator.current.onRequestsChange = (list: Request[]) => {
+		setRequests([...list]);
 	};
+
+	simulator.current.onProcessedRequestsChange = (list: ProcessedRequest[]) => {
+		setProcessedRequests([...list]);
+	}
+
+	const addRequest = (track: number) => simulator.current.addRequest(track, 0);
+	const removeRequest = (index: number) => simulator.current.removeRequest(index);
 
 	// request add form
 	const onSubmitForm = (e: FormEvent) => {
 		e.preventDefault();
 
 		// adding request to simulator and UI list
-		simulator.current.addRequest(requestTrack, 0);
 		setRequestTrack(NaN);
 		addRequest(requestTrack);
 	};
@@ -53,41 +57,60 @@ const useIOSimulator = () => {
 	const [processedRequests, setProcessedRequests] = useState<ProcessedRequest[]>([]);
 
 	// simulator control
+	const [isStarted, setStarted] = useState(false);
 	const [isRunning, setRunning] = useState(false);
 	const [hasNext, setHasNext] = useState(false);
 	const [hasPrevious, setHasPrevious] = useState(false);
 
 	const step = () => {
 		// simulator is running
-		if(!isRunning){
+		if(!isStarted){
 			simulator.current.direction = direction;
-			setRunning(true);
+			setStarted(true);
 		}
 
-
-		// get next request
-		let nextRequest: ProcessedRequest = simulator.current.processRequest();
-		setProcessedRequests([...processedRequests, nextRequest]);
+		// process next request
+		simulator.current.processRequest();
 	};
+
+	const previous = () => {
+		simulator.current.previousStep();
+	}
 
 	const stop = () => {
 		// reset to simulation initial state
-		setProcessedRequests([]);
+		setStarted(false);
 		setRunning(false);
 		simulator.current.reset();
 	};
 
 	const reset = () => {
 		// removes all requests
-		setProcessedRequests([]);
-		setRequests([]);
+		setStarted(false);
 		setRunning(false);
 		simulator.current.clear();
 	};
 
+	const pause = () => {
+		setRunning(false);
+	};
+
+	const play = () => {
+		setRunning(true);
+	};
+
+	const timerCallback = () => {
+		if (!hasNext) {
+			setRunning(false);
+			return;
+		}
+
+		step();
+	};
+
 	useEffect(() => {
-		console.log("hasNext=" + simulator.current.hasNextStep());
 		setHasNext(simulator.current.hasNextStep());
+		setHasPrevious(simulator.current.hasPreviousStep());
 	}, [requests, processedRequests]);
 
 	return {
@@ -99,8 +122,8 @@ const useIOSimulator = () => {
 		direction, setDirection,
 		onSubmitForm,
 		processedRequests,
-		isRunning,
-		step, reset, stop,
+		isRunning, isStarted,
+		step, reset, stop, previous, pause, play, timerCallback,
 		hasNext, hasPrevious
 	};
 };
