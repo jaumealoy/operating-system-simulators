@@ -197,7 +197,7 @@ class IOSimulator extends Simulator {
 		if (index < 0) {
 			// there isn't any available request on this direction
 			// the head must reach the maximum track and then change its direction
-			let next: number = this.isUp ? this._tracks : IOSimulator.MIN;
+			let next: number = this.isUp ? this.maxTrack : IOSimulator.MIN;
 
 			// and then change the direction
 			this.isUp = !this.isUp;
@@ -391,7 +391,7 @@ class IOSimulator extends Simulator {
 	}
 
 	private get maxTrack() : number {
-		return this._tracks;
+		return this._tracks - 1 + IOSimulator.MIN;
 	}
 }
 

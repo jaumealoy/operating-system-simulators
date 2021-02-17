@@ -56,7 +56,10 @@ function IOSimulatorPage() {
 		<>
 			<Row>
 				<Col md={6}>
-
+					<RequestChart 
+						tracks={3}
+						maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
+						requests={chartRequests} />
 				</Col>
 
 				<Col md={6}>
@@ -64,7 +67,7 @@ function IOSimulatorPage() {
 						<div className="title">Configuración del simulador</div>
 
 						<Row>
-							<Col md={7} className="mb-sm-3">
+							<Col md={7} className="mb-3">
 								<FormGroup>
 									<label>Algoritmo simulación</label>
 									
@@ -86,7 +89,8 @@ function IOSimulatorPage() {
 									<label>Posición inicial</label>
 									<FormControl 
 										value={initialPosition}
-										min={0}
+										min={IOSimulator.MIN}
+										max={maxTracks + IOSimulator.MIN - 1}
 										disabled={isStarted}
 										onChange={(e) => setInitialPosition(parseInt(e.target.value))}
 										type="number" />
@@ -126,7 +130,7 @@ function IOSimulatorPage() {
 						</Row>
 					</div>
 
-					<div className="simulator-group mt-sm-3">
+					<div className="simulator-group mt-3">
 						<div className="title">Peticiones</div>
 						<Row>
 							<Col md={6}>
@@ -143,7 +147,7 @@ function IOSimulatorPage() {
 											type="number" />
 									</FormGroup>
 
-									<button className="btn btn-primary mt-sm-2 float-right">
+									<button className="btn btn-primary mt-2 float-right">
 										Añadir petición
 									</button>
 								</form>
@@ -170,13 +174,6 @@ function IOSimulatorPage() {
 					</div>
 					
 				</Col>
-			</Row>
-
-			<Row>
-				<RequestChart 
-					tracks={3}
-					maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
-					requests={chartRequests} />
 			</Row>
 
 			<Row>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 
 import { SVG, PointArray } from "@svgdotjs/svg.js";
 
@@ -11,8 +11,8 @@ interface RequestChartProps {
 }
 
 // chart settings
-const WIDTH: number = 300;
-const HEIGHT: number = 150;
+let WIDTH: number = 300;
+let HEIGHT: number = 150;
 const AXIS_WIDTH: number = 5;
 const LINE_COLOR: string = "black";
 const RADIUS: number = 10;
@@ -21,9 +21,17 @@ const TEXT_SIZE: number = 8;
 function RequestChart(props: RequestChartProps) {
 	const chart = useRef(SVG());
 
+	useLayoutEffect(() => {
+		let element = document.getElementById("my_chart");
+		if(element != null){
+			WIDTH = element.getBoundingClientRect().width;
+			HEIGHT = WIDTH / 2;
+			chart.current.addTo("#my_chart").size(WIDTH, HEIGHT).bbox();
+		}
+	}, []);
+
 	useEffect(() => {
 		let aux = chart.current;
-		aux.addTo("#my_chart").size(WIDTH, HEIGHT).group();
 		aux.clear();
 
 		// highest request track
@@ -115,9 +123,8 @@ function RequestChart(props: RequestChartProps) {
 			   .fill({ color: LINE_COLOR });			
 		}
 
-
 		return () => {
-			//aux.scale(2, 2);
+		//	aux.scale(0.5);
 			aux.clear();
 		};
 	});
