@@ -7,13 +7,18 @@ import {
 	Col,
 	FormGroup,
 	FormControl,
-	FormCheck
+	FormCheck,
+	Modal
 } from "react-bootstrap";
 
-import { FiDelete } from "react-icons/fi";
+import { 
+	FiDelete,
+	FiInfo
+} from "react-icons/fi";
 
 import useIOSimulator from "./useIOSimulator";
 import { IOSimulator, ProcessedRequest, Request } from "./IOSimulator";
+import useAlgorithmHelp from "../../components/AlgorithmModalHelp/useAlgorithmHelp";
 
 function IOSimulatorPage() {
 	const {
@@ -30,6 +35,12 @@ function IOSimulatorPage() {
 		step, reset, stop, previous, play, pause, timerCallback,
 		hasNext, hasPrevious
 	} = useIOSimulator();
+
+	// modal help texts
+	const {
+		showAlgorithmModal,
+		AlgorithmModal
+	} = useAlgorithmHelp("io");
 
 	const [chartRequests, setChartRequests] = useState<number[]>([]);
 	useEffect(() => {
@@ -67,7 +78,7 @@ function IOSimulatorPage() {
 						<div className="title">Configuración del simulador</div>
 
 						<Row>
-							<Col md={7} className="mb-3">
+							<Col md={8} className="mb-3">
 								<FormGroup>
 									<label>Algoritmo simulación</label>
 									
@@ -79,12 +90,21 @@ function IOSimulatorPage() {
 											onChange={() => setSelectedAlgorithm(algorithm.id)}
 											checked={algorithm.id === selectedAlgorithm}
 											value={algorithm.id}
-											label={algorithm.name} />
+											label={
+												<>
+													{algorithm.name}
+													<button 
+														onClick={() => showAlgorithmModal(algorithm.id)}
+														className="btn btn-icon btn-sm">
+														<FiInfo />
+													</button>
+												</>
+											} />
 									)}
 								</FormGroup>
 							</Col>
 						
-							<Col md={5}>
+							<Col md={4}>
 								<FormGroup>
 									<label>Posición inicial</label>
 									<FormControl 
@@ -234,6 +254,8 @@ function IOSimulatorPage() {
 				pause={pause}
 				timerCallback={timerCallback}
 				next={step} />
+
+			<AlgorithmModal />
 		</>
 	)
 }

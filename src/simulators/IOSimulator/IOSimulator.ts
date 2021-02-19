@@ -122,7 +122,7 @@ class IOSimulator extends Simulator {
 		}
 
 		let ALGORITHM_MAP: {[key: string]: () => number} = {
-			"fifo": this.FIFO,
+			"fcfs": this.FCFS,
 			"sstf": this.SSTF.bind(this),
 			"scan": this.SCAN.bind(this),
 			"look": this.LOOK.bind(this),
@@ -163,7 +163,7 @@ class IOSimulator extends Simulator {
 		return processedRequest;
 	}
 
-	private FIFO() : number {
+	private FCFS() : number {
 		return 0;
 	}
 
@@ -270,7 +270,7 @@ class IOSimulator extends Simulator {
 			// there isn't any request more in this direction
 			// move the head to the nearest request to the other edge
 			let originalTrack: number = this.currentTrack;
-			this.currentTrack = IOSimulator.MIN;
+			this.currentTrack = (this.isUp ? IOSimulator.MIN : this.maxTrack);
 			index = this.findNextRequest();
 			this.currentTrack = originalTrack;
 		}
@@ -305,7 +305,7 @@ class IOSimulator extends Simulator {
 	 */
 	public static getAvailableAlgorithms() : Algorithm[] {
 		return [
-			{ id: "fifo", name: "First In First Served (FIFO)" },
+			{ id: "fcfs", name: "First Come First Served (FCFS)" },
 			{ id: "sstf", name: "Shortest Seek Time First (SSTF)" },
 			{ id: "scan", name: "SCAN" },
 			{ id: "cscan", name: "C-SCAN" },
