@@ -1,6 +1,8 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
+
+import { useTranslation } from "react-i18next";
 
 interface Language {
 	id: string;
@@ -8,11 +10,11 @@ interface Language {
 	flag: string;
 }
 
-const languages: Language[] = [
-	{ id: "ES", name: "Castellano", flag: "" },
-	{ id: "CAT", name: "Català", flag: "" },
-	{ id: "EN", name: "English", flag: "" }
-];
+const languages: {[id: string]: Language} = {
+	es: { id: "es", name: "Castellano", flag: "" },
+	ca: { id: "ca", name: "Català", flag: "" },
+	en: { id: "en", name: "English", flag: "" }
+};
 
 interface MenuItem {
 	key: string;
@@ -20,13 +22,25 @@ interface MenuItem {
 	to: string;
 }
 
-const items: MenuItem[] = [
-	{ key: "io_simulator", title: "IO Simulator", to: "/io" }
-];
-
 function Menu() {
+	const { t, i18n } = useTranslation();
+	const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
+
+	const location = useLocation();
+	const items: MenuItem[] = [
+		{ key: "io_simulator", title: t("menu.IOSimulator"), to: "/io" }
+	];
+
+	const selectLanguage = (language: string) => {
+		setSelectedLanguage(language);
+		i18n.changeLanguage(language);
+	};
+
+
+	console.log(location.pathname)
+
 	return (
-		<nav className="navbar navbar-dard bg-dark mb-sm-2">
+		<nav className="navbar navbar-dark bg-dark mb-sm-2">
 			<div className="container">
 				<div className="">
 					<ul className="navbar-nav">
@@ -34,7 +48,9 @@ function Menu() {
 							<li 
 								key={item.key}
 								className="nav-item">
-								<Link to={item.to}>
+								<Link
+									className={"nav-link" + (location.pathname == item.to ? " active" : "")}
+									to={item.to}>
 									{item.title}
 								</Link>
 							</li>
@@ -43,13 +59,15 @@ function Menu() {
 				</div>
 
 				<Dropdown>
-					<Dropdown.Toggle className="">
-						Català
+					<Dropdown.Toggle variant="menu-select" className="nav-link">
+						{languages[selectedLanguage].name}
 					</Dropdown.Toggle>
 
 					<Dropdown.Menu>
-						{languages.map(lang => 
-							<Dropdown.Item key={lang.id}>
+						{Object.entries(languages).map(([key, lang]) => 
+							<Dropdown.Item 
+								onClick={() => selectLanguage(lang.id)}
+								key={lang.id}>
 								{lang.name}
 							</Dropdown.Item>
 						)}

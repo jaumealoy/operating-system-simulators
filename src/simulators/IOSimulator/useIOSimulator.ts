@@ -4,7 +4,8 @@ import { IOSimulator, ProcessedRequest, Request } from "./IOSimulator";
 const MAX_TRACKS: number = 200;
 
 const useIOSimulator = () => {
-    // simulator
+    // simulators
+	const simulators = useRef<IOSimulator[]>([]);
 	const simulator = useRef<IOSimulator>(new IOSimulator());
 
 	// algorithm selected for the simulation
@@ -13,7 +14,7 @@ const useIOSimulator = () => {
 	);
 
 	useEffect(() => { 
-		simulator.current.algorithm = selectedAlgorithm 
+		simulator.current.algorithm = selectedAlgorithm;
 	}, [selectedAlgorithm]);
 
 	// text inputs
@@ -43,6 +44,26 @@ const useIOSimulator = () => {
 
 	const addRequest = (track: number) => simulator.current.addRequest(track, 0);
 	const removeRequest = (index: number) => simulator.current.removeRequest(index);
+
+	const loadRequestsFromList = (requests: number[]) => {
+		// remove all current requests
+		simulator.current.clear();
+		
+		// add new requests from list
+		requests.map((request: number) => addRequest(request));
+	};
+
+	// view mode
+	const [isSimpleView, setSimpleView] = useState<boolean>(true);
+	useEffect(() => {
+		if (isSimpleView) {
+			// removing all simulators
+			simulators.current = [new IOSimulator()];
+			simulator.current = simulators.current[0];
+		} else {
+
+		}
+	}, [isSimpleView]);
 
 	// request add form
 	const onSubmitForm = (e: FormEvent) => {
@@ -115,7 +136,7 @@ const useIOSimulator = () => {
 
 	return {
 		selectedAlgorithm, setSelectedAlgorithm,
-		requests, removeRequest,
+		requests, removeRequest, loadRequestsFromList,
 		initialPosition, setInitialPosition,
 		requestTrack, setRequestTrack,
 		maxTracks, setMaxTracks,
@@ -124,7 +145,8 @@ const useIOSimulator = () => {
 		processedRequests,
 		isRunning, isStarted,
 		step, reset, stop, previous, pause, play, timerCallback,
-		hasNext, hasPrevious
+		hasNext, hasPrevious,
+		isSimpleView, setSimpleView
 	};
 };
 

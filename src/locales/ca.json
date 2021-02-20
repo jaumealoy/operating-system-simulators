@@ -1,0 +1,13 @@
+{
+    "common": {
+        "close": "Tancar"
+    },
+
+    "io": {
+        
+    },
+
+    "menu": {
+        "IOSimulator": "Simulador E/S"
+    }
+}

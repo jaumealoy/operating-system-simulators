@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { SVG, PointArray } from "@svgdotjs/svg.js";
 
@@ -8,11 +8,12 @@ interface RequestChartProps {
 	maxTrack?: number;
 	numberOfRequests?: number;
 	requests: number[];
+	id: string;
 }
 
 // chart settings
-let WIDTH: number = 300;
-let HEIGHT: number = 150;
+const WIDTH: number = 300;
+const HEIGHT: number = 150;
 const AXIS_WIDTH: number = 5;
 const LINE_COLOR: string = "black";
 const RADIUS: number = 10;
@@ -22,15 +23,18 @@ function RequestChart(props: RequestChartProps) {
 	const chart = useRef(SVG());
 
 	useLayoutEffect(() => {
-		let element = document.getElementById("my_chart");
+		let element = document.getElementById(props.id);
 		if(element != null){
-			WIDTH = element.getBoundingClientRect().width;
-			HEIGHT = WIDTH / 2;
-			chart.current.addTo("#my_chart").size(WIDTH, HEIGHT).bbox();
+			let myWidth = element.getBoundingClientRect().width;
+			let myHeight = myWidth / 2;
+			chart.current.addTo("#" + props.id).size(myWidth, myHeight)
 		}
 	}, []);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
+		let WIDTH = chart.current.node.getBoundingClientRect().width;
+		let HEIGHT = WIDTH / 2;
+
 		let aux = chart.current;
 		aux.clear();
 
@@ -130,11 +134,7 @@ function RequestChart(props: RequestChartProps) {
 	});
 
 	return (
-		<>
-			<div id="my_chart">
-
-			</div>
-		</>
+		<div id={props.id}></div>
 	);
 }
 

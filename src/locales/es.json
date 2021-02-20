@@ -1,0 +1,36 @@
+{
+    "common": {
+        "close": "Cerrar",
+        "buttons": {
+            "simpleview": "Vista simple",
+            "comparaisonview": "Vista comparativa",
+            "tutorial": "Tutorial"
+        },
+        "example_number": "Ejemplo {{number}}",
+        "examples": "Ejemplos",
+        "simulation_algorithm": "Algoritmo simulación",
+        "simulator_settings": "Configuración del simulador"
+    },
+
+    "io": {
+        "requests": "Peticiones",
+        "add_request": "Añadir petición",
+        "no_requests_added": "No se ha introducido ninguna petición.",
+        "track": "Pista",
+        "direction": "Sentido",
+        "upwards": "Ascendente",
+        "downwards": "Descentende",
+        "initial_position": "Posición inicial",
+        "final_position": "Posición final",
+        "track_number": "Número de pistas",
+        "request_number": "# petición",
+        "displacement": "Desplazamiento",
+        "results": "Resultados",
+        "total": "Total",
+        "no_requests_completed": "No se ha completado ninguna petición"
+    },
+
+    "menu": {
+        "IOSimulator": "Simulador E/S"
+    }
+}
