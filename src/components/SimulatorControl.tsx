@@ -37,15 +37,19 @@ function SimulatorControl(props: SimulatorControlProps) {
 	);
 
 	return (
-		<div className="control-bar">
+		<div 
+			data-tut="control_bar_overview"
+			className="control-bar">
 			<div className="container">
-				<button 
+				<button
+					data-tut="control_bar_reset" 
 					onClick={() => (props.reset == undefined) ? null : props.reset()}
 					className="control-button">
 					<BsArrowCounterclockwise />
 				</button>
 
 				<button 
+					data-tut="control_bar_previous_step"
 					onClick={() => (props.previous == undefined) ? null : props.previous()}
 					disabled={!props.hasPrevious && true}
 					className="control-button">
@@ -53,6 +57,7 @@ function SimulatorControl(props: SimulatorControlProps) {
 				</button>
 
 				<button 
+					data-tut="control_bar_stop"
 					onClick={() => (props.stop == undefined) ? null : props.stop()}
 					className="control-button">
 					<BsFillStopFill />
@@ -60,12 +65,14 @@ function SimulatorControl(props: SimulatorControlProps) {
 
 				{(props.running != undefined && props.running) ?
 					<button 
+						data-tut="control_bar_play"
 						onClick={() => (props.pause == undefined) ? null : props.pause()}
 						className="control-button">
 						<GiPauseButton />
 					</button>
 					:
 					<button 
+						data-tut="control_bar_play"
 						disabled={!props.hasNext}
 						onClick={() => (props.start == undefined) ? null : props.start()}
 						className="control-button">
@@ -73,6 +80,7 @@ function SimulatorControl(props: SimulatorControlProps) {
 					</button>
 				}
 				<button 
+					data-tut="control_bar_next_step"
 					onClick={() => (props.next == undefined) ? null : props.next()}
 					disabled={!props.hasNext && true}
 					className="control-button">
@@ -80,6 +88,7 @@ function SimulatorControl(props: SimulatorControlProps) {
 				</button>
 
 				<FormControl 
+					data-tut="control_bar_speed"
 					className="mt-sm-1"
 					value={speed}
 					step={STEP_SPEED}
@@ -88,7 +97,9 @@ function SimulatorControl(props: SimulatorControlProps) {
 					onChange={(e) => setSpeed(parseInt(e.target.value))}
 					type="range"/>
 
-				<div className="float-right">
+				<div
+					data-tut="storage" 
+					className="float-right">
 					<button className="control-button">
 						<MdSave />
 					</button>

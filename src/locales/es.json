@@ -9,7 +9,19 @@
         "example_number": "Ejemplo {{number}}",
         "examples": "Ejemplos",
         "simulation_algorithm": "Algoritmo simulación",
-        "simulator_settings": "Configuración del simulador"
+        "simulator_settings": "Configuración del simulador",
+        "tutorial": {
+            "control_bar_overview": "Esto es la barra de control del simulador que te permite controlar la simulación.",
+            "control_bar_reset": "Este botón reinicia el simulador: elimina todas las peticiones.",
+            "control_bar_stop": "Este botón reinicia la simulación, sin eliminar las peticiones.",
+            "control_bar_previous_step": "Este botón permite volver al estado anterior de la simulación",
+            "control_bar_next_step": "Este botón avanza en un paso la simulación, permite ver la simulación paso a paso.",
+            "control_bar_play": "Este botón permite iniciar o parar la simulación automática.",
+            "control_bar_speed": "Puedes ajustar la velocidad de la simulación automática con esta barra",
+            "view_bar": "Puedes cambiar entre una vista de un solo simulador y una vista de múltiples simuladores para realizar comparaciones.",
+            "storage": "Puedes guardar y cargar las configuraciones de tu simulador.",
+            "repeat_tutorial": "Puedes volver a ver este tutorial en cualquier momento pulsándome."
+        }
     },
 
     "io": {
@@ -35,10 +47,30 @@
             "cscan": "CSCAN",
             "look": "LOOK",
             "clook": "CLOOK"
+        },
+
+        "tutorial": {
+            "algorithm_select": "Aquí puedes seleccionar el algoritmo de la simulación. Si estás en la vista comparativa podrás seleccionar más de uno.",
+            "simulator_settings": "Puedes configurar el número de pistas y posición inicial del cabezal. También se puede indicar el sentido inicial del movimiento, si los algoritmos seleccionados lo permiten.",
+            "request_list": "Aquí puedes indicar las peticiones que quieres simular y observar las peticiones que se procesarán",
+            "request_list_add": "Para añadir una petición debes introducir un valor numérico entre {{min}} y {{max}} y pulsar el botón \"Añadir petición\".",
+            "request_list_remove": "Aquí aparecen todas las peticiones así como las has introducido. Puedes borrarlas haciendo click en el icono con una \"X\"",
+            "demo_requests": "El simulador ya incluye algunos ejemplos de peticiones para observar el funcionamiento de éste. Si pulsas sobre algún ejemplo se añadirán automáticamente las peticiones."
         }
     },
 
     "menu": {
         "IOSimulator": "Simulador E/S"
+    },
+
+    "help": {
+        "modals": {
+            "io": {
+                "fcfs": {
+                    "text_1": "El algoritmo First Come First Served procesa los accesos a disco secuencialment. La primera petición que se recibe es la primera petición procesada.",
+                    "text_2": "Al realizarse muchas peticiones, este algoritmo se comporta como una planificación aleatoria, aunque es el sistema más justo de todos."
+                }
+            }
+        }
     }
 }

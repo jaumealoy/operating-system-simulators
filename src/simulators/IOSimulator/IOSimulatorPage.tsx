@@ -5,9 +5,9 @@ import SimulatorControl from "./../../components/SimulatorControl";
 import { IOSimulator, ProcessedRequest, Request } from "./IOSimulator";
 import useIOSimulator from "./useIOSimulator";
 import useAlgorithmHelp from "../../components/AlgorithmModalHelp/useAlgorithmHelp";
-import useTutorial from "../../helpers/useTutorial";
+import useTutorial, { StepAction } from "../../helpers/useTutorial";
 
-import Tour from 'reactour'
+import Tour, { ReactourStep } from 'reactour'
 import { useTranslation } from "react-i18next";
 
 import "./../../common/css/App.scss";
@@ -61,6 +61,7 @@ const EXAMPLES: IOExample[] = [
 	}
 ];
 
+
 function IOSimulatorPage() {
 	// translation texts
 	const { t } = useTranslation();
@@ -88,16 +89,108 @@ function IOSimulatorPage() {
 	} = useAlgorithmHelp("io");
 
 	// tutorial
-	const Tutorial = useTutorial("io");
+	const STEPS: ReactourStep[] = [
+		{
+			selector: '[data-tut="view_bar"]',
+			content: t("common.tutorial.view_bar")
+		},
+
+		{
+			selector: '[data-tut="algorithm_select"]',
+			content: t("io.tutorial.algorithm_select")
+		},
+
+		{
+			selector: '[data-tut="simulator_settings"]',
+			content: t("io.tutorial.simulator_settings")
+		},
+
+		{
+			selector: '[data-tut="request_list"]',
+			content: t("io.tutorial.request_list")
+		},
+
+		{
+			selector: '[data-tut="request_list_add"]',
+			content: t("io.tutorial.request_list_add", { min: IOSimulator.MIN, max: (IOSimulator.MIN + maxTracks - 1) })
+		},
+
+		{
+			selector: '[data-tut="request_list_remove"]',
+			content: t("io.tutorial.request_list_remove")
+		},
+
+		{
+			selector: '[data-tut="demo_requests"]',
+			content: t("io.tutorial.demo_requests")
+		},
+
+		{
+			selector: '[data-tut="control_bar_overview"]',
+			content: t("common.tutorial.control_bar_overview")
+		},
+
+		{
+			selector: '[data-tut="control_bar_reset"]',
+			content: t("common.tutorial.control_bar_reset")
+		},
+
+		{
+			selector: '[data-tut="control_bar_stop"]',
+			content: t("common.tutorial.control_bar_stop")
+		},
+
+		{
+			selector: '[data-tut="control_bar_previous_step"]',
+			content: t("common.tutorial.control_bar_previous_step")
+		},
+
+		{
+			selector: '[data-tut="control_bar_next_step"]',
+			content: t("common.tutorial.control_bar_next_step")
+		},
+
+		{
+			selector: '[data-tut="control_bar_play"]',
+			content: t("common.tutorial.control_bar_play")
+		},
+
+		{
+			selector: '[data-tut="control_bar_speed"]',
+			content: t("common.tutorial.control_bar_speed")
+		},
+
+		{
+			selector: '[data-tut="storage"]',
+			content: t("common.tutorial.storage")
+		},
+
+		{
+			selector: '[data-tut="repeat_tutorial"]',
+			content: t("common.tutorial.repeat_tutorial")
+		}
+	];
+
+	const STEP_ACTIONS: {[key: number]: StepAction} = {
+		5: {
+			onReach: () => {
+				loadRequestsFromList(EXAMPLES[0].requests);
+			},
+
+			onFinish: () => {
+				loadRequestsFromList([]);
+			}
+		}
+	};
+
+	const Tutorial = useTutorial("io", STEP_ACTIONS);
 
 	const chartRequests = (algorithm: string) : number[] => {
 		let requests: number[] = [initialPosition];
 
-		if(processedRequests[algorithm] != undefined){
 		for (let i = 0; i < processedRequests[algorithm].length; i++) {
 			requests.push(processedRequests[algorithm][i].finalTrack);
 		}
-	}
 
 		return requests;
 	};
@@ -120,13 +213,16 @@ function IOSimulatorPage() {
 			<Row className="mb-3">
 				<Col>
 					<button
+						data-tut="repeat_tutorial"
 						onClick={Tutorial.show}
 						className="btn btn-sm btn-outline-secondary">
 						<IoIosHelpBuoy className="mr-1" />
 						{t("common.buttons.tutorial")}
 					</button>
 
-					<div className="btn-group float-right">
+					<div
+						data-tut="view_bar"
+						className="btn-group float-right">
 						<input 
 							type="radio"
 							name="view-select"
@@ -168,7 +264,10 @@ function IOSimulatorPage() {
 							<div className="title">{t("common.simulator_settings")}</div>
 
 							<Row>
-								<Col md={8} className="mb-3">
+								<Col 
+									data-tut="algorithm_select"
+									md={8} 
+									className="mb-3">
 									<FormGroup>
 										<label>{t("common.simulation_algorithm")}</label>
 										
@@ -195,7 +294,8 @@ function IOSimulatorPage() {
 									</FormGroup>
 								</Col>
 							
-								<Col md={4}>
+								<Col md={4}
+									data-tut="simulator_settings">
 									<FormGroup>
 										<label>{t("io.initial_position")}</label>
 										<FormControl 
@@ -245,18 +345,24 @@ function IOSimulatorPage() {
 
 				<Col md={6}>
 					<div className="simulator-group">
-						<div className="simulator-group-content">
+						<div 
+							data-tut="request_list"
+							className="simulator-group-content">
 							<div className="title">{t("io.requests")}</div>
 
 							<Row>
-								<Col md={6}>
-									<form onSubmit={onSubmitForm}>
+								<Col 
+									data-tut="request_list_add"
+									md={6}>
+									<form 
+										onSubmit={onSubmitForm}>
 										<FormGroup>
 											<label>{t("io.track")}</label>
 
 											<FormControl
 												required
-												min={0}
+												min={IOSimulator.MIN}
+												max={IOSimulator.MIN + maxTracks - 1}
 												disabled={isStarted}
 												value={requestTrack}
 												onChange={(e) => setRequestTrack(parseInt(e.target.value))}
@@ -272,7 +378,9 @@ function IOSimulatorPage() {
 									</form>
 								</Col>
 								
-								<Col md={6}>
+								<Col 
+									data-tut="request_list_remove"
+									md={6}>
 									{requests.length == 0 ?
 										<p>{t("io.no_requests_added")}</p>
 										:
@@ -292,7 +400,9 @@ function IOSimulatorPage() {
 							</Row>
 						</div>
 
-						<div className="simulator-group-footer">
+						<div 
+							data-tut="demo_requests"
+							className="simulator-group-footer">
 							<div className="title">{t("common.examples")}</div>
 
 							{EXAMPLES.map((example: IOExample, index: number) =>
@@ -468,22 +578,14 @@ function IOSimulatorPage() {
 			<AlgorithmModal />
 
 
-		<Tour
-        	steps={[
-				{
-					selector: "#add_request_btn",
-					content: "Testing"
-				},
-
-				{
-					selector: "#add_request_btn",
-					content: "Testing"
-				}
-			]}
-			
-			onRequestClose={Tutorial.close}
-        	isOpen={Tutorial.visible}
-        	 />
+			<Tour
+				steps={STEPS}
+				onAfterOpen={Tutorial.onOpen}
+				goToStep={Tutorial.step}
+				nextStep={Tutorial.nextStep}
+				prevStep={Tutorial.prevStep}
+				onRequestClose={Tutorial.close}
+				isOpen={Tutorial.visible} />
 		</>
 	)
 }

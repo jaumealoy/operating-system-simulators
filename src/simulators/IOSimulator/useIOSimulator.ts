@@ -66,8 +66,12 @@ const useIOSimulator = () => {
 		setRequests((requests) => [...requests, { track: track, sector: 0 }]);
 	};
 
-	const removeRequest = (index: number) => 
+	const removeRequest = (index: number) => {
+		let tmp = [...requests];
+		tmp.splice(index, 1);
+		setRequests(tmp);
 		manager.current.removeRequest(index);
+	};
 
 	const loadRequestsFromList = (requests: number[]) => {
 		if(isRunning) return;

@@ -40,7 +40,7 @@ function Menu() {
 	console.log(location.pathname)
 
 	return (
-		<nav className="navbar navbar-dark bg-dark mb-sm-2">
+		<nav className="navbar navbar-dark bg-dark mb-2">
 			<div className="container">
 				<div className="">
 					<ul className="navbar-nav">
