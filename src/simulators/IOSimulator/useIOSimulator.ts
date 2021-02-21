@@ -1,32 +1,58 @@
 import { FormEvent, useState, useRef, useEffect } from "react";
+import IOManager from "./IOManager";
 import { IOSimulator, ProcessedRequest, Request } from "./IOSimulator";
 
+// max number of tracks
 const MAX_TRACKS: number = 200;
 
+// default selected algorithm
+const DEFAULT_ALGORITHM: string = IOSimulator.getAvailableAlgorithms()[0].id;
+
+const INITIAL_VALUE: {[key: string]: ProcessedRequest[]} = {}
+IOSimulator.getAvailableAlgorithms().map(algorithm => {
+	INITIAL_VALUE[algorithm.id] = [];
+});
+
 const useIOSimulator = () => {
-    // simulators
-	const simulators = useRef<IOSimulator[]>([]);
-	const simulator = useRef<IOSimulator>(new IOSimulator());
+	// simulator manager
+	const manager = useRef(new IOManager());
 
-	// algorithm selected for the simulation
-	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>(
-		IOSimulator.getAvailableAlgorithms()[0].id
-	);
+	// algorithm selected for the simulations, simple and comparaison view
+	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>(DEFAULT_ALGORITHM);
+	const [selectedAlgorithms, setSelectedAlgorithms] = useState<string[]>([DEFAULT_ALGORITHM]);
 
-	useEffect(() => { 
-		simulator.current.algorithm = selectedAlgorithm;
-	}, [selectedAlgorithm]);
+	const selectAlgorithm = (id: string) => {
+		if (isSimpleView) {
+			setSelectedAlgorithm(id);
+		} else {
+			// check if the algorithm is already selected
+			if (selectedAlgorithms.indexOf(id) >= 0) {
+				// remove the selected algorithm
+				let tmp = [...selectedAlgorithms];
+				tmp.splice(selectedAlgorithms.indexOf(id), 1);
+				setSelectedAlgorithms(tmp);
+			} else {
+				// add the new algorithm
+				setSelectedAlgorithms([...selectedAlgorithms, id]);
+			}
+		}
+	};
+
+	useEffect(() => {
+		manager.current.selectedAlgorithms = selectedAlgorithms;
+	}, [selectedAlgorithms]);
+
 
 	// text inputs
 	const [initialPosition, setInitialPosition] = useState<number>(IOSimulator.MIN);
 	useEffect(() => {
-		simulator.current.initialPosition = initialPosition;
+		manager.current.initialPosition = initialPosition;
 	}, [initialPosition]);
 	
 	const [requestTrack, setRequestTrack] = useState<number>(NaN);
 	const [maxTracks, setMaxTracks] = useState<number>(MAX_TRACKS);
 	useEffect(() => {
-		simulator.current.tracks = maxTracks;
+		manager.current.tracks = maxTracks;
 	}, [maxTracks]);
 
 	const [direction, setDirection] = useState<boolean>(true);
@@ -34,20 +60,21 @@ const useIOSimulator = () => {
 	// request list
 	const [requests, setRequests] = useState<Request[]>([]);
 
-	simulator.current.onRequestsChange = (list: Request[]) => {
-		setRequests([...list]);
+
+	const addRequest = (track: number) => {
+		manager.current.addRequest(track);
+		setRequests((requests) => [...requests, { track: track, sector: 0 }]);
 	};
 
-	simulator.current.onProcessedRequestsChange = (list: ProcessedRequest[]) => {
-		setProcessedRequests([...list]);
-	}
-
-	const addRequest = (track: number) => simulator.current.addRequest(track, 0);
-	const removeRequest = (index: number) => simulator.current.removeRequest(index);
+	const removeRequest = (index: number) => 
+		manager.current.removeRequest(index);
 
 	const loadRequestsFromList = (requests: number[]) => {
+		if(isRunning) return;
+
 		// remove all current requests
-		simulator.current.clear();
+		setRequests([]);
+		manager.current.clear();
 		
 		// add new requests from list
 		requests.map((request: number) => addRequest(request));
@@ -56,13 +83,11 @@ const useIOSimulator = () => {
 	// view mode
 	const [isSimpleView, setSimpleView] = useState<boolean>(true);
 	useEffect(() => {
-		if (isSimpleView) {
-			// removing all simulators
-			simulators.current = [new IOSimulator()];
-			simulator.current = simulators.current[0];
-		} else {
+		// update the manager view mode
+		manager.current.simpleView = isSimpleView;
 
-		}
+		// pause the simulation
+		pause();
 	}, [isSimpleView]);
 
 	// request add form
@@ -75,7 +100,10 @@ const useIOSimulator = () => {
 	};
 
 	// processed request
-	const [processedRequests, setProcessedRequests] = useState<ProcessedRequest[]>([]);
+	const [processedRequests, setProcessedRequests] = useState<{[key: string]: ProcessedRequest[]}>(INITIAL_VALUE);
+	manager.current.onProcessedRequestChange = (algorithm: string, requests: ProcessedRequest[]) => {
+		setProcessedRequests((processedRequests) => ({ ...processedRequests, [algorithm]: requests }));
+	};
 
 	// simulator control
 	const [isStarted, setStarted] = useState(false);
@@ -86,30 +114,32 @@ const useIOSimulator = () => {
 	const step = () => {
 		// simulator is running
 		if(!isStarted){
-			simulator.current.direction = direction;
+			manager.current.direction = direction;
 			setStarted(true);
 		}
 
 		// process next request
-		simulator.current.processRequest();
+		manager.current.processRequest();
 	};
 
 	const previous = () => {
-		simulator.current.previousStep();
+		// process next request
+		manager.current.previousStep();
 	}
 
 	const stop = () => {
 		// reset to simulation initial state
 		setStarted(false);
 		setRunning(false);
-		simulator.current.reset();
+		manager.current.reset();
 	};
 
 	const reset = () => {
 		// removes all requests
+		setRequests([]);
 		setStarted(false);
 		setRunning(false);
-		simulator.current.clear();
+		manager.current.clear();
 	};
 
 	const pause = () => {
@@ -130,12 +160,12 @@ const useIOSimulator = () => {
 	};
 
 	useEffect(() => {
-		setHasNext(simulator.current.hasNextStep());
-		setHasPrevious(simulator.current.hasPreviousStep());
-	}, [requests, processedRequests]);
+		setHasNext(manager.current.hasNextStep());
+		setHasPrevious(manager.current.hasPreviousStep());
+	}, [requests, processedRequests, isSimpleView]);
 
 	return {
-		selectedAlgorithm, setSelectedAlgorithm,
+		selectedAlgorithm, setSelectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		requests, removeRequest, loadRequestsFromList,
 		initialPosition, setInitialPosition,
 		requestTrack, setRequestTrack,

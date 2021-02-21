@@ -27,7 +27,15 @@
         "displacement": "Desplazamiento",
         "results": "Resultados",
         "total": "Total",
-        "no_requests_completed": "No se ha completado ninguna petición"
+        "no_requests_completed": "No se ha completado ninguna petición",
+        "algorithms": {
+            "fcfs": "First Come First Served (FCFS)",
+            "sstf": "Shortest Seek Time First (SSTF)",
+            "scan": "SCAN",
+            "cscan": "CSCAN",
+            "look": "LOOK",
+            "clook": "CLOOK"
+        }
     },
 
     "menu": {

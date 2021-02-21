@@ -54,7 +54,7 @@ const EXAMPLES: IOExample[] = [
 	},
 
 	{
-		initialTrack: 100,
+		initialTrack: 53,
 		tracks: 200,
 		requests: [98, 183, 37, 122, 14, 124, 65, 67],
 		direction: true
@@ -73,7 +73,7 @@ function IOSimulatorPage() {
 		direction, setDirection,
 		removeRequest,
 		onSubmitForm,
-		selectedAlgorithm, setSelectedAlgorithm,
+		selectedAlgorithm, setSelectedAlgorithm, selectAlgorithm, selectedAlgorithms,
 		processedRequests,
 		isRunning, isStarted,
 		step, reset, stop, previous, play, pause, timerCallback,
@@ -90,23 +90,26 @@ function IOSimulatorPage() {
 	// tutorial
 	const Tutorial = useTutorial("io");
 
-	const [chartRequests, setChartRequests] = useState<number[]>([]);
-	useEffect(() => {
-		let tmp: number[] = [initialPosition];
-		for(let i = 0; i < processedRequests.length; i++){
-			tmp.push(processedRequests[i].finalTrack);
-		}
+	const chartRequests = (algorithm: string) : number[] => {
+		let requests: number[] = [initialPosition];
 
-		setChartRequests(tmp);
-	}, [initialPosition, processedRequests]);
+		if(processedRequests[algorithm] != undefined){
+		for (let i = 0; i < processedRequests[algorithm].length; i++) {
+			requests.push(processedRequests[algorithm][i].finalTrack);
+		}
+	}
+
+		return requests;
+	};
 
 	// calculate sum of displacement
-	let sum = 0;
-	processedRequests.map(request => {
-		if (!request.fast) {
+	const calculateSumDisplacement = (algorithm: string) : number => {
+		let sum = 0;
+		processedRequests[algorithm].map(request => {
 			sum += Math.abs(request.finalTrack - request.initialTrack);
-		}
-	});
+		});
+		return sum;
+	};
 
 	
 	let aux = (request: Request) => request.track;
@@ -174,8 +177,9 @@ function IOSimulatorPage() {
 												name="selectedAlgorithm"
 												type={isSimpleView ? "radio" : "checkbox"}
 												disabled={isStarted}
-												onChange={() => setSelectedAlgorithm(algorithm.id)}
-												checked={algorithm.id === selectedAlgorithm}
+												onChange={() => selectAlgorithm(algorithm.id)}
+												checked={(isSimpleView && (selectedAlgorithm == algorithm.id)) 
+													|| (!isSimpleView && (selectedAlgorithms.indexOf(algorithm.id) >= 0))}
 												value={algorithm.id}
 												label={
 													<>
@@ -213,7 +217,7 @@ function IOSimulatorPage() {
 											type="number" />
 									</FormGroup>
 
-									{["look", "clook", "scan", "cscan"].indexOf(selectedAlgorithm) >= 0 &&
+									{selectedAlgorithms.filter((id) => ["look", "clook", "scan", "cscan"].includes(id)).length > 0 &&
 										<FormGroup>
 											<label>Sentido</label>
 											<FormCheck 
@@ -260,6 +264,7 @@ function IOSimulatorPage() {
 										</FormGroup>
 
 										<button 
+											disabled={isStarted}
 											id="add_request_btn"
 											className="btn btn-primary mt-2 float-right">
 											{t("io.add_request")}
@@ -293,7 +298,13 @@ function IOSimulatorPage() {
 							{EXAMPLES.map((example: IOExample, index: number) =>
 								<button 
 									key={"example_" + index}
-									onClick={() => loadRequestsFromList(example.requests)}
+									disabled={isStarted}
+									onClick={() => {
+										setInitialPosition(example.initialTrack);
+										setDirection(example.direction);
+										setMaxTracks(example.tracks);
+										loadRequestsFromList(example.requests)
+									}}
 									className="btn btn-link">
 									{t("common.example_number", { number: (index + 1) })}
 								</button>
@@ -313,7 +324,7 @@ function IOSimulatorPage() {
 						tracks={3}
 						id="simple_chart"
 						maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
-						requests={chartRequests} />
+						requests={chartRequests(selectedAlgorithm)} />
 				</Col>
 
 				<Col md={6}>
@@ -328,7 +339,7 @@ function IOSimulatorPage() {
 						</thead>
 
 						<tbody>
-							{processedRequests.map((request, index) => 
+							{processedRequests[selectedAlgorithm].map((request, index) => 
 								<tr>
 									<td>{index + 1}</td>
 									<td>{request.initialTrack}</td>
@@ -340,7 +351,7 @@ function IOSimulatorPage() {
 								</tr>
 							)}
 
-							{processedRequests.length == 0 ?
+							{processedRequests[selectedAlgorithm].length == 0 ?
 								<tr>
 									<td colSpan={4}>{t("io.no_requests_completed")}</td>
 								</tr>
@@ -350,7 +361,7 @@ function IOSimulatorPage() {
 									<td></td>
 									<td>{t("io.total")}</td>
 									<td>
-										{sum}
+										{calculateSumDisplacement(selectedAlgorithm)}
 									</td>
 								</tr>
 							}
@@ -361,34 +372,79 @@ function IOSimulatorPage() {
 			</Row>
 			}
 
+			{!isSimpleView &&
 			<Row className="mt-2">
 				<h2>{t("io.results")}</h2>
 				
 				<div className="row scrollable-x">
-					<Col md={4}>
-						<h4>First Come First Served (FCFS)</h4>
+					{selectedAlgorithms.map((algorithm: string, index: number) => 
+						<Col md={4}>
+							<h4>{t("io.algorithms." + algorithm)}</h4>
 
-						<Row>
-							<Col md={6}>
-								{/* Request chart */}
-								<RequestChart 
-									tracks={3}
-									id="chart_fcfs"
-									maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
-									requests={chartRequests} />
-							</Col>
+							<Row>
+								<Col md={12}>
+									{/* Request chart */}
+									<RequestChart 
+										tracks={3}
+										id={"chart_" + algorithm}
+										maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
+										requests={chartRequests(algorithm)} />
+								</Col>
 
-							<Col md={6}>
-								{/* HDD chart */}
-							</Col>
-						</Row>
+								<Col md={0}>
+									{/* HDD chart */}
+								</Col>
+							</Row>
 
-						<Row>
+							<Row>
+								<Col md={6}>
+									<table className="table">
+										<thead>
+											<tr>
+												<th>{t("io.request_number")}</th>
+												<th>{t("io.initial_position")}</th>
+												<th>{t("io.final_position")}</th>
+												<th>{t("io.displacement")}</th>
+											</tr>
+										</thead>
 
-						</Row>
-					</Col>
+										<tbody>
+											{processedRequests[algorithm].map((request, index) => 
+												<tr>
+													<td>{index + 1}</td>
+													<td>{request.initialTrack}</td>
+													<td>{request.finalTrack}</td>
+													<td>
+														{Math.abs(request.finalTrack - request.initialTrack)}
+														{request.fast && <sup>*</sup>}
+													</td>
+												</tr>
+											)}
+
+											{processedRequests[algorithm].length == 0 ?
+												<tr>
+													<td colSpan={4}>{t("io.no_requests_completed")}</td>
+												</tr>
+												:
+												<tr>
+													<td></td>
+													<td></td>
+													<td>{t("io.total")}</td>
+													<td>
+														{calculateSumDisplacement(algorithm)}
+													</td>
+												</tr>
+											}
+											
+										</tbody>
+									</table>
+								</Col>
+							</Row>
+						</Col>
+					)}
 				</div>
 			</Row>
+			}
 
 			<Row>
 				<Col md={6}>

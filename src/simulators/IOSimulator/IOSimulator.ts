@@ -62,7 +62,7 @@ class IOSimulator extends Simulator {
 		this.pendingRequests = [];
 		this.proceesedRequests = [];
 
-		this._algorithm = "fifo";
+		this._algorithm = "fcfs";
 		this.isUp = true;
 
 		this.running = false;
@@ -366,6 +366,10 @@ class IOSimulator extends Simulator {
 		}
 	}
 
+	public triggerCallbacks() : void {
+		this.onProcessedRequestsChange(this.proceesedRequests);
+	}
+
 	public hasNextStep() : boolean {
 		return this.pendingRequests.length > 0;
 	}
@@ -392,6 +396,10 @@ class IOSimulator extends Simulator {
 
 	private get maxTrack() : number {
 		return this._tracks - 1 + IOSimulator.MIN;
+	}
+
+	get algorithm() : string {
+		return this._algorithm;
 	}
 }
 
