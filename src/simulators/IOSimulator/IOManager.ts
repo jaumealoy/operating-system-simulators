@@ -102,7 +102,7 @@ class IOManager {
 	}
 
 	public previousStep() : void {
-		if (this.simpleView) {
+		if (this._simpleView) {
 			this.simulator.previousStep();
 		} else {
 			Object.values(this.simulators).map(simulator => {
@@ -114,7 +114,7 @@ class IOManager {
 	}
 
 	public processRequest() : void {
-		if (this.simpleView) {
+		if (this._simpleView) {
 			this.simulator.processRequest();
 		} else {
 			Object.values(this.simulators).map(simulator => {
@@ -130,7 +130,7 @@ class IOManager {
 
 		// trigger callbacks
 		if (this._simpleView) {
-			this.onProcessedRequestChange(this.simulator.algorithm, []);
+			this.simulator.triggerCallbacks();
 		} else {
 			Object.values(this.simulators).map(simulator => simulator.triggerCallbacks());
 		}

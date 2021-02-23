@@ -1,4 +1,3 @@
-import { exception } from "console";
 import { FormEvent, useState, useRef, useEffect } from "react";
 import { SaveFile } from "../Simulator";
 import IOManager from "./IOManager";

@@ -27,7 +27,7 @@ interface SimulatorControlProps {
 };
 
 const MIN_SPEED: number = 100;
-const MAX_SPEED: number = 5000;
+const MAX_SPEED: number = 3000;
 const STEP_SPEED: number = 100;
 
 function SimulatorControl(props: SimulatorControlProps) {
@@ -38,6 +38,12 @@ function SimulatorControl(props: SimulatorControlProps) {
 		speed,
 		props.running
 	);
+
+	const onSpeedInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+		let speed: number = parseInt(e.target.value);
+		speed = MAX_SPEED - speed + MIN_SPEED;
+		setSpeed(speed);
+	};
 
 	// save simulation modal
 	const [isSaveModalVisible, setSaveModalVisible] = useState(false);
@@ -149,11 +155,11 @@ function SimulatorControl(props: SimulatorControlProps) {
 					<FormControl 
 						data-tut="control_bar_speed"
 						className="mt-sm-1"
-						value={speed}
+						value={MAX_SPEED - speed + MIN_SPEED}
 						step={STEP_SPEED}
 						min={MIN_SPEED}
 						max={MAX_SPEED}
-						onChange={(e) => setSpeed(parseInt(e.target.value))}
+						onChange={onSpeedInputChange}
 						type="range"/>
 
 					<div
