@@ -130,7 +130,6 @@ class IOManager {
 
 		// trigger callbacks
 		if (this._simpleView) {
-			console.log("Updating")
 			this.onProcessedRequestChange(this.simulator.algorithm, []);
 		} else {
 			Object.values(this.simulators).map(simulator => simulator.triggerCallbacks());

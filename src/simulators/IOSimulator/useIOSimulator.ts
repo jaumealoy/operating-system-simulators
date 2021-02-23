@@ -1,4 +1,6 @@
+import { exception } from "console";
 import { FormEvent, useState, useRef, useEffect } from "react";
+import { SaveFile } from "../Simulator";
 import IOManager from "./IOManager";
 import { IOSimulator, ProcessedRequest, Request } from "./IOSimulator";
 
@@ -168,6 +170,52 @@ const useIOSimulator = () => {
 		setHasPrevious(manager.current.hasPreviousStep());
 	}, [requests, processedRequests, isSimpleView]);
 
+	// simulation storage
+	const saveSimulation = (download: ((content: string) => void)) : void => {
+		let req: number[] = requests.map((request: Request) => request.track);
+		let data: SaveFile = {
+			type: "io",
+			data: {
+				initialTrack: initialPosition,
+				tracks: maxTracks,
+				requests: req,
+				algorithm: selectedAlgorithm,
+				algorithms: selectedAlgorithms,
+				direction: direction
+			}
+		};
+
+		download(JSON.stringify(data));
+	};
+
+	const loadSimulation = (content: string) => {
+		let data = JSON.parse(content);
+
+		if (("type" in data) && data.type === "io") {
+			if ("data" in data) {
+				data = data.data;
+				// check that we actually have all the required fields
+				if (("initialTrack" in data)
+					&& ("tracks" in data)
+					&& ("direction" in data)
+					&& ("requests" in data)
+					&& ("algorithm" in data)
+					&& ("algorithms" in data)
+				) {
+
+					setInitialPosition(data.initialTrack);
+					setMaxTracks(data.tracks);
+					setDirection(data.direction);
+					setSelectedAlgorithm(data.algorithm);
+					loadRequestsFromList(data.requests);
+					setSelectedAlgorithms(data.algorithms);
+				} else {
+					throw new Error("invalid file format");
+				}
+			}
+		}
+	};
+
 	return {
 		selectedAlgorithm, setSelectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		requests, removeRequest, loadRequestsFromList,
@@ -180,7 +228,8 @@ const useIOSimulator = () => {
 		isRunning, isStarted,
 		step, reset, stop, previous, pause, play, timerCallback,
 		hasNext, hasPrevious,
-		isSimpleView, setSimpleView
+		isSimpleView, setSimpleView,
+		saveSimulation, loadSimulation
 	};
 };
 

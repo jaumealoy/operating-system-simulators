@@ -24,10 +24,15 @@ abstract class Simulator {
 	public abstract clear() : void;
 };
 
+interface SaveFile {
+	type: "io" | "cpu" | "memory";
+	data: any;
+};
+
 export { 
 	Simulator
 };
 
 export type {
-	Algorithm
+	Algorithm, SaveFile
 };

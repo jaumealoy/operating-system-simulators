@@ -79,7 +79,8 @@ function IOSimulatorPage() {
 		isRunning, isStarted,
 		step, reset, stop, previous, play, pause, timerCallback,
 		hasNext, hasPrevious,
-		isSimpleView, setSimpleView
+		isSimpleView, setSimpleView,
+		saveSimulation, loadSimulation
 	} = useIOSimulator();
 
 	// modal help texts
@@ -573,7 +574,9 @@ function IOSimulatorPage() {
 				start={play}
 				pause={pause}
 				timerCallback={timerCallback}
-				next={step} />
+				next={step}
+				onSaveFile={saveSimulation}
+				onOpenFile={loadSimulation} />
 
 			<AlgorithmModal />
 
