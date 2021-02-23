@@ -40,7 +40,7 @@ function SimulatorControl(props: SimulatorControlProps) {
 	);
 
 	// save simulation modal
-	const [isSaveModalVisible, setSaveModalVisible] = useState(true);
+	const [isSaveModalVisible, setSaveModalVisible] = useState(false);
 	const [filename, setFilename] = useState("");
 	const downloadLink = useRef<HTMLAnchorElement>(null);
 	const onSaveFileSubmit = (e: FormEvent) => {
