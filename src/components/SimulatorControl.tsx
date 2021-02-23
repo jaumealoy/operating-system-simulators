@@ -74,16 +74,20 @@ function SimulatorControl(props: SimulatorControlProps) {
 		if (openFileInput.current != null) {
 			let files = openFileInput.current.files;
 			if (files != undefined && files.length > 0) {
-				console.log("loading file")
-				
-				files[0].text().then(content => {
-					console.log(content)
-					if (props.onOpenFile != undefined) {
-						props.onOpenFile(content);
+				let fr: FileReader = new FileReader();
+				fr.onload = (event: ProgressEvent<FileReader>) => {
+					if (event.target != undefined && event.target.result != undefined) {
+						if (props.onOpenFile != undefined) {
+							try {
+								props.onOpenFile(event.target.result.toString());
+							} catch(error) {
+								console.error(error);
+							}
+						}
 					}
-				}).catch(error => {
-					console.error(error)
-				});
+				};
+
+				fr.readAsText(files[0]);
 
 				openFileInput.current.value = "";
 			}
