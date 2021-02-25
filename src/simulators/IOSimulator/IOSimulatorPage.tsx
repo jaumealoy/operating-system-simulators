@@ -341,7 +341,9 @@ function IOSimulatorPage() {
 											type="number" />
 									</FormGroup>
 
-									{selectedAlgorithms.filter((id) => ["look", "clook", "scan", "cscan"].includes(id)).length > 0 &&
+									{(["look", "clook", "scan", "cscan"].indexOf(selectedAlgorithm) >= 0
+										|| selectedAlgorithms.filter((id) => ["look", "clook", "scan", "cscan"].includes(id)).length > 0) 
+										&&
 										<FormGroup>
 											<label>Sentido</label>
 											<FormCheck 
