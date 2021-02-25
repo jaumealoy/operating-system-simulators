@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 import RequestChart from "./RequestChart";
+import Disk from "./Disk";
 import SimulatorControl from "./../../components/SimulatorControl";
 import { IOSimulator, ProcessedRequest, Request } from "./IOSimulator";
 import useIOSimulator from "./useIOSimulator";
@@ -58,6 +59,13 @@ const EXAMPLES: IOExample[] = [
 		tracks: 200,
 		requests: [98, 183, 37, 122, 14, 124, 65, 67],
 		direction: true
+	},
+
+	{
+		initialTrack: 10,
+		tracks: 20,
+		requests: [7, 15, 19, 13, 3, 14, 17, 4, 18, 2],
+		direction: true
 	}
 ];
 
@@ -80,7 +88,9 @@ function IOSimulatorPage() {
 		step, reset, stop, previous, play, pause, timerCallback,
 		hasNext, hasPrevious,
 		isSimpleView, setSimpleView,
-		saveSimulation, loadSimulation
+		saveSimulation, loadSimulation,
+		speed, setSpeed,
+		isFieldInvalid
 	} = useIOSimulator();
 
 	// modal help texts
@@ -208,6 +218,17 @@ function IOSimulatorPage() {
 	
 	let aux = (request: Request) => request.track;
 
+	// get last processed requests of selected algorithm
+	const getLastProcessedRequest = () => {
+		if (processedRequests[selectedAlgorithm].length > 0) {
+			return processedRequests[selectedAlgorithm][processedRequests[selectedAlgorithm].length - 1];
+		}
+
+		return null;
+	}
+
+	let lastProcessedRequest = getLastProcessedRequest();
+
 	return (
 		<>
 			{/* Tutorial and view select bar */}
@@ -305,6 +326,7 @@ function IOSimulatorPage() {
 											max={maxTracks + IOSimulator.MIN - 1}
 											disabled={isStarted}
 											onChange={(e) => setInitialPosition(parseInt(e.target.value))}
+											isInvalid={isFieldInvalid("initialPosition")}
 											type="number" />
 									</FormGroup>
 
@@ -315,6 +337,7 @@ function IOSimulatorPage() {
 											disabled={isStarted}
 											min={1} 
 											onChange={(e) => setMaxTracks(parseInt(e.target.value))}
+											isInvalid={isFieldInvalid("maxTracks")}
 											type="number" />
 									</FormGroup>
 
@@ -355,8 +378,7 @@ function IOSimulatorPage() {
 								<Col 
 									data-tut="request_list_add"
 									md={6}>
-									<form 
-										onSubmit={onSubmitForm}>
+									<form onSubmit={onSubmitForm}>
 										<FormGroup>
 											<label>{t("io.track")}</label>
 
@@ -431,11 +453,24 @@ function IOSimulatorPage() {
 				<h2>{t("io.results")}</h2>
 
 				<Col md={6}>
-					<RequestChart 
-						tracks={3}
-						id="simple_chart"
-						maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
-						requests={chartRequests(selectedAlgorithm)} />
+					<Row>
+						<Col md={8}>
+							<RequestChart 
+								tracks={3}
+								id="simple_chart"
+								maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
+								requests={chartRequests(selectedAlgorithm)} />
+						</Col>
+					
+						<Col md={4}>
+							<Disk 
+								tracks={maxTracks}
+								nextTrack={lastProcessedRequest ? lastProcessedRequest.finalTrack : undefined}
+								currentTrack={lastProcessedRequest ? lastProcessedRequest.initialTrack : initialPosition}
+								duration={speed}
+								/>
+						</Col>
+					</Row>
 				</Col>
 
 				<Col md={6}>
@@ -484,7 +519,7 @@ function IOSimulatorPage() {
 			}
 
 			{!isSimpleView &&
-			<Row className="mt-2">
+			<Row className="mt-2 mb-2">
 				<h2>{t("io.results")}</h2>
 				
 				<div className="row scrollable-x">
@@ -546,7 +581,6 @@ function IOSimulatorPage() {
 													</td>
 												</tr>
 											}
-											
 										</tbody>
 									</table>
 								</Col>
@@ -556,13 +590,6 @@ function IOSimulatorPage() {
 				</div>
 			</Row>
 			}
-
-			<Row>
-				<Col md={6}>
-
-					
-				</Col>
-			</Row>
 
 			<SimulatorControl 
 				running={isRunning}
@@ -576,10 +603,10 @@ function IOSimulatorPage() {
 				timerCallback={timerCallback}
 				next={step}
 				onSaveFile={saveSimulation}
-				onOpenFile={loadSimulation} />
+				onOpenFile={loadSimulation}
+				onSpeedChange={setSpeed} />
 
 			<AlgorithmModal />
-
 
 			<Tour
 				steps={STEPS}

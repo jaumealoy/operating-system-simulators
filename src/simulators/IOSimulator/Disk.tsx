@@ -1,22 +1,32 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { SVG, PointArray } from "@svgdotjs/svg.js";
+import { SVG, PointArray, G, Circle as SVGCircle } from "@svgdotjs/svg.js";
 import useInterval from "../../helpers/useInterval";
 
 interface DiskProps {
 	tracks: number;
 	currentTrack: number;
-	nextTrack: number;
+	nextTrack: number | undefined;
 	duration: number;
 }
 
-const COLOR: string = "black";
+// colors
+const TRACK_COLOR: string = "rgba(0, 0, 0, 0.2)";
+const CURRENT_TRACK_COLOR: string = "black";
+const NEXT_TRACK_COLOR: string = "purple";
+const CENTER_COLOR: string = "black";
+const HEADER_COLOR: string = "black";
+const HEADER_CIRCLE_COLOR: string = "#0d6efd";
 
-const CENTER_RADIUS: number = 10;
-const HEADER_RADIUS: number = 3;
+// dimensions
+const CENTER_RADIUS: number = 10; // center circle radius
+const HEADER_RADIUS: number = 3; // header circle radius
+const TRACK_WIDTH: number = 2; // track circle width
 
+// original width, for scaling purposes
 const WIDTH: number = 300;
 
-const FPS: number = 30;
+// animations
+const FPS: number = 30; // desired FPS
 
 interface Circle {
 	x: number;
@@ -73,137 +83,159 @@ function Disk(props: DiskProps) {
 	// helper functions
 	const spaceBetweenTracks: number = (WIDTH / 2 - CENTER_RADIUS) / props.tracks;
 	const trackRadius = (track: number) => WIDTH / 2 - track * spaceBetweenTracks;
+	const getTrackColor = (track: number) : string => {
+		if (track == props.currentTrack) {
+			return CURRENT_TRACK_COLOR;
+		} else if (track == props.nextTrack) {
+			return NEXT_TRACK_COLOR;
+		} else {
+			return TRACK_COLOR;
+		}
+	};
 
 	// angular velocity
 	const w = useRef<number>(0);
-	const [angle, setAngle] = useState<number>(0);
+	const angle = useRef<number>(0);
 	const targetAngle = useRef<number>(0);
 
 	// render
 	const lastRender = useRef<number>(Date.now());
 
+	// disk sections
+	let headerGroup = useRef<G>(chart.current.group());
+	const resetRotation = () => { 
+		headerGroup.current.rotate(-angle.current, WIDTH / 2, WIDTH)
+		angle.current = 0;
+	};
+
+	const tracks = useRef<SVGCircle[]>([]);
+
+	const arePropsValid = () => {
+		if (props.currentTrack == undefined || props.tracks == undefined 
+			|| isNaN(props.tracks) || isNaN(props.currentTrack)) {
+			return false;
+		}
+
+		if (props.currentTrack > props.tracks || (props.nextTrack != undefined && props.nextTrack > props.tracks)) {
+			return false;
+		}
+
+		return true;
+	};
+
 	useEffect(() => {
-		// define the circle described by the header
-		let headerCirlce: Circle = {
-			x: WIDTH / 2,
-			y: WIDTH,
-			radius: WIDTH / 2
-		};
+		// only update if the state is valid
+		if (arePropsValid()) {
+			// define the circle described by the header
+			let headerCirlce: Circle = {
+				x: WIDTH / 2,
+				y: WIDTH,
+				radius: WIDTH / 2
+			};
 
-		// calculate the current angle 
-		let currentTrackCircle: Circle = {
-			x: WIDTH / 2,
-			y: WIDTH / 2,
-			radius: trackRadius(props.currentTrack)
-		};
+			// calculate the current angle 
+			let currentTrackCircle: Circle = {
+				x: WIDTH / 2,
+				y: WIDTH / 2,
+				radius: trackRadius(props.currentTrack)
+			};
 
-		let intersections: number[][] = circleIntersection(headerCirlce, currentTrackCircle);
-		let intersection: number[] = getValidIntersection(intersections, WIDTH / 2);
-		let angle = rad2Deg(Math.atan((intersection[1] - WIDTH) / (intersection[0] - WIDTH / 2))) + 90;
-		let currentAngle = angle;
-		setAngle(angle);
+			let intersections: number[][] = circleIntersection(headerCirlce, currentTrackCircle);
+			let intersection: number[] = getValidIntersection(intersections, WIDTH / 2);
+			let initialAngle = rad2Deg(Math.atan((intersection[1] - WIDTH) / (intersection[0] - WIDTH / 2))) + 90;
+			let currentAngle = initialAngle;
+			if (headerGroup.current != null) {
+				resetRotation();
+				headerGroup.current.rotate(currentAngle, WIDTH / 2, WIDTH);
+				angle.current = initialAngle;
+			}
 
-		// calculate the target angle
-		let targetTrackCircle: Circle = {
-			x: WIDTH / 2,
-			y: WIDTH / 2,
-			radius: trackRadius(props.nextTrack)
-		};
+			if (props.nextTrack != undefined) {
+				// calculate the target angle
+				let targetTrackCircle: Circle = {
+					x: WIDTH / 2,
+					y: WIDTH / 2,
+					radius: trackRadius(props.nextTrack)
+				};
 
-		intersections = circleIntersection(headerCirlce, targetTrackCircle);
-		intersection = getValidIntersection(intersections, WIDTH / 2);
-		angle = rad2Deg(Math.atan((intersection[1] - WIDTH) / (intersection[0] - WIDTH / 2))) + 90;
+				intersections = circleIntersection(headerCirlce, targetTrackCircle);
+				intersection = getValidIntersection(intersections, WIDTH / 2);
+				initialAngle = rad2Deg(Math.atan((intersection[1] - WIDTH) / (intersection[0] - WIDTH / 2))) + 90;
+				targetAngle.current = initialAngle;
+			} else {
+				targetAngle.current = currentAngle;
+			}
 
-		targetAngle.current = angle;
+			// setting last render to now
+			lastRender.current = Date.now();
+			w.current = (currentAngle - targetAngle.current) / props.duration;
 
-		// setting last render to now
-		lastRender.current = Date.now();
-		w.current = (currentAngle - targetAngle.current) / props.duration;
-	}, [props.currentTrack, props.currentTrack]);
-
+			// change track colors
+			tracks.current.map((track: SVGCircle, index: number) => {
+				track.stroke({
+					color: getTrackColor(index),
+					width: TRACK_WIDTH
+				});
+			});
+		}
+	}, [props.nextTrack, props.currentTrack, props.tracks, props.duration]);
 
 	useLayoutEffect(() => {
 		if (container.current != null) {
-			let width: number = WIDTH;
-			let height: number = container.current.getBoundingClientRect().height;
-
-			let centerX: number = width / 2;
+			let width: number = container.current.getBoundingClientRect().width;
+			let centerX: number = WIDTH / 2;
 			let centerY: number = centerX;
 
-			chart.current.addTo(container.current).size(600, 600);
-			chart.current.clear();
+			chart.current.addTo(container.current).size(width, width);
 
+			let imageGroup = chart.current.group();
+			let diskGroup = imageGroup.group();
+			headerGroup.current = imageGroup.group();
+
+			tracks.current = [];
 			for (let i = 0; i < props.tracks; i++) {   
 				let radius: number = trackRadius(i);
 
-				let color = "rgba(0, 0, 0, 0.2)";
-				if (props.currentTrack == i) {
-					color = "black";
-				} else if (props.nextTrack == i) {
-					color = "purple";
-				}
-
-				chart.current.circle()
+				let track = diskGroup.circle()
 				.radius(radius)
 				.move(centerX - radius, centerY - radius)
-				.stroke({ color, width: 3 }).fill("transparent")
+				.stroke({ color: getTrackColor(i), width: TRACK_WIDTH }).fill("transparent");
+
+				tracks.current.push(track);
 			}
 
 			// drawing center block
-			chart.current.circle()
+			diskGroup.circle()
 			.radius(CENTER_RADIUS)
 			.move(centerX - CENTER_RADIUS, centerY - CENTER_RADIUS)
-			.fill(COLOR);
+			.fill(CENTER_COLOR);
 
 			// drawing header position
 			let base: number = 50;
 
-			let group = chart.current.group();
-			group.polygon([ [0, width / 2], [base / 2, 0], [base, width / 2] ])
-			.fill("black")
+			let group = headerGroup.current;
+			group.front();
+			group.polygon([ [0, WIDTH / 2], [base / 2, 0], [base, WIDTH / 2] ])
+			.fill(HEADER_COLOR)
 
 			group.circle()
 			.radius(HEADER_RADIUS)
-			.fill("blue")
+			.fill(HEADER_CIRCLE_COLOR)
 			.move(base / 2 - HEADER_RADIUS, -HEADER_RADIUS)
 		
-			group.move(width / 2 - base / 2, width / 2)
+			group.move(WIDTH / 2 - base / 2, WIDTH / 2)
+			group.rotate(angle.current, WIDTH / 2, WIDTH);
 
-			/*let angle: number = test;
-
-			let headerCircle: Circle = {
-				x: width / 2,
-				y: width,
-				radius: width / 2
-			};
-
-			let currentTrackCircle: Circle = {
-				x: width / 2,
-				y: width / 2,
-				radius: trackRadius(props.currentTrack)
-			};
-
-			let intersection: number[][] = circleIntersection(headerCircle, currentTrackCircle);
-			console.log(intersection);
-
-			intersection.map(sol => {
-				chart.current.circle()
-				.radius(2)
-				.fill("red")
-				.move(sol[0], sol[1]);
-			});
-
-			let validSolution: number[] = getValidIntersection(intersection, WIDTH / 2);
-
-
-			let dX = (validSolution[0] - width / 2);
-			let dY = (validSolution[1] - width);
-			
-			angle = Math.atan(dY / dX) * 180 / Math.PI + 90;*/
-
-			group.rotate(angle, width / 2, width);
+			// scale the image to fit horizontally
+			let scale = (width - TRACK_WIDTH * 2) / WIDTH;
+			imageGroup.scale(scale, scale, 0, 0).translate(TRACK_WIDTH, TRACK_WIDTH)
 		}
-	});
+
+		return () => {
+			chart.current.clear();
+			headerGroup.current = chart.current.group();
+		};
+	}, [props.tracks]);
 
 	useInterval(
 		() => {
@@ -213,10 +245,11 @@ function Disk(props: DiskProps) {
 
 			// updating current angle if needed
 			if (w.current != 0) {
-				if (Math.abs(angle - targetAngle.current) < Math.abs(w.current * delta)) {
+				if (Math.abs(angle.current - targetAngle.current) < Math.abs(w.current * delta)) {
 					w.current = 0;
 				} else {
-					setAngle(angle - w.current * delta);
+					angle.current = angle.current - w.current * delta;
+					headerGroup.current.rotate(-w.current * delta, WIDTH / 2, WIDTH);
 				}
 			}
 		},

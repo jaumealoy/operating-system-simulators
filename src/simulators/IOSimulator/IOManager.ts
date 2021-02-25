@@ -137,7 +137,11 @@ class IOManager {
 	}
 
 	set selectedAlgorithms(list: string[]) {
-		this._selectedAlgorithms = list;
+		if (this._simpleView) {
+			this.simulator.algorithm = list[0];
+		} else {
+			this._selectedAlgorithms = list;
+		}
 	}
 
 	// simulator setters

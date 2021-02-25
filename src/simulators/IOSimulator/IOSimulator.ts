@@ -401,6 +401,10 @@ class IOSimulator extends Simulator {
 	get algorithm() : string {
 		return this._algorithm;
 	}
+
+	public getAlgorithm() : string {
+		return this._algorithm;
+	}
 }
 
 export {

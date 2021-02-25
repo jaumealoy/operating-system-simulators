@@ -25,6 +25,7 @@ const useIOSimulator = () => {
 	const selectAlgorithm = (id: string) => {
 		if (isSimpleView) {
 			setSelectedAlgorithm(id);
+			manager.current.selectedAlgorithms = [id];
 		} else {
 			// check if the algorithm is already selected
 			if (selectedAlgorithms.indexOf(id) >= 0) {
@@ -44,16 +45,22 @@ const useIOSimulator = () => {
 	}, [selectedAlgorithms]);
 
 
+	// errors
+	const [errors, setErrors] = useState<{[key: string]: boolean}>({});
+	const isFieldInvalid = (key: string) => (key in errors) && errors[key];
+
 	// text inputs
 	const [initialPosition, setInitialPosition] = useState<number>(IOSimulator.MIN);
 	useEffect(() => {
-		manager.current.initialPosition = initialPosition;
+		setErrors({...errors, initialPosition: false});
+		manager.current.initialPosition = isNaN(initialPosition) ? 100 : initialPosition;
 	}, [initialPosition]);
 	
 	const [requestTrack, setRequestTrack] = useState<number>(NaN);
 	const [maxTracks, setMaxTracks] = useState<number>(MAX_TRACKS);
 	useEffect(() => {
-		manager.current.tracks = maxTracks;
+		setErrors({...errors, maxTracks: false});
+		manager.current.tracks = isNaN(maxTracks) ? 200 : maxTracks;
 	}, [maxTracks]);
 
 	const [direction, setDirection] = useState<boolean>(true);
@@ -115,8 +122,20 @@ const useIOSimulator = () => {
 	const [isRunning, setRunning] = useState(false);
 	const [hasNext, setHasNext] = useState(false);
 	const [hasPrevious, setHasPrevious] = useState(false);
+	const [speed, setSpeed] = useState(0);
 
 	const step = () => {
+		// check that everything is valid
+		if (isNaN(initialPosition) || initialPosition >= maxTracks) {
+			setErrors((errors) => ({...errors, initialPosition: true}));
+			return;
+		}
+
+		if (isNaN(maxTracks)) {
+			setErrors((errors) => ({...errors, maxTracks: true}));
+			return;
+		}
+
 		// simulator is running
 		if(!isStarted){
 			manager.current.direction = direction;
@@ -228,7 +247,9 @@ const useIOSimulator = () => {
 		step, reset, stop, previous, pause, play, timerCallback,
 		hasNext, hasPrevious,
 		isSimpleView, setSimpleView,
-		saveSimulation, loadSimulation
+		saveSimulation, loadSimulation,
+		speed, setSpeed,
+		isFieldInvalid
 	};
 };
 

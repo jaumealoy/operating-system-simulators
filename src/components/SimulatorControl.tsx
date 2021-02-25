@@ -23,7 +23,7 @@ interface SimulatorControlProps {
 	onSpeedChange?: (speed: number) => void;
 	timerCallback?: () => void;
 	onOpenFile?: (data: string) => void;
-	onSaveFile?: (download: ((content: string) => void)) => void
+	onSaveFile?: (download: ((content: string) => void)) => void;
 };
 
 const MIN_SPEED: number = 100;
@@ -44,6 +44,13 @@ function SimulatorControl(props: SimulatorControlProps) {
 		speed = MAX_SPEED - speed + MIN_SPEED;
 		setSpeed(speed);
 	};
+
+	useEffect(() => {
+		if (props.onSpeedChange != undefined) {
+			let delay: number = speed;
+			props.onSpeedChange(delay);
+		}
+	}, [speed])
 
 	// save simulation modal
 	const [isSaveModalVisible, setSaveModalVisible] = useState(false);
