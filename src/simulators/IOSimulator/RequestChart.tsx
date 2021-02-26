@@ -20,18 +20,21 @@ const RADIUS: number = 10;
 const TEXT_SIZE: number = 8;
 
 function RequestChart(props: RequestChartProps) {
+	const container = useRef<HTMLDivElement>(null);
 	const chart = useRef(SVG());
 
+	const [status, setStatus] = useState<boolean>(false);
+	const forceRender = () => setStatus((status) => !status);
+
 	useLayoutEffect(() => {
-		let element = document.getElementById(props.id);
-		if(element != null){
-			let myWidth = element.getBoundingClientRect().width;
+		if(container.current != null){
+			let myWidth = container.current.getBoundingClientRect().width;
 			let myHeight = myWidth / 2;
-			chart.current.addTo("#" + props.id).size(myWidth, myHeight)
+			chart.current.addTo(container.current).size(myWidth, myHeight)
 		}
 	}, []);
 
-	useLayoutEffect(() => {
+	useEffect(() => {
 		let WIDTH = chart.current.node.getBoundingClientRect().width;
 		let HEIGHT = WIDTH / 2;
 
@@ -128,13 +131,32 @@ function RequestChart(props: RequestChartProps) {
 		}
 
 		return () => {
-		//	aux.scale(0.5);
 			aux.clear();
 		};
 	});
 
+	useEffect(() => {
+		let resizeListener = () => {
+			if (container.current != null) {
+				// get available width
+				let availableWidth: number = container.current.getBoundingClientRect().width;
+				chart.current.width(availableWidth);
+				chart.current.height(availableWidth / 2);
+				forceRender();
+			}
+ 		};
+
+		// add resize listener on component init
+		window.addEventListener("resize", resizeListener);
+
+		return () => {
+			// remove resize listener before component unload
+			window.removeEventListener("resize", resizeListener);
+		};
+	}, []);
+
 	return (
-		<div id={props.id}></div>
+		<div ref={container} id={props.id}></div>
 	);
 }
 

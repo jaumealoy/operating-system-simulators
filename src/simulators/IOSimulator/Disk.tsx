@@ -76,6 +76,10 @@ const getValidIntersection = (intersections: number[][], minX: number) => {
 
 const rad2Deg = (radians: number) => radians * 180 / Math.PI;
 
+interface GroupRef {
+	g: G | null
+};
+
 function Disk(props: DiskProps) {
 	const container = useRef<HTMLDivElement>(null);
 	const chart = useRef(SVG());
@@ -102,6 +106,7 @@ function Disk(props: DiskProps) {
 	const lastRender = useRef<number>(Date.now());
 
 	// disk sections
+	let disk = useRef<GroupRef>({ g: null });
 	let headerGroup = useRef<G>(chart.current.group());
 	const resetRotation = () => { 
 		headerGroup.current.rotate(-angle.current, WIDTH / 2, WIDTH)
@@ -188,7 +193,9 @@ function Disk(props: DiskProps) {
 
 			chart.current.addTo(container.current).size(width, width);
 
-			let imageGroup = chart.current.group();
+			disk.current.g = chart.current.group();
+
+			let imageGroup = disk.current.g;
 			let diskGroup = imageGroup.group();
 			headerGroup.current = imageGroup.group();
 
@@ -236,6 +243,34 @@ function Disk(props: DiskProps) {
 			headerGroup.current = chart.current.group();
 		};
 	}, [props.tracks]);
+
+
+	useEffect(() => {
+		let resizeListener = () => {
+			if (container.current != null && disk.current.g != null) {
+				let availableWidth: number = container.current.getBoundingClientRect().width;
+
+				// get current scale
+				let currentWidth = chart.current.width();
+				let currentScale = currentWidth / WIDTH;
+
+				// calculate new scale
+				let scale = ((availableWidth - TRACK_WIDTH * 2) / WIDTH) / currentScale;
+				let group = disk.current.g;
+				group.scale(scale, scale, 0, 0)
+				chart.current.width(currentWidth * scale);
+				chart.current.height(currentWidth * scale);
+			}
+		};
+
+		// adding resize listener
+		window.addEventListener("resize", resizeListener);
+
+		return () => {
+			// removing resize listener on component unload
+			window.removeEventListener("resize", resizeListener);
+		};
+	}, [])
 
 	useInterval(
 		() => {
