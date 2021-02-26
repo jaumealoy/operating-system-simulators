@@ -409,17 +409,51 @@ function IOSimulatorPage() {
 									{requests.length == 0 ?
 										<p>{t("io.no_requests_added")}</p>
 										:
-										requests.map((value: Request, index: number) => 
-											<span className="badge rounded-pill pill-md bg-secondary px-2 mr-1">
-												{value.track}
-
-												{!isStarted &&	
-													<FiDelete
-														onClick={() => removeRequest(index)}
-														className="pointer ml-sm-1" />
+										requests.map((value: Request, index: number) => {
+											// check if this request is already processed or not
+											let background: string = "bg-secondary";
+											if (isSimpleView) {
+												let found: boolean = false;
+												for (let i = 0; i < processedRequests[selectedAlgorithm].length && !found; i++) {
+													found = processedRequests[selectedAlgorithm][i].index == index;
 												}
-											</span>
-										)
+
+												if (found) {
+													background = "bg-success";
+												}
+											} else {
+												let completed = true;
+												let atLeastOne = false;
+
+												selectedAlgorithms.map(algorithm => {
+													let found: boolean = false;
+													for (let i = 0; i < processedRequests[algorithm].length && !found; i++) {
+														found = processedRequests[algorithm][i].index == index;
+													}
+
+													atLeastOne = atLeastOne || found;
+													completed = completed && found;
+												});
+
+												if (!completed && atLeastOne) {
+													background = "bg-warning";
+												} else if (completed) {
+													background = "bg-success";
+												}
+											}
+
+											return (
+												<span className={`badge rounded-pill pill-md ${background} px-2 mr-1`}>
+													{value.track}
+
+													{!isStarted &&	
+														<FiDelete
+															onClick={() => removeRequest(index)}
+															className="pointer ml-sm-1" />
+													}
+												</span>
+											);
+										})
 									}
 								</Col>
 							</Row>

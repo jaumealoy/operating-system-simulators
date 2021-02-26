@@ -10,12 +10,14 @@ interface Request {
 	track: number;
 	sector: number;
 	fast?: boolean;
+	requestIndex?: number;
 };
 
 interface ProcessedRequest {
 	initialTrack: number;
 	finalTrack: number;
 	fast: boolean;
+	index: number;
 }
 
 interface NextRequest {
@@ -119,6 +121,11 @@ class IOSimulator extends Simulator {
 			// that the current track is the one set on the initial position input
 			this.running = true;
 			this.currentTrack = this._initialPosition;
+
+			// lock requests indexes
+			this.pendingRequests.map((request: Request, index: number) => {
+				request.requestIndex = index;
+			});
 		}
 
 		let ALGORITHM_MAP: {[key: string]: () => number} = {
@@ -148,7 +155,8 @@ class IOSimulator extends Simulator {
 		let processedRequest: ProcessedRequest = {
 			initialTrack: this.currentTrack,
 			finalTrack: nextRequest.request.track,
-			fast: nextRequest.request.fast || false
+			fast: nextRequest.request.fast || false,
+			index: nextRequest.request.requestIndex || 0
 		};
 
 		this.currentTrack = processedRequest.finalTrack;
