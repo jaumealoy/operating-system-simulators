@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -6,6 +6,10 @@ interface AlgorithmModal {
 	title: string;
 	body: JSX.Element;
 };
+
+interface AlgorithmModalProps {
+	onOpen?: () => void; 
+}
 
 const useAlgorithmHelp = (simulator: string) => {
 	// modals data
@@ -102,31 +106,37 @@ const useAlgorithmHelp = (simulator: string) => {
 
 	const close = () => setVisible(false);
 
-	const modal = () => (
-		<Modal
-			onHide={close}
-			show={visible}>
-			{visible &&
-				<>
-					<Modal.Header closeButton>
-						{ALGORITHM_HELP[simulator][selectedAlgorithm].title}
-					</Modal.Header>
+	const modal = (props: AlgorithmModalProps) => {
+		if (visible && props.onOpen != undefined) {
+			props.onOpen();
+		}
+		
+		return (
+			<Modal
+				onHide={close}
+				show={visible}>
+				{visible &&
+					<>
+						<Modal.Header closeButton>
+							{ALGORITHM_HELP[simulator][selectedAlgorithm].title}
+						</Modal.Header>
 
-					<Modal.Body>
-						{ALGORITHM_HELP[simulator][selectedAlgorithm].body}
-					</Modal.Body>
-				</>
-			}
+						<Modal.Body>
+							{ALGORITHM_HELP[simulator][selectedAlgorithm].body}
+						</Modal.Body>
+					</>
+				}
 
-			<Modal.Footer>
-				<button 
-					onClick={close}
-					className="btn btn-secondary">
-						Cerrar
-				</button>
-			</Modal.Footer>
-		</Modal>
-	);
+				<Modal.Footer>
+					<button 
+						onClick={close}
+						className="btn btn-secondary">
+							Cerrar
+					</button>
+				</Modal.Footer>
+			</Modal>
+		);
+	}
 
 	return {
 		showAlgorithmModal: show,

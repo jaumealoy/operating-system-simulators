@@ -644,7 +644,8 @@ function IOSimulatorPage() {
 				onOpenFile={loadSimulation}
 				onSpeedChange={setSpeed} />
 
-			<AlgorithmModal />
+			<AlgorithmModal
+				onOpen={pause} />
 
 			<Tour
 				steps={STEPS}
