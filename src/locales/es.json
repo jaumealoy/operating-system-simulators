@@ -4,7 +4,15 @@
         "buttons": {
             "simpleview": "Vista simple",
             "comparaisonview": "Vista comparativa",
-            "tutorial": "Tutorial"
+            "tutorial": "Tutorial",
+            "previous_step": "Paso anterior",
+            "next_step": "Siguiente paso",
+            "reset": "Borrar datos",
+            "pause": "Pausar",
+            "play": "Iniciar",
+            "stop": "Reiniciar simulación",
+            "load_file": "Cargar simulación",
+            "save_file": "Guardar simulación"
         },
         "example_number": "Ejemplo {{number}}",
         "examples": "Ejemplos",

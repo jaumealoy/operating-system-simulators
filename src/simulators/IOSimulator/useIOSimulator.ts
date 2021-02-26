@@ -120,6 +120,7 @@ const useIOSimulator = () => {
 	// simulator control
 	const [isStarted, setStarted] = useState(false);
 	const [isRunning, setRunning] = useState(false);
+	const [isFinished, setFinished] = useState(false);
 	const [hasNext, setHasNext] = useState(false);
 	const [hasPrevious, setHasPrevious] = useState(false);
 	const [speed, setSpeed] = useState(0);
@@ -188,6 +189,18 @@ const useIOSimulator = () => {
 		setHasPrevious(manager.current.hasPreviousStep());
 	}, [requests, processedRequests, isSimpleView]);
 
+	useEffect(() => {
+		setFinished(!hasNext);
+	}, [hasNext]);
+
+	useEffect(() => {
+		if (isFinished) {
+			setRunning(false);
+			setStarted(false);
+			manager.current.reset();
+		}
+	}, [selectedAlgorithms, selectedAlgorithm, initialPosition, maxTracks, requests, direction]);
+
 	// simulation storage
 	const saveSimulation = (download: ((content: string) => void)) : void => {
 		let req: number[] = requests.map((request: Request) => request.track);
@@ -243,7 +256,7 @@ const useIOSimulator = () => {
 		direction, setDirection,
 		onSubmitForm,
 		processedRequests,
-		isRunning, isStarted,
+		isRunning, isStarted, isFinished,
 		step, reset, stop, previous, pause, play, timerCallback,
 		hasNext, hasPrevious,
 		isSimpleView, setSimpleView,

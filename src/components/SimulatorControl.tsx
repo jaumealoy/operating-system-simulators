@@ -5,10 +5,16 @@ import { BsFillStopFill, BsPlayFill, BsArrowCounterclockwise } from "react-icons
 import { MdSave } from "react-icons/md";
 import { FaFileUpload } from "react-icons/fa";
 
-import { FormControl, Modal } from "react-bootstrap";
+import { 
+	FormControl, 
+	Modal,
+	OverlayTrigger,
+	Tooltip
+} from "react-bootstrap";
 
 import useInterval from "./../helpers/useInterval";
 import { SaveFile } from "../simulators/Simulator";
+import { useTranslation } from "react-i18next";
 
 interface SimulatorControlProps {
 	hasPrevious?: boolean;
@@ -31,6 +37,8 @@ const MAX_SPEED: number = 3000;
 const STEP_SPEED: number = 100;
 
 function SimulatorControl(props: SimulatorControlProps) {
+	const { t } = useTranslation();
+
 	// speed slider control
 	const [speed, setSpeed] = useState<number>(1000);
 	useInterval(
@@ -113,51 +121,70 @@ function SimulatorControl(props: SimulatorControlProps) {
 				data-tut="control_bar_overview"
 				className="control-bar">
 				<div className="container">
-					<button
-						data-tut="control_bar_reset" 
-						onClick={() => (props.reset == undefined) ? null : props.reset()}
-						className="control-button">
-						<BsArrowCounterclockwise />
-					</button>
+					<OverlayTrigger
+						overlay={<Tooltip id="reset_btn_tooltip">{t("common.buttons.reset")}</Tooltip>}>
+						<button
+							data-tut="control_bar_reset" 
+							onClick={() => (props.reset == undefined) ? null : props.reset()}
+							className="control-button">
+							<BsArrowCounterclockwise />
+						</button>
+					</OverlayTrigger>
 
-					<button 
-						data-tut="control_bar_previous_step"
-						onClick={() => (props.previous == undefined) ? null : props.previous()}
-						disabled={!props.hasPrevious && true}
-						className="control-button">
-						<GiPreviousButton />
-					</button>
+					<OverlayTrigger
+						overlay={<Tooltip id="previous_step_btn_tooltip">{t("common.buttons.previous_step")}</Tooltip>}>
+						<button 
+							data-tut="control_bar_previous_step"
+							onClick={() => (props.previous == undefined) ? null : props.previous()}
+							disabled={!props.hasPrevious && true}
+							className="control-button">
+							<GiPreviousButton />
+						</button>
+					</OverlayTrigger>
 
-					<button 
-						data-tut="control_bar_stop"
-						onClick={() => (props.stop == undefined) ? null : props.stop()}
-						className="control-button">
-						<BsFillStopFill />
-					</button>
+					<OverlayTrigger
+						overlay={<Tooltip id="previous_step_btn_tooltip">{t("common.buttons.stop")}</Tooltip>}>
+						<button 
+							data-tut="control_bar_stop"
+							onClick={() => (props.stop == undefined) ? null : props.stop()}
+							className="control-button">
+							<BsFillStopFill />
+						</button>
+					</OverlayTrigger>
 
 					{(props.running != undefined && props.running) ?
-						<button 
-							data-tut="control_bar_play"
-							onClick={() => (props.pause == undefined) ? null : props.pause()}
-							className="control-button">
-							<GiPauseButton />
-						</button>
+						<OverlayTrigger
+							overlay={<Tooltip id="previous_step_btn_tooltip">{t("common.buttons.pause")}</Tooltip>}>
+							<button 
+								data-tut="control_bar_play"
+								onClick={() => (props.pause == undefined) ? null : props.pause()}
+								className="control-button">
+								<GiPauseButton />
+							</button>
+						</OverlayTrigger>
 						:
-						<button 
-							data-tut="control_bar_play"
-							disabled={!props.hasNext}
-							onClick={() => (props.start == undefined) ? null : props.start()}
-							className="control-button">
-							<BsPlayFill />
-						</button>
+						<OverlayTrigger
+							overlay={<Tooltip id="previous_step_btn_tooltip">{t("common.buttons.play")}</Tooltip>}>
+								<button 
+									data-tut="control_bar_play"
+									disabled={!props.hasNext}
+									onClick={() => (props.start == undefined) ? null : props.start()}
+									className="control-button">
+									<BsPlayFill />
+								</button>
+						</OverlayTrigger>
 					}
-					<button 
-						data-tut="control_bar_next_step"
-						onClick={() => (props.next == undefined) ? null : props.next()}
-						disabled={!props.hasNext && true}
-						className="control-button">
-						<GiNextButton />
-					</button>
+
+					<OverlayTrigger
+						overlay={<Tooltip id="previous_step_btn_tooltip">{t("common.buttons.next_step")}</Tooltip>}>
+						<button 
+							data-tut="control_bar_next_step"
+							onClick={() => (props.next == undefined) ? null : props.next()}
+							disabled={!props.hasNext && true}
+							className="control-button">
+							<GiNextButton />
+						</button>
+					</OverlayTrigger>
 
 					<FormControl 
 						data-tut="control_bar_speed"
@@ -172,17 +199,24 @@ function SimulatorControl(props: SimulatorControlProps) {
 					<div
 						data-tut="storage" 
 						className="float-right">
-						<button 
-							onClick={() => setSaveModalVisible(true)}
-							className="control-button">
-							<MdSave />
-						</button>
 
-						<button 
-							onClick={onLoadButtonClick}
-							className="control-button">
-							<GiOpenFolder />
-						</button>
+						<OverlayTrigger
+							overlay={<Tooltip id="previous_step_btn_tooltip">{t("common.buttons.save_file")}</Tooltip>}>
+							<button 
+								onClick={() => setSaveModalVisible(true)}
+								className="control-button">
+								<MdSave />
+							</button>
+						</OverlayTrigger>
+
+						<OverlayTrigger
+							overlay={<Tooltip id="previous_step_btn_tooltip">{t("common.buttons.load_file")}</Tooltip>}>
+							<button 
+								onClick={onLoadButtonClick}
+								className="control-button">
+								<GiOpenFolder />
+							</button>
+						</OverlayTrigger>
 
 						<input 
 							ref={openFileInput}

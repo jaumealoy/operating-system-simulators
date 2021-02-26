@@ -84,7 +84,7 @@ function IOSimulatorPage() {
 		onSubmitForm,
 		selectedAlgorithm, setSelectedAlgorithm, selectAlgorithm, selectedAlgorithms,
 		processedRequests,
-		isRunning, isStarted,
+		isRunning, isStarted, isFinished,
 		step, reset, stop, previous, play, pause, timerCallback,
 		hasNext, hasPrevious,
 		isSimpleView, setSimpleView,
@@ -297,7 +297,7 @@ function IOSimulatorPage() {
 											<FormCheck 
 												name="selectedAlgorithm"
 												type={isSimpleView ? "radio" : "checkbox"}
-												disabled={isStarted}
+												disabled={!(!isStarted || isFinished)}
 												onChange={() => selectAlgorithm(algorithm.id)}
 												checked={(isSimpleView && (selectedAlgorithm == algorithm.id)) 
 													|| (!isSimpleView && (selectedAlgorithms.indexOf(algorithm.id) >= 0))}
@@ -324,7 +324,7 @@ function IOSimulatorPage() {
 											value={initialPosition}
 											min={IOSimulator.MIN}
 											max={maxTracks + IOSimulator.MIN - 1}
-											disabled={isStarted}
+											disabled={!(!isStarted || isFinished)}
 											onChange={(e) => setInitialPosition(parseInt(e.target.value))}
 											isInvalid={isFieldInvalid("initialPosition")}
 											type="number" />
@@ -334,7 +334,7 @@ function IOSimulatorPage() {
 										<label>{t("io.track_number")}</label>
 										<FormControl 
 											value={maxTracks}
-											disabled={isStarted}
+											disabled={!(!isStarted || isFinished)}
 											min={1} 
 											onChange={(e) => setMaxTracks(parseInt(e.target.value))}
 											isInvalid={isFieldInvalid("maxTracks")}
@@ -351,7 +351,7 @@ function IOSimulatorPage() {
 												label="Ascendente"
 												onChange={() => setDirection(true)}
 												checked={direction}
-												disabled={isStarted}
+												disabled={!(!isStarted || isFinished)}
 												name="direction" />
 
 											<FormCheck 
@@ -359,7 +359,7 @@ function IOSimulatorPage() {
 												label="Descendente"
 												onChange={() => setDirection(false)}
 												checked={!direction}
-												disabled={isStarted}
+												disabled={!(!isStarted || isFinished)}
 												name="direction" />
 										</FormGroup>
 									}
@@ -370,7 +370,7 @@ function IOSimulatorPage() {
 				</Col>
 
 				<Col md={6}>
-					<div className="simulator-group">
+					<div className="simulator-group mt-3 mt-sm-0">
 						<div 
 							data-tut="request_list"
 							className="simulator-group-content">
@@ -388,14 +388,14 @@ function IOSimulatorPage() {
 												required
 												min={IOSimulator.MIN}
 												max={IOSimulator.MIN + maxTracks - 1}
-												disabled={isStarted}
+												disabled={!(!isStarted || isFinished)}
 												value={requestTrack}
 												onChange={(e) => setRequestTrack(parseInt(e.target.value))}
 												type="number" />
 										</FormGroup>
 
 										<button 
-											disabled={isStarted}
+											disabled={!(!isStarted || isFinished)}
 											id="add_request_btn"
 											className="btn btn-primary mt-2 float-right">
 											{t("io.add_request")}
@@ -446,7 +446,7 @@ function IOSimulatorPage() {
 												<span className={`badge rounded-pill pill-md ${background} px-2 mr-1`}>
 													{value.track}
 
-													{!isStarted &&	
+													{!(!(!isStarted || isFinished)) &&	
 														<FiDelete
 															onClick={() => removeRequest(index)}
 															className="pointer ml-sm-1" />
@@ -467,7 +467,7 @@ function IOSimulatorPage() {
 							{EXAMPLES.map((example: IOExample, index: number) =>
 								<button 
 									key={"example_" + index}
-									disabled={isStarted}
+									disabled={!(!isStarted || isFinished)}
 									onClick={() => {
 										setInitialPosition(example.initialTrack);
 										setDirection(example.direction);
@@ -510,6 +510,7 @@ function IOSimulatorPage() {
 				</Col>
 
 				<Col md={6}>
+					<div className="table-responsive">
 					<table className="table">
 						<thead>
 							<tr>
@@ -550,6 +551,7 @@ function IOSimulatorPage() {
 							
 						</tbody>
 					</table>
+					</div>
 				</Col>
 			</Row>
 			}

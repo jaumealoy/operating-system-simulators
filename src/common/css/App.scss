@@ -1,7 +1,7 @@
 @import "bootstrap/scss/bootstrap.scss";
 
 $control-bar-background: $gray-800;
-$control-bar-height: 50px;
+$control-bar-height: 60px;
 
 label {
     font-weight: bold;
@@ -25,6 +25,7 @@ label {
     color: $white;
     display: flex;
     align-items: center;
+    font-size: 24px;
 }
 
 .control-bar .control-button {
@@ -36,6 +37,29 @@ label {
 .control-bar .control-button:disabled{
     color: $gray-500;
 }
+
+@media(max-width: 320px) {
+    .control-bar {
+        font-size: 18px;
+    }
+
+    .control-bar input[type="range"] {
+        max-width: 60px;
+    }
+}
+
+@media(min-width: 320px) {
+    .control-bar input[type="range"] {
+        max-width: 70px;
+    }
+}
+
+@media(min-width: 768px) {
+    .control-bar input[type="range"] {
+        max-width: 120px;
+    }
+}
+
 
 body {
     margin-bottom: $control-bar-height;
@@ -92,4 +116,8 @@ body {
 .scrollable-x {
     overflow-x: auto;
     flex-wrap: nowrap;
+}
+
+.arrow {
+    z-index: 10000000000;
 }
