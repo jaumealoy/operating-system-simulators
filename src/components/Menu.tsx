@@ -24,7 +24,7 @@ interface MenuItem {
 
 function Menu() {
 	const { t, i18n } = useTranslation();
-	const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
+	const [selectedLanguage, setSelectedLanguage] = useState(i18n.language in languages ? i18n.language : "es");
 
 	const location = useLocation();
 	const items: MenuItem[] = [
