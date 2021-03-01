@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Dropdown } from "react-bootstrap";
+import { Dropdown, Navbar, Nav } from "react-bootstrap";
 
 import { useTranslation } from "react-i18next";
 
@@ -28,6 +28,7 @@ function Menu() {
 
 	const location = useLocation();
 	const items: MenuItem[] = [
+		{ key: "cpu_simulator", title: t("menu.CPUSimulator"), to: "/cpu" },
 		{ key: "io_simulator", title: t("menu.IOSimulator"), to: "/io" }
 	];
 
@@ -36,14 +37,16 @@ function Menu() {
 		i18n.changeLanguage(language);
 	};
 
-
-	console.log(location.pathname)
-
 	return (
-		<nav className="navbar navbar-dark bg-dark mb-2">
+		<Navbar 
+			expand="md"
+			className="mb-2"
+			variant="dark" 
+			bg="dark">
 			<div className="container">
-				<div className="">
-					<ul className="navbar-nav">
+				<Navbar.Toggle aria-controls="main_menu" />
+				<Navbar.Collapse id="main_menu">
+					<Nav className="mr-auto">
 						{items.map(item => 
 							<li 
 								key={item.key}
@@ -55,8 +58,8 @@ function Menu() {
 								</Link>
 							</li>
 						)}
-					</ul>
-				</div>
+					</Nav>
+				</Navbar.Collapse>
 
 				<Dropdown>
 					<Dropdown.Toggle variant="menu-select" className="nav-link">
@@ -73,10 +76,8 @@ function Menu() {
 						)}
 					</Dropdown.Menu>
 				</Dropdown>
-
-
 			</div>
-		</nav>
+		</Navbar>
 	);
 }
 

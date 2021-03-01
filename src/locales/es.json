@@ -68,7 +68,8 @@
     },
 
     "menu": {
-        "IOSimulator": "Simulador E/S"
+        "IOSimulator": "Simulador E/S",
+        "CPUSimulator": "Simulador CPU"
     },
 
     "help": {

@@ -121,6 +121,10 @@ function Disk(props: DiskProps) {
 			return false;
 		}
 
+		if (props.tracks <= 0) {
+			return false;
+		}
+
 		if (props.currentTrack > props.tracks || (props.nextTrack != undefined && props.nextTrack > props.tracks)) {
 			return false;
 		}
@@ -280,7 +284,10 @@ function Disk(props: DiskProps) {
 
 			// updating current angle if needed
 			if (w.current != 0) {
-				if (Math.abs(angle.current - targetAngle.current) < Math.abs(w.current * delta)) {
+				let alpha: number = Math.abs(angle.current - targetAngle.current);
+				if (alpha < Math.abs(w.current * delta)) {
+					angle.current = targetAngle.current;
+					headerGroup.current.rotate(alpha * (w.current > 0 ? 1 : -1), WIDTH / 2, WIDTH);
 					w.current = 0;
 				} else {
 					angle.current = angle.current - w.current * delta;

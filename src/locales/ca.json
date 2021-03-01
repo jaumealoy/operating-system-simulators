@@ -1,6 +1,35 @@
 {
     "common": {
-        "close": "Tancar"
+        "close": "Tancar",
+        "buttons": {
+            "simpleview": "Vista simple",
+            "comparaisonview": "Vista comparativa",
+            "tutorial": "Tutorial",
+            "previous_step": "Passa anterior",
+            "next_step": "Següent pasa",
+            "reset": "Esborrar dades",
+            "pause": "Pausar",
+            "play": "Iniciar",
+            "stop": "Reiniciar simulació",
+            "load_file": "Carregar simulació",
+            "save_file": "Desar simulació"
+        },
+        "example_number": "Exemple {{number}}",
+        "examples": "Exemples",
+        "simulation_algorithm": "Algoritme simulació",
+        "simulator_settings": "Configuració del simulador",
+        "tutorial": {
+            "control_bar_overview": "Aquesta barra és la barra de control del simulador, que permet controlar la simulació.",
+            "control_bar_reset": "Aquest botó reinicia el simulador: esborra totes les peticions.",
+            "control_bar_stop": "Aquest botó reinicia la simulació, sense esborrar les peticions.",
+            "control_bar_previous_step": "Aquest botó permite tornar una passa enrera la simulació.",
+            "control_bar_next_step": "Aquest botó avança en una passo la simulació, permet veure la simulació passa a passa.",
+            "control_bar_play": "Aquest botó permet iniciar o aturar la simulació automàtica.",
+            "control_bar_speed": "Pots ajustar la velocitat de la simulació amb aquesta barra.",
+            "view_bar": "Pots canviar entre una vista d'un únic simulador i una vista de múltiples simuladors per realitzar comparacions",
+            "storage": "Pots guardar i carregar les configuracions del simulador.",
+            "repeat_tutorial": "Pots consultar aquest tutorial en qualsevol moment fent-me clic."
+        }
     },
 
     "io": {
