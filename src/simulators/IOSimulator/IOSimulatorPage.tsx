@@ -511,46 +511,46 @@ function IOSimulatorPage() {
 
 				<Col md={6}>
 					<div className="table-responsive">
-					<table className="table">
-						<thead>
-							<tr>
-								<th>{t("io.request_number")}</th>
-								<th>{t("io.initial_position")}</th>
-								<th>{t("io.final_position")}</th>
-								<th>{t("io.displacement")}</th>
-							</tr>
-						</thead>
+						<table className="table">
+							<thead>
+								<tr>
+									<th>{t("io.request_number")}</th>
+									<th>{t("io.initial_position")}</th>
+									<th>{t("io.final_position")}</th>
+									<th>{t("io.displacement")}</th>
+								</tr>
+							</thead>
 
-						<tbody>
-							{processedRequests[selectedAlgorithm].map((request, index) => 
-								<tr>
-									<td>{index + 1}</td>
-									<td>{request.initialTrack}</td>
-									<td>{request.finalTrack}</td>
-									<td>
-										{Math.abs(request.finalTrack - request.initialTrack)}
-										{request.fast && <sup>*</sup>}
-									</td>
-								</tr>
-							)}
+							<tbody>
+								{processedRequests[selectedAlgorithm].map((request, index) => 
+									<tr>
+										<td>{index + 1}</td>
+										<td>{request.initialTrack}</td>
+										<td>{request.finalTrack}</td>
+										<td>
+											{Math.abs(request.finalTrack - request.initialTrack)}
+											{request.fast && <sup>*</sup>}
+										</td>
+									</tr>
+								)}
 
-							{processedRequests[selectedAlgorithm].length == 0 ?
-								<tr>
-									<td colSpan={4}>{t("io.no_requests_completed")}</td>
-								</tr>
-								:
-								<tr>
-									<td></td>
-									<td></td>
-									<td>{t("io.total")}</td>
-									<td>
-										{calculateSumDisplacement(selectedAlgorithm)}
-									</td>
-								</tr>
-							}
-							
-						</tbody>
-					</table>
+								{processedRequests[selectedAlgorithm].length == 0 ?
+									<tr>
+										<td colSpan={4}>{t("io.no_requests_completed")}</td>
+									</tr>
+									:
+									<tr>
+										<td></td>
+										<td></td>
+										<td>{t("io.total")}</td>
+										<td>
+											{calculateSumDisplacement(selectedAlgorithm)}
+										</td>
+									</tr>
+								}
+								
+							</tbody>
+						</table>
 					</div>
 				</Col>
 			</Row>

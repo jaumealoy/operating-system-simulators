@@ -182,6 +182,7 @@ function TimeChart(props: TimeChartProps) {
 
 			// resize it to fit horizontally
 			let availableWidth: number = container.current.getBoundingClientRect().width;
+			canvas.transform({ scale: [1, 1] });
 			let scale: number = availableWidth / canvas.width();
 			canvas.scale(scale, scale, 0, 0);
 

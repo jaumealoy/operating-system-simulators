@@ -121,3 +121,113 @@ body {
 .arrow {
     z-index: 10000000000;
 }
+
+/*.cpu-cycle-distribution .input-group-text {
+    font-size: 10px;
+    padding: 0px 4px;
+    border-bottom-left-radius: 0;
+}
+
+.cpu-cycle-distribution .form-check {
+    text-align: center;
+    border: 1px solid #ced4da;
+    align-items: center;
+    padding: 0;
+    display: flex;
+    padding: 0 2px;
+    height: 100%;
+    margin: 0;
+}
+
+.cpu-cycle-distribution .form-check:last-child {
+    border-top-right-radius: 0.25rem;
+}
+
+.cpu-cycle-distribution input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
+    margin: 0px;
+}
+
+.input-group-row {
+    margin-top: -1px;
+}*/
+
+.my-input-group {
+    display: flex;
+    flex-direction: row;
+}
+
+.my-input-group .my-input-group-col:first-child {
+    position: sticky;
+    left: 0;
+}
+
+.my-input-group .my-input-group-col:first-child .my-input-group-cell {
+    border: 1px solid #ced4da;
+    margin-top: -1px;
+}
+
+.my-input-group .my-input-group-col:first-child .my-input-group-cell:first-child {
+    border-top-left-radius: 4px;
+}
+
+.my-input-group .my-input-group-col:first-child .my-input-group-cell:last-child {
+    border-bottom-left-radius: 4px;
+}
+
+.my-input-group .my-input-group-col:last-child .my-input-group-cell:first-child {
+    border-top-right-radius: 4px;
+}
+
+.my-input-group .my-input-group-col:last-child .my-input-group-cell:last-child {
+    border-bottom-right-radius: 4px;
+}
+
+
+.my-input-group .my-input-group-col {
+    margin: 0;
+}
+
+.my-input-group {
+    overflow-x: auto;
+    padding-top: 1px;
+    padding-left: 1px;
+    position: relative;
+}
+
+.my-input-group-cell.header {
+    font-weight: bold;
+    background: #e9ecef;
+}
+
+.cpu-cycle-distribution .my-input-group-cell {
+    font-size: 12px;
+    padding: 0 4px;
+    border: 1px solid #ced4da;
+    margin-top: -1px;
+    margin-left: -1px;
+}
+
+.cpu-cycle-distribution .form-check {
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    display: flex;
+    padding: 0 0px;
+    margin: 0;
+    height: 18px;
+    min-height: 0 !important;
+}
+
+.cpu-cycle-distribution input[type="radio"] {
+    width: 8px;
+    height: 8px;
+    margin: 0px;
+    min-height: initial;
+}
+
+h3 {
+    font-size: 20px;
+}
