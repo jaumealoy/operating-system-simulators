@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { SVG, G, Text } from "@svgdotjs/svg.js";
+import { ProcessSnapshot } from "./CPUSimulator";
 
 /* Visual settings */
 const FONT_SIZE: number = 14;
@@ -19,11 +20,6 @@ interface TimeChartProps {
 	events: ProcessSnapshot[][];
 	maxTicks: number;
 	step?: number;
-};
-
-interface ProcessSnapshot {
-	status: "running" | "blocked";
-	id: string;
 };
 
 interface ChartPeriod {

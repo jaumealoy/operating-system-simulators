@@ -23,10 +23,55 @@ const EXAMPLES: CPUExample[] = [
 	{
 		processList: [
 			{
+				id: "A",
 				arrival: 0,
-				cycles: [],
+				cycles: [false, false, false, false],
+				estimatedDuration: 0
+			},
+
+			{
+				id: "B",
+				arrival: 2,
+				cycles: [false, false, false, false],
 				estimatedDuration: 0
 			}
+
+		],
+		quantum: 1
+	},
+
+	{
+		processList: [
+			{
+				id: "A",
+				arrival: 0,
+				cycles: [false, false, false],
+				estimatedDuration: 0
+			},
+			{
+				id: "B",
+				arrival: 2,
+				cycles: [false, false, false, false, false, false],
+				estimatedDuration: 0
+			},
+			{
+				id: "C",
+				arrival: 4,
+				cycles: [false, false, false, false],
+				estimatedDuration: 0
+			},
+			{
+				id: "D",
+				arrival: 6,
+				cycles: [false, false, false, false, false],
+				estimatedDuration: 0
+			},
+			{
+				id: "E",
+				arrival: 8,
+				cycles: [false, false],
+				estimatedDuration: 0
+			},
 		],
 		quantum: 1
 	}
@@ -35,10 +80,14 @@ const EXAMPLES: CPUExample[] = [
 function CPUSimulatorPage() {
 	const { t } = useTranslation();
 	const {
-		processes,
+		processes, 
+		queues, events,
 		name, arrival, estimatedDuration, duration, cycleDistribution,
 		setName, setArrival, setEstimatedDuration, setDuration, selectCycleType,
-		onSubmit
+		loadProcessesFromList,
+		onSubmit,
+		hasNextStep,
+		next
 	} = useCPUSimulator();
 
 	return (
@@ -192,7 +241,17 @@ function CPUSimulatorPage() {
 
 						<div className="simulator-group-footer">
 							<div className="title">{t("common.examples")}</div>
-
+							
+							{EXAMPLES.map((example: CPUExample, index: number) =>
+								<button 
+									key={"example_" + index}
+									onClick={() => {
+										loadProcessesFromList(example.processList);
+									}}
+									className="btn btn-link">
+									{t("common.example_number", { number: (index + 1) })}
+								</button>
+							)}
 						</div>
 					</div>
 				</Col>
@@ -208,7 +267,19 @@ function CPUSimulatorPage() {
 								:
 								processes.map(process => 
 									<div> 
-										A
+										<table>
+											<tbody>
+												<tr>
+													<th>Nombre</th>
+													<td>{process.id}</td>
+												</tr>
+
+												<tr>
+													<th>Llegada</th>
+													<td>{process.arrival}</td>
+												</tr>
+											</tbody>
+										</table>
 									</div>	
 								)
 							}
@@ -228,19 +299,9 @@ function CPUSimulatorPage() {
 						</h3>
 
 						<TimeChart
-							processes={["A", "B", "E", "C", "D"]}
-							maxTicks={20}
-							events={[
-								[{ id: "B", status: "running" }],
-								[{ id: "B", status: "running" }],
-								[{ id: "B", status: "running" }, { id: "E", status: "blocked" }],
-								[{ id: "A", status: "running" }, { id: "E", status: "blocked" }],
-								[{ id: "A", status: "running" }, { id: "E", status: "blocked" }],
-								[{ id: "C", status: "running" }],
-								[{ id: "D", status: "running" }],
-								[{ id: "C", status: "running" }],
-								[{ id: "c", status: "running" }]
-							]}
+							processes={processes.map(a => a.id)}
+							maxTicks={25}
+							events={events}
 						/>
 					</Col>
 
@@ -258,17 +319,53 @@ function CPUSimulatorPage() {
 					</Col>
 
 					<Col md={4}>
-					B
+						<h3>Ready</h3>
+						<table className="table">
+							<thead>
+								<tr>
+									<th>Proceso</th>
+									<th></th>
+								</tr>
+							</thead>
+
+							<tbody>
+								{queues.ready.map(process => 
+									<tr>
+										<td>{process.process.id}</td>
+										<td>-</td>
+									</tr>
+								)}	
+							</tbody>
+						</table>
 					</Col>
 
 					<Col md={4}>
-					C
+						<h3>Incoming</h3>
+						<table className="table">
+							<thead>
+								<tr>
+									<th>Proceso</th>
+									<th></th>
+								</tr>
+							</thead>
+
+							<tbody>
+								{queues.incoming.map(process => 
+									<tr>
+										<td>{process.process.id}</td>
+										<td>-</td>
+									</tr>
+								)}	
+							</tbody>
+						</table>
 					</Col>
 				</Row>
 			</Row>
 
 			<SimulatorControl
-			/>
+				hasNext={hasNextStep()}
+				next={next}
+				/>
 		</>
 	);
 }

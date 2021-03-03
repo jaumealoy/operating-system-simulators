@@ -1,5 +1,5 @@
 import { useState, FormEvent, useEffect, useRef } from "react";
-import { Process } from "./CPUSimulator";
+import { CPUSimulator, Process, ProcessSnapshot, ProcessWrap } from "./CPUSimulator";
 
 const DEFAULT_NAMES: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -7,17 +7,27 @@ const useCPUSimulator = () => {
     // simulator manager
     const manager = useRef(null);
 
+    const simulator = useRef(new CPUSimulator());
+
     // process list
     const [processes, setProcesses] = useState<Process[]>([]);
    
-    const addProcess = (arrival: number, cycles: boolean[], estimatedDuration: number) : void => {
+    const addProcess = (id: string, arrival: number, cycles: boolean[], estimatedDuration: number) : void => {
         let process: Process = {
+            id,
             arrival,
             cycles,
             estimatedDuration
         };
 
+        simulator.current.addProcess(process);
+
         setProcesses((processes) => [...processes, process]);
+    };
+
+
+    const loadProcessesFromList = (list: Process[]) => {
+        list.map(process => addProcess(process.id, process.arrival, process.cycles, process.estimatedDuration));
     };
 
     const removeProcess = (index: number) : void => {
@@ -62,17 +72,40 @@ const useCPUSimulator = () => {
 
         // adding the process to the list
         addProcess(
+            name,
             parseInt(arrival),
             cycleDistribution,
             parseInt(estimatedDuration)
         );
     };
 
+
+    // TODO:
+    const [events, setEvents] = useState<ProcessSnapshot[][]>([]);
+    const [queues, setQueues] = useState<{[key:string]: ProcessWrap[]}>({
+        incoming: [], ready: [], blocked: []
+    });
+
+    simulator.current.onQueueChange = (q) => {
+        setQueues({...q});
+    };
+
+
+    // simulator controls
+    const hasNextStep = () : boolean => simulator.current.hasNextStep();
+    const next = () => {
+        setEvents([...events, simulator.current.processNextRequest()])
+    };
+
     return {
         name, estimatedDuration, duration, cycleDistribution, arrival,
         setName, setEstimatedDuration, setDuration, setArrival, selectCycleType,
         onSubmit,
-        processes
+        loadProcessesFromList,
+        processes,
+        next,
+        hasNextStep,
+        queues, events
     };
 };
 
