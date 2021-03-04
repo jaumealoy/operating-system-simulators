@@ -91,7 +91,10 @@ function CPUSimulatorPage() {
 		loadProcessesFromList,
 		onSubmit,
 		hasNextStep,
-		next
+		next,
+		selectedAlgorithm, selectAlgorithm,
+		quantum, setQuantum,
+		simulationLength
 	} = useCPUSimulator();
 
 	return (
@@ -112,6 +115,8 @@ function CPUSimulatorPage() {
 											<FormCheck
 												type="radio"
 												name="selectedAlgorithm"
+												onChange={() => selectAlgorithm(algorithm.id)}
+												checked={selectedAlgorithm == algorithm.id}
 												label={algorithm.name}
 											/>
 										)}
@@ -123,6 +128,8 @@ function CPUSimulatorPage() {
 										<label>Quantum</label>
 										<FormControl
 											type="number"
+											value={quantum}
+											onChange={(e) => setQuantum(parseInt(e.target.value))}
 											min={0}
 											step={1}
 										/>
@@ -271,7 +278,7 @@ function CPUSimulatorPage() {
 
 						<TimeChart
 							processes={processes.map(a => a.id)}
-							maxTicks={25}
+							maxTicks={Math.max(simulationLength, 20)}
 							events={events}
 						/>
 					</Col>

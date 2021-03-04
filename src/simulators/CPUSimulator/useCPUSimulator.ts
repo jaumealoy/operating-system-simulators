@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect, useRef } from "react";
 import { CPUSimulator, Process, ProcessSnapshot, ProcessWrap } from "./CPUSimulator";
 
 const DEFAULT_NAMES: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const DEFAULT_ALGORITHM: string = CPUSimulator.getAvailableAlgorithms()[0].id;
 
 const useCPUSimulator = () => {
 	// simulator manager
@@ -40,6 +41,21 @@ const useCPUSimulator = () => {
 			setProcesses(tmp);
 		}
 	};
+
+	// simulator settings (algorithm, selected quantums)
+	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>(DEFAULT_ALGORITHM);
+
+	const selectAlgorithm = (algorithm: string) => {
+		// TOOD: on simple view, change the selected algorithm variable
+		// and in comparaison view add or remove it from the list
+		setSelectedAlgorithm(algorithm);
+		simulator.current.algorithm = algorithm;
+	};
+
+	const [quantum, setQuantum] = useState<number>(1);
+	useEffect(() => {
+		simulator.current.quatum = quantum;
+	}, [quantum]);
 
 	// add process form
 	const [name, setName] = useState<string>("");
@@ -121,6 +137,12 @@ const useCPUSimulator = () => {
 		setProcessSummary({...processSummary, [p.process.id]: p});
 	};
 
+	// calculate an estimation of the simulation length
+	const [simulationLength, setSimulationLength] = useState<number>(0);
+	useEffect(() => {
+		setSimulationLength(simulator.current.simulationTicks);
+	}, [processes]);
+
 	// simulator controls
 	const hasNextStep = () : boolean => simulator.current.hasNextStep();
 	const next = () => {
@@ -135,7 +157,10 @@ const useCPUSimulator = () => {
 		processes,
 		next,
 		hasNextStep,
-		currentProcess, queues, events, getProcessSummary
+		currentProcess, queues, events, getProcessSummary,
+		selectedAlgorithm, selectAlgorithm,
+		quantum, setQuantum,
+		simulationLength
 	};
 };
 

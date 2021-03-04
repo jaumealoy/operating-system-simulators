@@ -24,6 +24,9 @@ interface ProcessWrap {
 
 	// current internal cycle
     currentCycle: number;
+
+	// number of CPU cycles received since last arrival
+	burstCycles: number;
 };
 
 class CPUSimulator extends Simulator {
@@ -74,13 +77,7 @@ class CPUSimulator extends Simulator {
 	 */
 	public addProcess(process: Process) : void {
 		this._processList.push(process);
-		this._queues.incoming.push({ 
-			currentCycle: 0,  
-			process,
-			startCycle: -1,
-			finishCycle: -1
-		});
-
+		this._queues.incoming.push(this.createProcessWrap(process));
 		this.onQueueChange(this._queues);
 	}
 
@@ -107,7 +104,7 @@ class CPUSimulator extends Simulator {
 		Object.keys(this._queues).map(key => this._queues[key] = []);
 
 		// all processes are in the incoming queue
-		this._queues.incoming = this._processList.map(process => ({ currentCycle: 0, startCycle: -1, finishCycle: -1, process }));
+		this._queues.incoming = this._processList.map(process => this.createProcessWrap(process));
 	}
     
 	/**
@@ -129,7 +126,7 @@ class CPUSimulator extends Simulator {
             // we must initialize CPU queues with the correct process
             this._cycle = 0;
             this._queues = {
-                incoming: this._processList.map(process => ({ currentCycle: 0, startCycle: -1, finishCycle: -1, process })),
+                incoming: this._processList.map(process => this.createProcessWrap(process)),
                 ready: [],
                 blocked: []
             };
@@ -188,7 +185,10 @@ class CPUSimulator extends Simulator {
 		// update running process
 		if (this._currentProcess != null) {
 			let process: ProcessWrap = this._currentProcess;
+
+			// increase cycle counters
 			process.currentCycle++;
+			process.burstCycles++;
 
 			// if the selected algorithm is preemptive, we might stop the current process
 			let newProcess: number = this.algorithmFunctions[this._algorithm]();
@@ -224,6 +224,9 @@ class CPUSimulator extends Simulator {
 				if (this._currentProcess.startCycle < 0) {
 					this._currentProcess.startCycle = this._cycle;
 				}
+
+				// set the burst counter to zero, this process has just arrived at the CPU
+				this._currentProcess.burstCycles = 0;
 			}
 		}
 
@@ -301,6 +304,28 @@ class CPUSimulator extends Simulator {
 		return index;
 	}
 
+	private RR() : number {
+		let index: number = -1;
+
+		// if there is a process running, we might have to stop if it has reached
+		// its burst limit
+		if (this._currentProcess != null && this._currentProcess.burstCycles >= this._quantum) {
+			// we will stop the current process if there are other processes
+			// waiting to use the CPU
+			// TODO: for virtual round robin, if the current process has IO cycle, it will be stopped
+			if (this._queues.ready.length > 0) {
+				index = 0;
+			}
+		} else if (this._currentProcess == null) {
+			// there isn't any process, a new process will be executed if there is any
+			if (this._queues.ready.length > 0) {
+				index = 0;
+			}
+		}
+
+		return index;
+	}
+
     /**
      * Returns a list of available algorithms for this simulator
      */
@@ -318,17 +343,35 @@ class CPUSimulator extends Simulator {
 	private algorithmFunctions: {[key: string]: () => number} = {
 		fifo: this.FIFO.bind(this),
 		spn: this.SPN.bind(this),
-		srtn: this.SRTN.bind(this)
+		srtn: this.SRTN.bind(this),
+		rr: this.RR.bind(this)
 	};
 
     /**
-     * Performs the simulation (withou changing the current state) and returns
+     * Performs the simulation (without changing the current state) and returns
      * the number of ticks that it will take
      */
     get simulationTicks() : number {
-        return 10;
+		let fakeSimulator: CPUSimulator = new CPUSimulator();
+		let counter: number = 0;
+
+		// add the processes and set the correct algorithm
+		this._processList.map(process => fakeSimulator.addProcess(process));
+		fakeSimulator.algorithm = this._algorithm;
+		fakeSimulator.quatum = this._quantum;
+
+		// run the simulation
+		while (fakeSimulator.hasNextStep()) {
+			fakeSimulator.processNextRequest();
+			counter++;
+		}
+
+        return counter;
     }
 
+	/**
+	 * Sets the value of the quantum used for algorithms such as Round Robin
+	 */
     set quatum(value: number) {
         if (value >= 1) {
             this._quantum = value;
@@ -353,6 +396,23 @@ class CPUSimulator extends Simulator {
 
 		// executing the callback with the updated information
 		this.onProcessFinish(process);
+	}
+
+	/**
+	 * Sets the algorithm that the simulator will use
+	 */
+	set algorithm(id: string) {
+		this._algorithm = id;
+	}
+
+	private createProcessWrap(process: Process) : ProcessWrap {
+		return {
+			startCycle: -1,
+			finishCycle: -1,
+			burstCycles: 0,
+			currentCycle: 0,
+			process
+		};
 	}
 }
 
