@@ -3,6 +3,10 @@
 $control-bar-background: $gray-800;
 $control-bar-height: 60px;
 
+body {
+    padding-bottom: $control-bar-height;
+}
+
 label {
     font-weight: bold;
 }
@@ -209,6 +213,16 @@ body {
     margin-left: -1px;
 }
 
+.cpu-cycle-distribution .my-input-group-cell.bg-success {
+    background: map-get($map: $theme-colors, $key: "sucess");
+}
+
+.cpu-cycle-distribution .my-input-group-cell.current {
+    animation-name: highlight_cycle;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+}
+
 .cpu-cycle-distribution .form-check {
     text-align: center;
     align-items: center;
@@ -230,4 +244,9 @@ body {
 
 h3 {
     font-size: 20px;
+}
+
+.process-list {
+    display: flex;
+    flex-direction: row;
 }

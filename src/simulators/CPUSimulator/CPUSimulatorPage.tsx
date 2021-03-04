@@ -6,12 +6,16 @@ import {
 import { useTranslation } from "react-i18next";
 import { FiCpu } from "react-icons/fi";
 import { MdTimeline } from "react-icons/md";
+import { BsTable } from "react-icons/bs";
 
 import TopBar from "../../components/TopBar";
 import TimeChart from "./TimeChart";
 import useCPUSimulator from "./useCPUSimulator";
 import { CPUSimulator, Process } from "./CPUSimulator";
 import SimulatorControl from "./../../components/SimulatorControl";
+import CycleDistribution from "./CycleDistribution";
+
+import "./../../common/css/CPUSimulator.scss";
 
 /* EXAMPLES */
 interface CPUExample {
@@ -81,7 +85,7 @@ function CPUSimulatorPage() {
 	const { t } = useTranslation();
 	const {
 		processes, 
-		queues, events,
+		currentProcess, queues, events, getProcessSummary,
 		name, arrival, estimatedDuration, duration, cycleDistribution,
 		setName, setArrival, setEstimatedDuration, setDuration, selectCycleType,
 		loadProcessesFromList,
@@ -190,45 +194,10 @@ function CPUSimulatorPage() {
 										<FormGroup className="cpu-cycle-distribution">
 											<label>Distribución de los ciclos</label>
 
-											<div className="my-input-group mt-1">
-												<div className="my-input-group-col">
-													<div className="my-input-group-cell fake-cell header">
-														&nbsp;
-													</div>
-
-													<div className="my-input-group-cell header">
-														CPU
-													</div>
-
-													<div className="my-input-group-cell header">
-														IO
-													</div>
-												</div>
-
-												{cycleDistribution.map((value, index) =>
-													<div className="my-input-group-col">
-														<div className="my-input-group-cell">
-															{index + 1}
-														</div>
-
-														<div className="my-input-group-cell">
-															<FormCheck
-																onChange={() => selectCycleType(index, false)}
-																checked={!value}
-																name={`cycle[${index}]`}
-																type="radio" />
-														</div>
-
-														<div className="my-input-group-cell">
-															<FormCheck
-																onChange={() => selectCycleType(index, true)}
-																checked={value}
-																name={`cycle[${index}]`}
-																type="radio" />
-														</div>
-													</div>
-												)}
-											</div>
+											<CycleDistribution 
+												cycles={cycleDistribution}
+												editable
+												onSelectCycle={(index, value) => selectCycleType(index, value)} />
 										</FormGroup>
 
 										<button className="btn mt-1 btn-primary">
@@ -262,27 +231,29 @@ function CPUSimulatorPage() {
 					<div className="simulator-group">
 						<div className="simulator-group-content">
 							<div className="title">Procesos introducidos</div>
-							{processes.length == 0 ?
-								"No has introducido ninguna petición"
-								:
-								processes.map(process => 
-									<div> 
-										<table>
-											<tbody>
-												<tr>
-													<th>Nombre</th>
-													<td>{process.id}</td>
-												</tr>
+							<div className="process-list">
+								{processes.length == 0 ?
+									"No has introducido ninguna petición"
+									:
+									processes.map(process => 
+										<div> 
+											<table>
+												<tbody>
+													<tr>
+														<th>Nombre</th>
+														<td>{process.id}</td>
+													</tr>
 
-												<tr>
-													<th>Llegada</th>
-													<td>{process.arrival}</td>
-												</tr>
-											</tbody>
-										</table>
-									</div>	
-								)
-							}
+													<tr>
+														<th>Llegada</th>
+														<td>{process.arrival}</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>	
+									)
+								}
+							</div>
 						</div>
 					</div>
 				</Col>
@@ -310,6 +281,40 @@ function CPUSimulatorPage() {
 							<FiCpu className="mr-1" />
 							Procesador
 						</h3>
+
+						{currentProcess == null ?
+							"Actualmente no hay ningún proceso en ejecución."
+							:
+							<>
+								<table 
+									style={{ tableLayout:"fixed" }} 
+									className="table">
+									<tbody>
+										<tr>
+											<th>Nombre</th>
+											<td>{currentProcess.process.id}</td>
+										</tr>
+
+										<tr>
+											<th>Próximo cambio</th>
+											<td>0 ciclos</td>
+										</tr>
+
+										<tr>
+											<th>Distribución</th>
+											<td>
+												<FormGroup className="cpu-cycle-distribution">
+												<CycleDistribution 
+													cycles={currentProcess.process.cycles}
+													currentCycle={currentProcess.currentCycle + 1}
+													editable={false} />
+												</FormGroup>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</>
+						}
 					</Col>
 				</Row>
 
@@ -357,6 +362,46 @@ function CPUSimulatorPage() {
 									</tr>
 								)}	
 							</tbody>
+						</table>
+					</Col>
+				</Row>
+
+				<Row className="mb-2">
+					<Col md={12}>
+						<h3>
+							<BsTable className="mr-1" />
+							Resumen planificación
+						</h3>
+
+						<table className="table">
+							<thead>
+								<tr>
+									<th>Proceso</th>
+									<th>Tiempo de servicio</th>
+									<th>Tiempo de retorno</th>
+									<th>Tiempo de respuesta</th>
+									<th>Tiempo de respuesta normalizado</th>
+								</tr>
+							</thead>
+
+							<tbody>
+								{processes.length == 0 ?
+									<tr>
+										<td colSpan={5}>No se han introducido procesos</td>
+									</tr>
+									:
+									processes.map(process => 
+										<tr>
+											<td>{process.id}</td>
+											<td>{process.cycles.length}</td>
+											<td>{getProcessSummary(process.id).turnaround}</td>
+											<td>{getProcessSummary(process.id).response}</td>
+											<td>{getProcessSummary(process.id).normalizedResponse}</td>
+										</tr>
+									)
+								}
+							</tbody>
+
 						</table>
 					</Col>
 				</Row>

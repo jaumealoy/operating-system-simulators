@@ -16,8 +16,14 @@ interface ProcessSnapshot {
 };
 
 interface ProcessWrap {
-    currentCycle: number;
     process: Process;
+
+	// indicate when the process received its first and last cycle
+	startCycle: number;
+	finishCycle: number;
+
+	// current internal cycle
+    currentCycle: number;
 };
 
 class CPUSimulator extends Simulator {
@@ -36,6 +42,8 @@ class CPUSimulator extends Simulator {
 
 	// callbacks
 	public onQueueChange: (queue: {[key: string]: ProcessWrap[]}) => void;
+	public onProcessChange: (process: ProcessWrap | null) => void;
+	public onProcessFinish: (process: ProcessWrap) => void;
 
     constructor() {
         super();
@@ -56,6 +64,8 @@ class CPUSimulator extends Simulator {
 
 		// default callback
 		this.onQueueChange = () => {};
+		this.onProcessChange = () => {};
+		this.onProcessFinish = () => {};
     }
 
 	/**
@@ -64,7 +74,12 @@ class CPUSimulator extends Simulator {
 	 */
 	public addProcess(process: Process) : void {
 		this._processList.push(process);
-		this._queues.incoming.push({ currentCycle: 0, process });
+		this._queues.incoming.push({ 
+			currentCycle: 0,  
+			process,
+			startCycle: -1,
+			finishCycle: -1
+		});
 
 		this.onQueueChange(this._queues);
 	}
@@ -79,12 +94,34 @@ class CPUSimulator extends Simulator {
     public hasPreviousStep(): boolean {
         throw new Error("Method not implemented.");
     }
+
+	/**
+	 * Sets the simulator to its initial state without erasing the processes
+	 */
     public reset(): void {
-        throw new Error("Method not implemented.");
-    }
-    public clear(): void {
-        throw new Error("Method not implemented.");
-    }
+		// simulator is stopped
+		this._running = false;
+		this.currentProcess = null;
+
+		// clear the queues
+		Object.keys(this._queues).map(key => this._queues[key] = []);
+
+		// all processes are in the incoming queue
+		this._queues.incoming = this._processList.map(process => ({ currentCycle: 0, startCycle: -1, finishCycle: -1, process }));
+	}
+    
+	/**
+	 * Erases all simulator processes
+	 */
+	public clear(): void {
+		// simulator is stopped
+		this._running = false;
+		this.currentProcess = null;
+
+		// process list and queues are cleared
+		this._processList = [];
+		Object.keys(this._queues).map(key => this._queues[key] = []);
+	}
 
     public processNextRequest() : ProcessSnapshot[] {
         // is the first time processing a request?
@@ -92,7 +129,7 @@ class CPUSimulator extends Simulator {
             // we must initialize CPU queues with the correct process
             this._cycle = 0;
             this._queues = {
-                incoming: this._processList.map(process => ({ currentCycle: 0, process })),
+                incoming: this._processList.map(process => ({ currentCycle: 0, startCycle: -1, finishCycle: -1, process })),
                 ready: [],
                 blocked: []
             };
@@ -132,7 +169,15 @@ class CPUSimulator extends Simulator {
 		for (let i = 0; i < this._queues.blocked.length; i++) {
 			this._queues.blocked[i].currentCycle++;
 			
-			if (!this._queues.blocked[i].currentCycle) {
+			if (this._queues.blocked[i].currentCycle >= this._queues.blocked[i].currentCycle) {
+				// this process has finished
+				// remove it from the blocked queue
+				let p: ProcessWrap = this._queues.blocked[i];
+				this._queues.blocked.splice(i, 1);
+
+				// and notify its finalization
+				this._processFinish(p);
+			}else if (!this._queues.blocked[i].currentCycle) {
 				// process has finished the IO burst
 				// add it to the ready queue
 				this._queues.ready.push(this._queues.blocked[i]);
@@ -151,7 +196,8 @@ class CPUSimulator extends Simulator {
 			let cycles = process.process.cycles;
 			if (process.currentCycle >= cycles.length) {
 				// this process has finished!
-				this._currentProcess = null;
+				this._processFinish(this._currentProcess);
+				this.currentProcess = null;
 			} else if (cycles[process.currentCycle]) {
 				// TODO: only move the process to the blocked queue if the preemptive policy is enabled
 				// this process must go to the blocked queue
@@ -172,6 +218,12 @@ class CPUSimulator extends Simulator {
 				let process = this._queues.ready[index];
 				this._queues.ready.splice(index, 1);
 				this._currentProcess = process;
+
+				// if this process hasn't received any CPU burst before, update its
+				// start cycle to keep track of the execution time
+				if (this._currentProcess.startCycle < 0) {
+					this._currentProcess.startCycle = this._cycle;
+				}
 			}
 		}
 
@@ -282,6 +334,26 @@ class CPUSimulator extends Simulator {
             this._quantum = value;
         }
     }
+
+	/**
+	 * Sets the current process in execution and executes the callbacks
+	 */
+	private set currentProcess(process: ProcessWrap | null) {
+		this._currentProcess = process;
+		this.onProcessChange(this._currentProcess);
+	}
+
+	/**
+	 * Handles the finalization of a process
+	 * @param process process to be finished
+	 */
+	private _processFinish(process: ProcessWrap) {
+		// updates the finish cycle
+		process.finishCycle = this._cycle;
+
+		// executing the callback with the updated information
+		this.onProcessFinish(process);
+	}
 }
 
 export { CPUSimulator };

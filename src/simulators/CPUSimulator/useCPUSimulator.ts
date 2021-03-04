@@ -4,109 +4,139 @@ import { CPUSimulator, Process, ProcessSnapshot, ProcessWrap } from "./CPUSimula
 const DEFAULT_NAMES: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 const useCPUSimulator = () => {
-    // simulator manager
-    const manager = useRef(null);
+	// simulator manager
+	const manager = useRef(null);
 
-    const simulator = useRef(new CPUSimulator());
+	const simulator = useRef(new CPUSimulator());
 
-    // process list
-    const [processes, setProcesses] = useState<Process[]>([]);
+	// process list
+	const [processes, setProcesses] = useState<Process[]>([]);
    
-    const addProcess = (id: string, arrival: number, cycles: boolean[], estimatedDuration: number) : void => {
-        let process: Process = {
-            id,
-            arrival,
-            cycles,
-            estimatedDuration
-        };
+	const addProcess = (id: string, arrival: number, cycles: boolean[], estimatedDuration: number) : void => {
+		let process: Process = {
+			id,
+			arrival,
+			cycles,
+			estimatedDuration
+		};
 
-        simulator.current.addProcess(process);
+		simulator.current.addProcess(process);
 
-        setProcesses((processes) => [...processes, process]);
-    };
-
-
-    const loadProcessesFromList = (list: Process[]) => {
-        list.map(process => addProcess(process.id, process.arrival, process.cycles, process.estimatedDuration));
-    };
-
-    const removeProcess = (index: number) : void => {
-        if (index >= 0 && index < processes.length) {
-            let tmp: Process[] = [...processes];
-            tmp.splice(index, 1);
-            setProcesses(tmp);
-        }
-    };
-
-    // add process form
-    const [name, setName] = useState<string>("");
-    const [estimatedDuration, setEstimatedDuration] = useState<string>("");
-    const [duration, setDuration] = useState<string>("5");
-    const [cycleDistribution, setCycleDistribution] = useState<boolean[]>([]);
-    const [arrival, setArrival] = useState<string>("");
-
-    const selectCycleType = (index: number, value: boolean) : void => {
-        if (index < cycleDistribution.length) {
-            let distribution = [...cycleDistribution];
-            distribution[index] = value;
-            setCycleDistribution(distribution);
-        }
-    };
-
-    useEffect(() => {
-        let distribution = [];
-        let p_duration: number = parseInt(duration);
-        for (let i = 0; i < p_duration; i++) {
-            if (i < cycleDistribution.length) {
-                distribution.push(cycleDistribution[i]);
-            } else {
-                distribution.push(false);
-            }
-        }
-        setCycleDistribution(distribution);
-    }, [duration]);
+		setProcesses((processes) => [...processes, process]);
+	};
 
 
-    const onSubmit = (e: FormEvent) => {
-        e.preventDefault();
+	const loadProcessesFromList = (list: Process[]) => {
+		// clear the current process list
+		simulator.current.clear();
+		setProcesses([]);
+		list.map(process => addProcess(process.id, process.arrival, process.cycles, process.estimatedDuration));
+	};
 
-        // adding the process to the list
-        addProcess(
-            name,
-            parseInt(arrival),
-            cycleDistribution,
-            parseInt(estimatedDuration)
-        );
-    };
+	const removeProcess = (index: number) : void => {
+		if (index >= 0 && index < processes.length) {
+			let tmp: Process[] = [...processes];
+			tmp.splice(index, 1);
+			setProcesses(tmp);
+		}
+	};
+
+	// add process form
+	const [name, setName] = useState<string>("");
+	const [estimatedDuration, setEstimatedDuration] = useState<string>("");
+	const [duration, setDuration] = useState<string>("5");
+	const [cycleDistribution, setCycleDistribution] = useState<boolean[]>([]);
+	const [arrival, setArrival] = useState<string>("");
+
+	const selectCycleType = (index: number, value: boolean) : void => {
+		if (index < cycleDistribution.length) {
+			let distribution = [...cycleDistribution];
+			distribution[index] = value;
+			setCycleDistribution(distribution);
+		}
+	};
+
+	useEffect(() => {
+		let distribution = [];
+		let p_duration: number = parseInt(duration);
+		for (let i = 0; i < p_duration; i++) {
+			if (i < cycleDistribution.length) {
+				distribution.push(cycleDistribution[i]);
+			} else {
+				distribution.push(false);
+			}
+		}
+		setCycleDistribution(distribution);
+	}, [duration]);
 
 
-    // TODO:
-    const [events, setEvents] = useState<ProcessSnapshot[][]>([]);
-    const [queues, setQueues] = useState<{[key:string]: ProcessWrap[]}>({
-        incoming: [], ready: [], blocked: []
-    });
+	const onSubmit = (e: FormEvent) => {
+		e.preventDefault();
 
-    simulator.current.onQueueChange = (q) => {
-        setQueues({...q});
-    };
+		// adding the process to the list
+		addProcess(
+			name,
+			parseInt(arrival),
+			cycleDistribution,
+			parseInt(estimatedDuration)
+		);
+	};
 
 
-    // simulator controls
-    const hasNextStep = () : boolean => simulator.current.hasNextStep();
-    const next = () => {
-        setEvents([...events, simulator.current.processNextRequest()])
-    };
+	// simulation results
+	// simple view
+	const [currentProcess, setCurrentProcess] = useState<ProcessWrap | null>(null);
+	simulator.current.onProcessChange = (process: ProcessWrap | null) : void => setCurrentProcess(process);
 
-    return {
-        name, estimatedDuration, duration, cycleDistribution, arrival,
-        setName, setEstimatedDuration, setDuration, setArrival, selectCycleType,
-        onSubmit,
-        loadProcessesFromList,
-        processes,
-        next,
-        hasNextStep,
-        queues, events
-    };
+	const [events, setEvents] = useState<ProcessSnapshot[][]>([]);
+	const [queues, setQueues] = useState<{[key:string]: ProcessWrap[]}>({
+		incoming: [], ready: [], blocked: []
+	});
+
+	simulator.current.onQueueChange = (q) => {
+		setQueues({...q});
+	};
+
+	const [processSummary, setProcessSummary] = useState<{[key: string]: ProcessWrap}>({});
+	const getProcessSummary = (id: string) => {
+		let data = {
+			turnaround: "-",
+			response: "-",
+			normalizedResponse: "-"
+		};
+
+		if (id in processSummary) {
+			let turnaround = processSummary[id].finishCycle - processSummary[id].process.arrival;
+			let response = processSummary[id].finishCycle -  processSummary[id].startCycle;
+			data.turnaround = turnaround.toString();
+			data.response = response.toString();
+			data.normalizedResponse = (turnaround / processSummary[id].process.cycles.length).toFixed(2).toString();
+			
+		}
+
+		return data;
+	};
+
+	simulator.current.onProcessFinish = (p: ProcessWrap) => {
+		setProcessSummary({...processSummary, [p.process.id]: p});
+	};
+
+	// simulator controls
+	const hasNextStep = () : boolean => simulator.current.hasNextStep();
+	const next = () => {
+		setEvents([...events, simulator.current.processNextRequest()])
+	};
+
+	return {
+		name, estimatedDuration, duration, cycleDistribution, arrival,
+		setName, setEstimatedDuration, setDuration, setArrival, selectCycleType,
+		onSubmit,
+		loadProcessesFromList,
+		processes,
+		next,
+		hasNextStep,
+		currentProcess, queues, events, getProcessSummary
+	};
 };
 
 export default useCPUSimulator;

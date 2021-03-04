@@ -1,0 +1,15 @@
+@import "bootstrap/scss/bootstrap.scss";
+
+@keyframes highlight_cycle {
+    0% {
+        background: map-get($map: $theme-colors, $key: "primary");
+    }
+    
+    75% {
+        background: transparent;
+    }
+
+    100% {
+        background: map-get($map: $theme-colors, $key: "primary");
+    }
+}
