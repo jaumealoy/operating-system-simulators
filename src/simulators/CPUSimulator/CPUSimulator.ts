@@ -326,6 +326,35 @@ class CPUSimulator extends Simulator {
 		return index;
 	}
 
+	private HRRN() : number {
+		let index: number = -1;
+
+		const responseRatio = (process: ProcessWrap) : number => {
+			// wait time is the difference between the current cycle and 
+			// the arrival cycle
+			// TODO: change the actual length for the Estimated Duration field?
+			let wait: number = this._cycle - process.process.arrival;
+			return (wait + process.process.cycles.length) / process.process.cycles.length;
+		};
+
+		// this algorithm is not preemptive, therefore if there is a process it must 
+		// not find any other process
+		if (this._currentProcess == null) {
+			let max: number = -1;
+
+			for (let i = 0; i < this._queues.ready.length; i++) {
+				let tmp: ProcessWrap = this._queues.ready[i];
+				let rr: number = responseRatio(tmp);
+				if (rr > max) {
+					index = i;
+					max = rr;
+				}
+			}
+		}
+
+		return index;
+	}
+
     /**
      * Returns a list of available algorithms for this simulator
      */
@@ -334,7 +363,7 @@ class CPUSimulator extends Simulator {
             { id: "fifo", name: "First In First Out" },
             { id: "spn", name: "Shortest Process Next" },
             { id: "srtn", name: "Shortest Remaining Time Next" },
-            { id: "hrn", name: "Highest Reponse Next" },
+            { id: "hrrn", name: "Highest Reponse Ratio Next" },
             { id: "rr", name: "Round Robin" },
             { id: "feedback", name: "Feedback" },
         ];
@@ -344,7 +373,8 @@ class CPUSimulator extends Simulator {
 		fifo: this.FIFO.bind(this),
 		spn: this.SPN.bind(this),
 		srtn: this.SRTN.bind(this),
-		rr: this.RR.bind(this)
+		rr: this.RR.bind(this),
+		hrrn: this.HRRN.bind(this)
 	};
 
     /**
