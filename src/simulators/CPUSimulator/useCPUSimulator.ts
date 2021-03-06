@@ -57,6 +57,32 @@ const useCPUSimulator = () => {
 		simulator.current.quatum = quantum;
 	}, [quantum]);
 
+	// feedback algorithm settings
+	interface FeedbackSettings {
+		quantum: number;
+		mode: boolean;
+		maxQueues: number;
+	};
+
+	const [feedbackSettings, setFeedbackSettings] = useState<FeedbackSettings>({
+		quantum: 1,
+		mode: false,
+		maxQueues: 10
+	});
+
+	useEffect(() => {
+		if (selectedAlgorithm == "feedback") {
+			simulator.current.maxQueues = feedbackSettings.maxQueues;
+			simulator.current.quantumMode = feedbackSettings.mode;
+
+			if (!feedbackSettings.mode) {
+				simulator.current.quatum = feedbackSettings.quantum;
+			}
+		} else if (selectedAlgorithm == "rr") {
+			simulator.current.quatum = quantum;
+		}
+	}, [selectedAlgorithm, feedbackSettings]);
+
 	// add process form
 	const [name, setName] = useState<string>("");
 	const [estimatedDuration, setEstimatedDuration] = useState<string>("");
@@ -149,17 +175,31 @@ const useCPUSimulator = () => {
 		setEvents([...events, simulator.current.processNextRequest()])
 	};
 
+	const stop = () => {
+		simulator.current.reset();
+		setProcessSummary({});
+		setEvents([]);
+	};
+
+	const reset = () => {
+		simulator.current.clear();
+		setProcesses([]);
+		setProcessSummary({});
+		setEvents([]);	
+	};
+
 	return {
 		name, estimatedDuration, duration, cycleDistribution, arrival,
 		setName, setEstimatedDuration, setDuration, setArrival, selectCycleType,
 		onSubmit,
 		loadProcessesFromList,
 		processes,
-		next,
+		next, stop, reset,
 		hasNextStep,
 		currentProcess, queues, events, getProcessSummary,
 		selectedAlgorithm, selectAlgorithm,
 		quantum, setQuantum,
+		feedbackSettings, setFeedbackSettings,
 		simulationLength
 	};
 };

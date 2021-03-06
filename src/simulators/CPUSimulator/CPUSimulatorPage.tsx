@@ -91,9 +91,10 @@ function CPUSimulatorPage() {
 		loadProcessesFromList,
 		onSubmit,
 		hasNextStep,
-		next,
+		next, stop, reset,
 		selectedAlgorithm, selectAlgorithm,
 		quantum, setQuantum,
+		feedbackSettings, setFeedbackSettings,
 		simulationLength
 	} = useCPUSimulator();
 
@@ -109,7 +110,7 @@ function CPUSimulatorPage() {
 							<div className="title">{t("common.simulator_settings")}</div>
 
 							<Row>
-								<Col md={8}>
+								<Col md={7}>
 									<FormGroup>
 										{CPUSimulator.getAvailableAlgorithms().map(algorithm =>
 											<FormCheck
@@ -123,17 +124,62 @@ function CPUSimulatorPage() {
 									</FormGroup>
 								</Col>
 
-								<Col md={4}>
-									<FormGroup>
-										<label>Quantum</label>
-										<FormControl
-											type="number"
-											value={quantum}
-											onChange={(e) => setQuantum(parseInt(e.target.value))}
-											min={0}
-											step={1}
-										/>
-									</FormGroup>
+								<Col md={5}>
+									{selectedAlgorithm == "rr" && 
+										<FormGroup>
+											<label>Quantum</label>
+											<FormControl
+												type="number"
+												value={quantum}
+												onChange={(e) => setQuantum(parseInt(e.target.value))}
+												min={0}
+												step={1}
+											/>
+										</FormGroup>
+									}
+
+									{selectedAlgorithm == "feedback" &&
+										<>
+											<FormGroup>
+												<label>Quantum</label>
+												<FormCheck 
+													name="quantum_feedback"
+													type="radio"
+													checked={!feedbackSettings.mode}
+													onChange={() => setFeedbackSettings({ ...feedbackSettings, mode: false})}
+													label={
+														<div style={{ display: "flex" }}>
+															<span className="mr-2">Fijo:</span> 
+															<FormControl 
+																className="inline-input" 
+																size="sm" 
+																type="number"
+																min={1}
+																value={feedbackSettings.quantum}
+																onChange={(e) => setFeedbackSettings({ ...feedbackSettings, quantum: parseInt(e.target.value)})} /> 
+														</div>
+													} />
+
+												<FormCheck 
+													name="quantum_feedback"
+													checked={feedbackSettings.mode}
+													onChange={() => setFeedbackSettings({ ...feedbackSettings, mode: true})}
+													label={<i>2<sup>i</sup></i>}
+													type="radio" />
+													
+											</FormGroup>
+
+											<FormGroup>
+												<label>Máximo de colas</label>
+												<FormControl 
+													min={0}
+													value={feedbackSettings.maxQueues}
+													onChange={(e) => setFeedbackSettings({ ...feedbackSettings, maxQueues: parseInt(e.target.value)})}
+													type="number" />
+												<small>El valor 0 indica ilimitado</small>
+											</FormGroup>
+										</>
+									}
 								</Col>
 							</Row>
 						</div>
@@ -417,6 +463,8 @@ function CPUSimulatorPage() {
 			<SimulatorControl
 				hasNext={hasNextStep()}
 				next={next}
+				stop={stop}
+				reset={reset}
 				/>
 		</>
 	);
