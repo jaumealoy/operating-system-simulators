@@ -175,6 +175,13 @@ const useCPUSimulator = () => {
 		setEvents([...events, simulator.current.processNextRequest()])
 	};
 
+	const hasPreviousStep = () : boolean => simulator.current.hasPreviousStep();
+	const previous = () => {
+		events.splice(events.length - 1, 1);
+		setEvents([...events]);
+		simulator.current.previousStep();
+	};
+
 	const stop = () => {
 		simulator.current.reset();
 		setProcessSummary({});
@@ -191,11 +198,11 @@ const useCPUSimulator = () => {
 	return {
 		name, estimatedDuration, duration, cycleDistribution, arrival,
 		setName, setEstimatedDuration, setDuration, setArrival, selectCycleType,
-		onSubmit,
+		onSubmit,removeProcess,
 		loadProcessesFromList,
 		processes,
-		next, stop, reset,
-		hasNextStep,
+		next, stop, reset, previous,
+		hasNextStep, hasPreviousStep,
 		currentProcess, queues, events, getProcessSummary,
 		selectedAlgorithm, selectAlgorithm,
 		quantum, setQuantum,

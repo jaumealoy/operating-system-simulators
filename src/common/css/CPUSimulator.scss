@@ -13,3 +13,8 @@
         background: map-get($map: $theme-colors, $key: "primary");
     }
 }
+
+h4 {
+    font-size: 14px;
+    margin-top: -10px;
+}

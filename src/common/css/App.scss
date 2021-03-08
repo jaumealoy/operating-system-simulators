@@ -119,7 +119,7 @@ body {
 
 .scrollable-x {
     overflow-x: auto;
-    flex-wrap: nowrap;
+    flex-wrap: nowrap !important;
 }
 
 .arrow {

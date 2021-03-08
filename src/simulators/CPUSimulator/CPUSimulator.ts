@@ -2,6 +2,7 @@ import {
 	Simulator, 
 	Algorithm 
 } from "../Simulator";
+import CPUState from "./CPUState";
 
 interface Process {
 	id: string;
@@ -50,6 +51,7 @@ class CPUSimulator extends Simulator {
 
 	// simulator status
 	private _running: boolean;
+	private _states: CPUState[];
 
 	// callbacks
 	public onQueueChange: (queue: {[key: string]: ProcessWrap[]}) => void;
@@ -60,6 +62,7 @@ class CPUSimulator extends Simulator {
 		super();
 
 		this._running = false;
+		this._states = [];
 
 		this._algorithm = "fifo";
 		this._processList = [];
@@ -73,8 +76,7 @@ class CPUSimulator extends Simulator {
 		this._readyQueues = [[]];
 		this._queues = {
 			incoming: [],
-			blocked: [],
-			ready: []
+			blocked: []
 		};
 
 		// default callback
@@ -90,7 +92,7 @@ class CPUSimulator extends Simulator {
 	public addProcess(process: Process) : void {
 		this._processList.push(process);
 		this._queues.incoming.push(this.createProcessWrap(process));
-		this.onQueueChange(this._queues);
+		this.invokeOnQueueChange();
 	}
 
 	public hasNextStep(): boolean {
@@ -101,7 +103,7 @@ class CPUSimulator extends Simulator {
 	}
 
 	public hasPreviousStep(): boolean {
-		throw new Error("Method not implemented.");
+		return this._states.length > 0;
 	}
 
 	/**
@@ -132,20 +134,39 @@ class CPUSimulator extends Simulator {
 		Object.keys(this._queues).map(key => this._queues[key] = []);
 	}
 
+	/**
+	 * Returns to the previous simulation step
+	 */
+	public previousStep() : void {
+		let state = this._states.pop();
+		if (state) {
+			this.currentProcess = state.currentProcess;
+			this.cycle = state.cycle;
+
+			// revert queues to previous state
+			this._queues = state.queues;
+			this._readyQueues = state.readyQueues;
+			this.invokeOnQueueChange();
+		}
+	}
+
 	public processNextRequest() : ProcessSnapshot[] {
 		// is the first time processing a request?
 		if (!this._running) {
 			// we must initialize CPU queues with the correct process
-			this._cycle = 0;
+			this.cycle = 0;
 			this._queues = {
 				incoming: this._processList.map(process => this.createProcessWrap(process)),
-				ready: [],
 				blocked: []
 			};
-			this._readyQueues = [];
+			this._readyQueues = [[]];
 			this._running = true;
 		}
 
+		// snapshot current state
+		this._states.push(new CPUState(this._currentProcess, this._cycle, this._queues, this._readyQueues));
+
+		// update the current state
 		this.updateState();
 
 		// generate processor snapshot
@@ -190,7 +211,6 @@ class CPUSimulator extends Simulator {
 			}else if (!this._queues.blocked[i].currentCycle) {
 				// process has finished the IO burst
 				// add it to the ready queue
-				//this._queues.ready.push(this._queues.blocked[i]);
 				this.addProcessToReady(this._queues.blocked[i].priority, this._queues.blocked[i]);
 				this._queues.blocked.splice(i, 1);
 			}
@@ -216,7 +236,7 @@ class CPUSimulator extends Simulator {
 				// TODO: only move the process to the blocked queue if the preemptive policy is enabled
 				// this process must go to the blocked queue
 				this._queues.blocked.push(process);
-				this._currentProcess = null;
+				this.currentProcess = null;
 
 				if (this._algorithm == "feedback" && (this._maxQueues == -1 || (this._maxQueues > 0 && process.priority < this._maxQueues))) {
 					process.priority++;
@@ -228,7 +248,7 @@ class CPUSimulator extends Simulator {
 				}
 
 				this.addProcessToReady(this._currentProcess.priority, this._currentProcess);
-				this._currentProcess = null;
+				this.currentProcess = null;
 			}
 		}
 
@@ -239,23 +259,23 @@ class CPUSimulator extends Simulator {
 			if (next != null) {
 				let process = next.queue[next.index];
 				next.queue.splice(next.index, 1);
-				this._currentProcess = process;
+				this.currentProcess = process;
 
 				// if this process hasn't received any CPU burst before, update its
 				// start cycle to keep track of the execution time
-				if (this._currentProcess.startCycle < 0) {
-					this._currentProcess.startCycle = this._cycle;
+				if (process.startCycle < 0) {
+					process.startCycle = this._cycle;
 				}
 
 				// set the burst counter to zero, this process has just arrived at the CPU
-				this._currentProcess.burstCycles = 0;
+				process.burstCycles = 0;
 			}
 		}
 
 		// this cycle has ended
-		this._cycle++;
+		this.cycle++;
 
-		this.onQueueChange(this._queues);
+		this.invokeOnQueueChange();
 	}
 
 	/**
@@ -571,6 +591,22 @@ class CPUSimulator extends Simulator {
 	 */
 	public set quantumMode(value: boolean) {
 		this._quantumMode = value;
+	}
+
+	private invokeOnQueueChange() : void {
+		let finalQueues: {[key: string]: ProcessWrap[]} = {};
+		finalQueues["incoming"] = this._queues.incoming;
+		finalQueues["blocked"] = this._queues.blocked;
+		this._readyQueues.map((queue, index) => finalQueues[`ready_${index}`] = queue);
+		this.onQueueChange(finalQueues);
+	}
+
+	private get cycle() : number {
+		return this._cycle;
+	}
+
+	private set cycle(value: number) {
+		this._cycle = value;
 	}
 }
 
