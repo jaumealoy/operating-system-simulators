@@ -95,6 +95,19 @@ class CPUSimulator extends Simulator {
 		this.invokeOnQueueChange();
 	}
 
+	/**
+	 * Removes a process from the simulator
+	 * @param index process to be removed
+	 */
+	public removeProcess(index: number) : void {
+		this._processList.splice(index, 1);
+
+		if (!this._running && index < this._queues.incoming.length) {
+			this._queues.incoming.splice(index, 1);
+			this.invokeOnQueueChange();
+		}
+	}
+
 	public hasNextStep(): boolean {
 		// there will be a next step as long as there is a process on any queue
 		// or a process running
@@ -545,6 +558,10 @@ class CPUSimulator extends Simulator {
 	 */
 	set algorithm(id: string) {
 		this._algorithm = id;
+	}
+
+	get algorithm() : string {
+		return this._algorithm;
 	}
 
 	private createProcessWrap(process: Process) : ProcessWrap {

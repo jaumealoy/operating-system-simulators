@@ -29,7 +29,7 @@ function CycleDistribution(props: CycleDistributionProps) {
 			</div>
 
 			{props.cycles.map((value, index) =>
-				<div className="my-input-group-col">
+				<div className="my-input-group-col" key={`cycle_${index}`}>
 					<div className="my-input-group-cell">
 						{index + 1}
 					</div>

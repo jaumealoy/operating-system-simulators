@@ -25,7 +25,7 @@ function ProcessQueue(props: ProcessQueueProps) {
 
 				<tbody>
 					{props.list.map(process => 
-						<tr>
+						<tr key={process.process.id}>
 							<td>{process.process.id}</td>
 							<td>
 								{props.columnValue && props.columnValue(process)}

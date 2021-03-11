@@ -67,6 +67,17 @@
         }
     },
 
+    "cpu": {
+        "algorithms": {
+            "fifo": "First In First Out",
+            "spn": "Shortest Process Next",
+            "srtn": "Shortest Remaining Time Next",
+            "hrrn": "Highest Response Ratio Next",
+            "feedback": "Feedback",
+            "rr": "Round Robin"
+        }
+    },
+
     "menu": {
         "IOSimulator": "Simulador E/S",
         "CPUSimulator": "Simulador CPU"

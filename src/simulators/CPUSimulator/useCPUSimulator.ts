@@ -1,14 +1,27 @@
 import { useState, FormEvent, useEffect, useRef } from "react";
+import AlgorithmSettings from "./components/AlgorithmSettings";
+import { CPUManager, SimulationResult } from "./CPUManager";
 import { CPUSimulator, Process, ProcessSnapshot, ProcessWrap } from "./CPUSimulator";
 
 const DEFAULT_NAMES: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const DEFAULT_ALGORITHM: string = CPUSimulator.getAvailableAlgorithms()[0].id;
 
+
+
 const useCPUSimulator = () => {
 	// simulator manager
-	const manager = useRef(null);
-
+	const manager = useRef(new CPUManager());
 	const simulator = useRef(new CPUSimulator());
+
+	const [isSimpleView, setSimpleViewState] = useState(true);
+	const setSimpleView = (value: boolean) => {
+		//manager.current.simpleView = value;
+		setSimpleViewState(value);
+	};
+
+	useEffect(() => {
+		manager.current.simpleView = isSimpleView;
+	}, [isSimpleView]);
 
 	// process list
 	const [processes, setProcesses] = useState<Process[]>([]);
@@ -21,7 +34,8 @@ const useCPUSimulator = () => {
 			estimatedDuration
 		};
 
-		simulator.current.addProcess(process);
+		//simulator.current.addProcess(process);
+		manager.current.addProcess(process);
 
 		setProcesses((processes) => [...processes, process]);
 	};
@@ -29,9 +43,9 @@ const useCPUSimulator = () => {
 
 	const loadProcessesFromList = (list: Process[]) => {
 		// clear the current process list
-		simulator.current.clear();
-		setProcesses([]);
-		list.map(process => addProcess(process.id, process.arrival, process.cycles, process.estimatedDuration));
+		manager.current.clear();
+		setProcesses([...list]);
+		list.map(process => manager.current.addProcess(process));
 	};
 
 	const removeProcess = (index: number) : void => {
@@ -39,17 +53,79 @@ const useCPUSimulator = () => {
 			let tmp: Process[] = [...processes];
 			tmp.splice(index, 1);
 			setProcesses(tmp);
+
+			simulator.current.removeProcess(index);
+			manager.current.removeProcess(index);
 		}
 	};
 
 	// simulator settings (algorithm, selected quantums)
 	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>(DEFAULT_ALGORITHM);
+	const [selectedAlgorithms, setSelectedAlgorithms] = useState<string[]>([]);
+	const [algorithmVariants, setAlgorithmVariants] = useState<{[key: string]: AlgorithmSettings[]}>({
+		rr: [],
+		feedback: []
+	});
+	const [currentVariant, setCurrentVariant] = useState<string>("");
 
 	const selectAlgorithm = (algorithm: string) => {
-		// TOOD: on simple view, change the selected algorithm variable
-		// and in comparaison view add or remove it from the list
-		setSelectedAlgorithm(algorithm);
-		simulator.current.algorithm = algorithm;
+		manager.current.selectAlgorithm(algorithm);
+		if (isSimpleView) {
+			// just select the new algorithm
+			setSelectedAlgorithm(algorithm);
+			simulator.current.algorithm = algorithm;
+		} else {
+			// add or remove the selected algorithm from the list
+			let idx: number = selectedAlgorithms.indexOf(algorithm);
+			if (idx >= 0) {
+				selectedAlgorithms.splice(idx, 1);
+				setSelectedAlgorithms([...selectedAlgorithms]);
+			} else {
+				setSelectedAlgorithms([...selectedAlgorithms, algorithm]);
+			}
+		}
+	};
+
+	const isAlgorithmSelected = (id: string) : boolean => {
+		if (isSimpleView) {
+			return selectedAlgorithm == id;
+		} else {
+			return selectedAlgorithms.indexOf(id) >= 0;
+		}
+	};
+
+	const addAlgorithmVariant = (algorithm: string, settings: AlgorithmSettings) : void => {
+		if (algorithm != "rr" && algorithm != "feedback") {
+			return;
+		}
+
+		setAlgorithmVariants({
+			...algorithmVariants,
+			[algorithm]: [
+				...algorithmVariants[algorithm],
+				settings
+			]
+		});
+
+		manager.current.addAlgorithmVariant(algorithm, settings);
+	};
+
+	const removeAlgorithmVariant = (algorithm: string, index: number) : void => {
+		if (algorithm in algorithmVariants) {
+			algorithmVariants[algorithm].splice(index, 1);
+			setAlgorithmVariants({
+				...algorithmVariants,
+				[algorithm]: [...algorithmVariants[algorithm]]
+			});
+
+			manager.current.removeAlgorithmVariant(algorithm, index);
+		}
+	};
+
+	const startVariantCreation = (algorithm: string) : void => {
+		if (algorithm == "rr" || algorithm == "feedback") {
+			setCurrentVariant(algorithm);
+		}
 	};
 
 	const [quantum, setQuantum] = useState<number>(1);
@@ -58,30 +134,32 @@ const useCPUSimulator = () => {
 	}, [quantum]);
 
 	// feedback algorithm settings
-	interface FeedbackSettings {
-		quantum: number;
-		mode: boolean;
-		maxQueues: number;
-	};
-
-	const [feedbackSettings, setFeedbackSettings] = useState<FeedbackSettings>({
+	const [feedbackSettings, setFeedbackSettings] = useState<AlgorithmSettings>({
 		quantum: 1,
-		mode: false,
+		quantumMode: false,
 		maxQueues: 10
 	});
 
 	useEffect(() => {
 		if (selectedAlgorithm == "feedback") {
 			simulator.current.maxQueues = feedbackSettings.maxQueues;
-			simulator.current.quantumMode = feedbackSettings.mode;
+			simulator.current.quantumMode = feedbackSettings.quantumMode;
 
-			if (!feedbackSettings.mode) {
+			if (!feedbackSettings.quantumMode) {
 				simulator.current.quatum = feedbackSettings.quantum;
 			}
 		} else if (selectedAlgorithm == "rr") {
 			simulator.current.quatum = quantum;
 		}
 	}, [selectedAlgorithm, feedbackSettings]);
+
+	const changeAlgorithmSettings = (algorithm: string, settings: AlgorithmSettings) => {
+		if (algorithm == "rr") {
+			setQuantum(settings.quantum);
+		} else if(algorithm == "feedback") {
+			setFeedbackSettings({...settings});
+		}
+	};
 
 	// add process form
 	const [name, setName] = useState<string>("");
@@ -163,19 +241,26 @@ const useCPUSimulator = () => {
 		setProcessSummary({...processSummary, [p.process.id]: p});
 	};
 
+
+	const [results, setResults] = useState<{[key: string]: SimulationResult[]}>({});
+	manager.current.onResultsChange = (results) => {
+		setResults({...results});
+	};
+
 	// calculate an estimation of the simulation length
 	const [simulationLength, setSimulationLength] = useState<number>(0);
 	useEffect(() => {
-		setSimulationLength(simulator.current.simulationTicks);
-	}, [processes]);
+		setSimulationLength(manager.current.simulationTicks);
+	}, [processes, isSimpleView, algorithmVariants, selectedAlgorithms]);
 
 	// simulator controls
-	const hasNextStep = () : boolean => simulator.current.hasNextStep();
+	const hasNextStep = () : boolean => manager.current.hasNextStep();
 	const next = () => {
-		setEvents([...events, simulator.current.processNextRequest()])
+		manager.current.nextStep();
+		//setEvents([...events, simulator.current.processNextRequest()])
 	};
 
-	const hasPreviousStep = () : boolean => simulator.current.hasPreviousStep();
+	const hasPreviousStep = () : boolean => manager.current.hasPreviousStep();
 	const previous = () => {
 		events.splice(events.length - 1, 1);
 		setEvents([...events]);
@@ -204,10 +289,16 @@ const useCPUSimulator = () => {
 		next, stop, reset, previous,
 		hasNextStep, hasPreviousStep,
 		currentProcess, queues, events, getProcessSummary,
-		selectedAlgorithm, selectAlgorithm,
+		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		quantum, setQuantum,
 		feedbackSettings, setFeedbackSettings,
-		simulationLength
+		simulationLength,
+		isSimpleView, setSimpleView,
+		isAlgorithmSelected,
+		algorithmVariants, addAlgorithmVariant, removeAlgorithmVariant, startVariantCreation,
+		currentVariant,
+		changeAlgorithmSettings,
+		results
 	};
 };
 
