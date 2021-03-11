@@ -174,7 +174,7 @@ class CPUManager {
 			this._simulationResult = this.createEmptyResults();
 			this.invokeChangeResults();
 		} else {
-			// check if the algorithm is being selected or remove
+			// check if the algorithm is being selected or removed
 			let idx = this._selectedAlgorithms.indexOf(id);
 			if (idx >= 0) {
 				// remove this algorithm
@@ -183,12 +183,14 @@ class CPUManager {
 				// clean-up simulators and results from this algorithm
 				this._simulators[id] = [];
 				this._simulationResults[id] = [];
+				this.invokeChangeResults();
 			} else {
 				// add the algorithm
 				console.log("Selecting " + id)
 				if (id == "rr" || id == "feedback") {
 					// do nothing, simulators of these algorithms will be added using 
 					// the addAlgorithmVariant method
+					this._selectedAlgorithms.push(id);
 				} else {
 					let simulator: CPUSimulator = this.createSimulator();
 					simulator.algorithm = id;
@@ -358,6 +360,14 @@ class CPUManager {
 			});
 		} else {
 			this.onResultsChange(this._simulationResults);
+		}
+	}
+
+	public set algorithmSettings(settings: AlgorithmSettings)  {
+		if (this._simpleView) {
+			this._simulator.quatum = settings.quantum;
+			this._simulator.quantumMode = settings.quantumMode;
+			this._simulator.maxQueues = settings.maxQueues;
 		}
 	}
 }

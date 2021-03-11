@@ -15,6 +15,8 @@ import "./../../common/css/CPUSimulator.scss";
 import ProcessQueue from "./ProcessQueue";
 import AlgorithmSettings from "./components/AlgorithmSettings";
 import SummaryTable from "./components/SummaryTable";
+import ProcessList from "./components/ProcessList";
+import VariantTag from "./components/VariantTag";
 
 /* ICONS */
 import { 
@@ -26,6 +28,7 @@ import {
 import { MdTimeline } from "react-icons/md";
 import { BsTable } from "react-icons/bs";
 import { IoMdAddCircleOutline } from "react-icons/io";
+import AddProcessForm from "./components/AddProcessForm";
 
 /* EXAMPLES */
 interface CPUExample {
@@ -122,26 +125,19 @@ function CPUSimulatorPage() {
 	const { t } = useTranslation();
 	const {
 		processes, 
-		//currentProcess,
-		//queues,
-		//  events, 
-		getProcessSummary,
-		name, arrival, estimatedDuration, duration, cycleDistribution,
-		setName, setArrival, setEstimatedDuration, setDuration, selectCycleType,
-		loadProcessesFromList, removeProcess,
-		onSubmit,
+		addProcess, removeProcess, loadProcessesFromList,
 		hasNextStep, hasPreviousStep,
-		next, stop, reset, previous,
+		next, stop, reset, previous, play, pause, timerCallback,
+		speed, setSpeed,
 		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
-		quantum, setQuantum,
-		feedbackSettings, setFeedbackSettings,
+		quantum, feedbackSettings, changeAlgorithmSettings,
 		simulationLength,
 		isSimpleView, setSimpleView,
 		isAlgorithmSelected,
 		algorithmVariants, addAlgorithmVariant, removeAlgorithmVariant, startVariantCreation,
 		currentVariant,
-		changeAlgorithmSettings,
-		results
+		results,
+		isStarted, isRunning
 	} = useCPUSimulator();
 
 
@@ -177,6 +173,7 @@ function CPUSimulatorPage() {
 												key={`algorithm_${algorithm.id}`}
 												type={isSimpleView ? "radio" : "checkbox"}
 												name="selectedAlgorithm"
+												disabled={isStarted}
 												onChange={() => selectAlgorithm(algorithm.id)}
 												checked={isAlgorithmSelected(algorithm.id)}
 												label={["rr", "feedback"].indexOf(algorithm.id) >= 0 ? 
@@ -185,36 +182,24 @@ function CPUSimulatorPage() {
 														{!isSimpleView && isAlgorithmSelected(algorithm.id) && 
 															<div>
 																{algorithmVariants[algorithm.id].map((variant, i) => 
-																	<div className="badge bg-success mr-1">
-																		{algorithm.id == "rr" ?
-																			`q=${variant.quantum}`
-																			:
-																			<>
-																				{variant.quantumMode ?
-																					<span>q=2<sup>i</sup></span>
-																					:
-																					`q=${variant.quantum}`
-																				}, 
-																				{variant.maxQueues == 0 ?
-																					"ilimitadas" 
-																					:
-																					`${variant.maxQueues} colas`
-																				}
-																			</>
-																		}
-																		<FiDelete
-																			onClick={() => removeAlgorithmVariant(algorithm.id, i)}
-																			className="pointer ml-sm-1" />
-																	</div>
+																	<VariantTag 
+																		key={`variant_${i}`}
+																		algorithm={algorithm.id}
+																		deletable={isStarted}
+																		settings={variant}
+																		onDelete={() => removeAlgorithmVariant(algorithm.id, i)} />
+																
 																)}
 																
-																<div 
-																	className="badge bg-secondary pointer"
-																	onClick={() => startVariantCreation(algorithm.id)}>
-																	<IoMdAddCircleOutline 
-																		className="mr-1" />
-																	Añadir
-																</div>
+																{!isStarted && 
+																	<div 
+																		className="badge bg-secondary pointer"
+																		onClick={() => startVariantCreation(algorithm.id)}>
+																		<IoMdAddCircleOutline 
+																			className="mr-1" />
+																		Añadir
+																	</div>
+																}
 															</div>
 														}
 													</div>
@@ -246,74 +231,9 @@ function CPUSimulatorPage() {
 						<div className="simulator-group-content">
 							<div className="title">Procesos</div>
 
-							<form onSubmit={onSubmit}>
-								<Row>
-									<Col md={6}>
-										<Row>
-											<Col md={6}>
-												<FormGroup>
-													<label>Nombre</label>
-													<FormControl
-														required
-														onChange={(e) => setName(e.target.value)}
-														value={name} />
-												</FormGroup>
-											</Col>
-
-											<Col md={6}>
-												<FormGroup>
-													<label>Llegada</label>
-													<FormControl
-														required
-														type="number"
-														onChange={(e) => setArrival(e.target.value)}
-														value={arrival} />
-												</FormGroup>
-											</Col>
-										</Row>
-
-										<Row>
-											<Col md={6}>
-												<FormGroup>
-													<label>Estimación</label>
-
-													<FormControl
-														required
-														type="number"
-														onChange={(e) => setEstimatedDuration(e.target.value)}
-														value={estimatedDuration} />
-												</FormGroup>
-											</Col>
-
-											<Col md={6}>
-												<FormGroup>
-													<label>Ciclos</label>
-													<FormControl
-														required
-														type="number"
-														onChange={(e) => setDuration(e.target.value)}
-														value={duration} />
-												</FormGroup>
-											</Col>
-										</Row>
-									</Col>
-
-									<Col md={6}>
-										<FormGroup className="cpu-cycle-distribution">
-											<label>Distribución de los ciclos</label>
-
-											<CycleDistribution 
-												cycles={cycleDistribution}
-												editable
-												onSelectCycle={(index, value) => selectCycleType(index, value)} />
-										</FormGroup>
-
-										<button className="btn mt-1 btn-primary">
-											Añadir proceso
-										</button>
-									</Col>
-								</Row>
-							</form>
+							<AddProcessForm 
+								disabled={isStarted}
+								onAddProcess={addProcess} />
 						</div>
 
 						<div className="simulator-group-footer">
@@ -322,6 +242,7 @@ function CPUSimulatorPage() {
 							{EXAMPLES.map((example: CPUExample, index: number) =>
 								<button 
 									key={"example_" + index}
+									disabled={isStarted}
 									onClick={() => {
 										loadProcessesFromList(example.processList);
 									}}
@@ -340,49 +261,10 @@ function CPUSimulatorPage() {
 						<div className="simulator-group-content">
 							<div className="title">Procesos introducidos</div>
 							<div className="process-list scrollable-x">
-								{processes.length == 0 ?
-									"No has introducido ninguna petición"
-									:
-									processes.map((process, index) => 
-										<div className="mr-2" key={`process_${process.id}`}> 
-											<table className="table">
-												<tbody>
-													<tr>
-														<th>Nombre</th>
-														<td>
-															{process.id}
-
-															<button 
-																className="btn float-right btn-sm btn-link py-0"
-																onClick={() => removeProcess(index)}>
-																<FiDelete />
-															</button>
-														</td>
-													</tr>
-
-													<tr>
-														<th>Llegada</th>
-														<td>{process.arrival}</td>
-													</tr>
-
-													<tr>
-														<th>Distribución</th>
-														<td>
-															<FormGroup className="cpu-cycle-distribution">
-															<CycleDistribution 
-																key={`process_${process.id}_dist`}
-																editable={false}
-																cycles={process.cycles}
-																currentCycle={Number.MAX_VALUE}
-																/>
-															</FormGroup>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</div>	
-									)
-								}
+								<ProcessList 
+									processes={processes}
+									deletionEnabled={!isStarted}
+									onDeleteProcess={removeProcess} />
 							</div>
 						</div>
 					</div>
@@ -575,7 +457,11 @@ function CPUSimulatorPage() {
 				previous={previous}
 				stop={stop}
 				reset={reset}
-				/>
+				onSpeedChange={setSpeed}
+				running={isRunning}
+				start={play}
+				pause={pause}
+				timerCallback={timerCallback} />
 		</>
 	);
 }

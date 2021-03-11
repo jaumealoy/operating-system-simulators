@@ -6,11 +6,13 @@ interface CycleDistributionProps {
     editable: boolean;
     currentCycle?: number;
     onSelectCycle?: (index: number, value: boolean) => void;
+	disabled?: boolean;
 };
 
 function CycleDistribution(props: CycleDistributionProps) {
 	let fn = props.onSelectCycle || (() => {});
 	let current = props.currentCycle || 0;
+	let disabled: boolean = props.disabled || false;
 	
     return (
         <div className="my-input-group mt-1">
@@ -39,6 +41,7 @@ function CycleDistribution(props: CycleDistributionProps) {
 						<>
 							<div className="my-input-group-cell">
 								<FormCheck
+									disabled={disabled}
 									onChange={() => fn(index, false)}
 									checked={!value}
 									name={`cycle[${index}]`}
@@ -47,6 +50,7 @@ function CycleDistribution(props: CycleDistributionProps) {
 
 							<div className="my-input-group-cell">
 								<FormCheck
+									disabled={disabled}
 									onChange={() => fn(index, true)}
 									checked={value}
 									name={`cycle[${index}]`}
