@@ -129,9 +129,13 @@ class CPUSimulator extends Simulator {
 
 		// clear the queues
 		Object.keys(this._queues).map(key => this._queues[key] = []);
+		this._readyQueues = [];
 
 		// all processes are in the incoming queue
 		this._queues.incoming = this._processList.map(process => this.createProcessWrap(process));
+
+		// clear previous steps
+		this._states = [];
 	}
 	
 	/**
@@ -145,6 +149,10 @@ class CPUSimulator extends Simulator {
 		// process list and queues are cleared
 		this._processList = [];
 		Object.keys(this._queues).map(key => this._queues[key] = []);
+		this._readyQueues = [];
+
+		// clear previous steps
+		this._states = [];
 	}
 
 	/**
@@ -209,11 +217,11 @@ class CPUSimulator extends Simulator {
 			}
 		}
 
-		// TODO: update blocked processes and move them to the ready queue
+		// update blocked processes and move them to the ready queue
 		for (let i = 0; i < this._queues.blocked.length; i++) {
 			this._queues.blocked[i].currentCycle++;
 			
-			if (this._queues.blocked[i].currentCycle >= this._queues.blocked[i].currentCycle) {
+			if (this._queues.blocked[i].currentCycle >= this._queues.blocked[i].process.cycles.length) {
 				// this process has finished
 				// remove it from the blocked queue
 				let p: ProcessWrap = this._queues.blocked[i];
@@ -221,7 +229,7 @@ class CPUSimulator extends Simulator {
 
 				// and notify its finalization
 				this._processFinish(p);
-			}else if (!this._queues.blocked[i].currentCycle) {
+			}else if (!this._queues.blocked[i].process.cycles[this._queues.blocked[i].currentCycle]) {
 				// process has finished the IO burst
 				// add it to the ready queue
 				this.addProcessToReady(this._queues.blocked[i].priority, this._queues.blocked[i]);
@@ -255,7 +263,6 @@ class CPUSimulator extends Simulator {
 					process.priority++;
 				}
 			} else if (newProcess != null) {
-				// TODO: change priority if the algorithm is feedback
 				if (this._algorithm == "feedback" && (this._maxQueues == -1 || (this._maxQueues > 0 && this._currentProcess.priority < this._maxQueues))) {
 					this._currentProcess.priority++;
 				}
@@ -618,11 +625,11 @@ class CPUSimulator extends Simulator {
 		this.onQueueChange(finalQueues);
 	}
 
-	private get cycle() : number {
+	public get cycle() : number {
 		return this._cycle;
 	}
 
-	private set cycle(value: number) {
+	public set cycle(value: number) {
 		this._cycle = value;
 	}
 }

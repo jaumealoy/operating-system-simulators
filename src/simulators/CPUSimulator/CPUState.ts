@@ -11,7 +11,7 @@ class CPUState extends State {
         super();
 
 		this._cycle = cycle;
-		this._currentProcess = process;
+		this._currentProcess = process == null ? null : CPUState.copy(process);
 
 		this._queues = {};
 		Object.entries(queues).map(

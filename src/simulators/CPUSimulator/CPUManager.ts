@@ -1,3 +1,4 @@
+import { Simulator } from "../Simulator";
 import AlgorithmSettings from "./components/AlgorithmSettings";
 import { 
 	CPUSimulator,
@@ -107,6 +108,58 @@ class CPUManager {
 				})
 			);
 		}
+
+		this.invokeChangeResults();
+	}
+
+	public previousStep() : void {
+		if (this._simpleView) {
+			this._simulator.previousStep();
+			this._simulationResult.events.pop();
+
+			Object.entries(this._simulationResult.summary).map(([id, value]) => {
+				if (value.finishCycle == this._simulator.cycle) {
+					delete this._simulationResult.summary[id];
+				}
+			})
+		} else {
+			Object.values(this._simulators).map(list =>
+				list.map(simulator => simulator.previousStep())
+			);
+
+			Object.entries(this._simulationResults).map(([algorithmId, list]) =>  
+				list.map((result, simulatorIndex) => { 
+					result.events.pop();
+					Object.entries(result.summary).map(([id, value]) => {
+						if (value.finishCycle == this._simulators[algorithmId][simulatorIndex].cycle) {
+							delete result.summary[id];
+						}
+					});
+				})
+			);
+		}
+
+		this.invokeChangeResults();
+	}
+
+	/**
+	 * Sets the simulation state to the initial one
+	 */
+	public reset() : void {
+		// simple view simulator
+		this._simulator.reset();
+		this._simulationResult = this.createEmptyResults();
+
+		// comparaison view simulator
+		Object.values(this._simulators).map(list =>
+			list.map(simulator => simulator.reset())
+		);
+
+		Object.values(this._simulationResults).map(list => {
+			for (let i = 0; i < list.length; i++) {
+				list[i] = this.createEmptyResults();
+			}
+		});
 
 		this.invokeChangeResults();
 	}

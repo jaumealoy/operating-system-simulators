@@ -88,7 +88,34 @@ const EXAMPLES: CPUExample[] = [
 			},
 		],
 		quantum: 1
-	}
+	},
+
+	{
+		processList: [
+			{
+				id: "A",
+				arrival: 0,
+				cycles: [false, false, true, false],
+				estimatedDuration: 0
+			},
+
+			{
+				id: "B",
+				arrival: 2,
+				cycles: [false, false, false, false],
+				estimatedDuration: 0
+			},
+
+			{
+				id: "C",
+				arrival: 0,
+				cycles: [false, true, true, false, false],
+				estimatedDuration: 0
+			}
+
+		],
+		quantum: 1
+	},
 ];
 
 function CPUSimulatorPage() {
@@ -439,9 +466,10 @@ function CPUSimulatorPage() {
 								columnTitle="Ciclos restantes"
 								columnValue={(p: ProcessWrap) => {
 									let next: number = p.currentCycle;
-									while (next < p.process.cycles.length && !p.process.cycles[next]) {
+									while (next < p.process.cycles.length && p.process.cycles[next]) {
 										next++;
 									}
+									next = next - p.currentCycle;
 									return next.toString();
 								}}
 								list={queues.blocked || []} />

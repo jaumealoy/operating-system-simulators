@@ -111,6 +111,7 @@ function TimeChart(props: TimeChartProps) {
 			// convert the raw input data to chart periods
 			let data: {[key: string]: ChartPeriod[]} = {};
 			let foundPeriod: {[key: string]: boolean} = {};
+			let foundStatus: {[key: string]: "running" | "blocked"} = {};
 			props.processes.map(id => foundPeriod[id] = false);
 
 			for (let tick = 0; tick < props.events.length; tick++) {
@@ -119,12 +120,15 @@ function TimeChart(props: TimeChartProps) {
 				let newFounds: {[key: string]: boolean} = { };
 				props.processes.map(id => newFounds[id] = false);
 
+				let newStatus: {[key: string]: "running" | "blocked"} = {};
+
 				for (let i = 0; i < events.length; i++) {
 					let id: string = events[i].id;
 
-					if (!foundPeriod[id]) {
+					if (!foundPeriod[id] || (foundPeriod[id] && events[i].status != foundStatus[id])) {
 						// we must start a new period for this process
 						newFounds[id] = true;
+						newStatus[id] = events[i].status;
 
 						if (!(id in data)) {
 							data[id] = [];
@@ -139,11 +143,13 @@ function TimeChart(props: TimeChartProps) {
 						// we must increase the end of the process one cycle more
 						// as we have found it again
 						data[id][data[id].length - 1].end++;
-						newFounds[events[i].id] = true;
+						newFounds[id] = true;
+						newStatus[id] = events[i].status;
 					}
 				}
 
 				foundPeriod = newFounds;
+				foundStatus = newStatus;
 			}
 
 			props.processes.map((id: string, index: number) => {

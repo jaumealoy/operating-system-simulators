@@ -262,15 +262,18 @@ const useCPUSimulator = () => {
 
 	const hasPreviousStep = () : boolean => manager.current.hasPreviousStep();
 	const previous = () => {
-		events.splice(events.length - 1, 1);
-		setEvents([...events]);
-		simulator.current.previousStep();
+		/*events.splice(events.length - 1, 1);
+		setEvents([...events]);*/
+		manager.current.previousStep();
+		//simulator.current.previousStep();
 	};
 
 	const stop = () => {
-		simulator.current.reset();
+		manager.current.reset();
+		
+		/*simulator.current.reset();
 		setProcessSummary({});
-		setEvents([]);
+		setEvents([]);*/
 	};
 
 	const reset = () => {
