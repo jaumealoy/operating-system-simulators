@@ -186,7 +186,6 @@ class CPUManager {
 				this.invokeChangeResults();
 			} else {
 				// add the algorithm
-				console.log("Selecting " + id)
 				if (id == "rr" || id == "feedback") {
 					// do nothing, simulators of these algorithms will be added using 
 					// the addAlgorithmVariant method
@@ -266,7 +265,7 @@ class CPUManager {
 			currentProcess: null,
 			queues: {},
 			summary: {},
-			events: []
+			events: [],
 		};
 	}
 
@@ -279,10 +278,12 @@ class CPUManager {
 
 		// add this process to all existing simulators
 		this._simulator.addProcess(process);
-		Object.values(this._simulators)
+		/*Object.values(this._simulators)
 		.map(list => 
 			list.map(simulator => simulator.addProcess(process))
-		);
+		);*/
+
+		this.invokeChangeResults();
 	}
 
 	public clear() : void {

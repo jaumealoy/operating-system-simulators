@@ -3,10 +3,7 @@ import AlgorithmSettings from "./components/AlgorithmSettings";
 import { CPUManager, SimulationResult } from "./CPUManager";
 import { CPUSimulator, Process, ProcessSnapshot, ProcessWrap } from "./CPUSimulator";
 
-const DEFAULT_NAMES: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const DEFAULT_ALGORITHM: string = CPUSimulator.getAvailableAlgorithms()[0].id;
-
-
 
 const useCPUSimulator = () => {
 	// simulator manager
@@ -14,7 +11,6 @@ const useCPUSimulator = () => {
 
 	const [isSimpleView, setSimpleViewState] = useState(true);
 	const setSimpleView = (value: boolean) => {
-		//manager.current.simpleView = value;
 		setSimpleViewState(value);
 	};
 
@@ -26,10 +22,9 @@ const useCPUSimulator = () => {
 	const [processes, setProcesses] = useState<Process[]>([]);
    
 	const addProcess = (process: Process) => {
+		setProcesses([...processes, process]);
 		manager.current.addProcess(process);
-		setProcesses((processes) => [...processes, process]);
 	};
-
 
 	const loadProcessesFromList = (list: Process[]) => {
 		// clear the current process list
@@ -68,6 +63,10 @@ const useCPUSimulator = () => {
 			if (idx >= 0) {
 				selectedAlgorithms.splice(idx, 1);
 				setSelectedAlgorithms([...selectedAlgorithms]);
+
+				if (algorithm == currentVariant) {
+					setCurrentVariant("");
+				}
 			} else {
 				setSelectedAlgorithms([...selectedAlgorithms, algorithm]);
 
@@ -216,11 +215,6 @@ const useCPUSimulator = () => {
 			setRunning(false);
 		}
 	}
-
-	// simulation will have finished once there isn't a next step
-	useEffect(() => {
-	
-	}, []);
 
 	// simulation reset to its initial state if there is a change in the process list or 
 	// simulator settings

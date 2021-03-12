@@ -31,6 +31,9 @@ interface ProcessWrap {
 	
 	// current priority
 	priority: number;
+
+	// number of cycles waiting in the current queue (incoming or ready)
+	waiting: number;
 };
 
 type NextProcess = null | { queue: ProcessWrap[], index: number };
@@ -206,7 +209,7 @@ class CPUSimulator extends Simulator {
 
 	private updateState() : void {
 		// move incoming processes to the ready queue if their arrival is cycle is the current one
-		for (let i = 0; i < this._queues.incoming.length; i++) {
+		for (let i = this._queues.incoming.length - 1; i >= 0; i--) {
 			let process = this._queues.incoming[i];
 			if (process.process.arrival == this._cycle) {
 				// add the process to the ready queue
@@ -218,7 +221,7 @@ class CPUSimulator extends Simulator {
 		}
 
 		// update blocked processes and move them to the ready queue
-		for (let i = 0; i < this._queues.blocked.length; i++) {
+		for (let i = this._queues.blocked.length - 1; i >=  0; i--) {
 			this._queues.blocked[i].currentCycle++;
 			
 			if (this._queues.blocked[i].currentCycle >= this._queues.blocked[i].process.cycles.length) {
@@ -291,6 +294,15 @@ class CPUSimulator extends Simulator {
 				process.burstCycles = 0;
 			}
 		}
+
+		// increase waiting counter on process queues
+		Object.values(this._queues).map(queue => 
+			queue.map(process => process.waiting++)
+		);
+
+		this._readyQueues.map(queue => 
+			queue.map(process => process.waiting++)
+		);
 
 		// this cycle has ended
 		this.cycle++;
@@ -521,6 +533,8 @@ class CPUSimulator extends Simulator {
 		this._processList.map(process => fakeSimulator.addProcess(process));
 		fakeSimulator.algorithm = this._algorithm;
 		fakeSimulator.quatum = this._quantum;
+		fakeSimulator.maxQueues = this._maxQueues;
+		fakeSimulator.quantumMode = this._quantumMode;
 
 		// run the simulation
 		while (fakeSimulator.hasNextStep()) {
@@ -578,7 +592,8 @@ class CPUSimulator extends Simulator {
 			burstCycles: 0,
 			currentCycle: 0,
 			priority: 0,
-			process
+			process,
+			waiting: 0
 		};
 	}
 
@@ -596,6 +611,9 @@ class CPUSimulator extends Simulator {
 		}
 
 		this._readyQueues[priority].push(process);
+
+		// reset waiting counter
+		process.waiting = 0;
 	}
 
 	/**

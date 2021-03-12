@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, FormEvent } from "react";
 import { FormGroup, FormControl, FormCheck } from "react-bootstrap";
 
 interface AlgorithmSettingsProps {
@@ -94,7 +94,9 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 	 * Callback when the add button is pressed
 	 * Add the new algorithm variant to the list
 	 */
-	let finishConfiguration = () => {
+	let finishConfiguration = (event: FormEvent) => {
+		event.preventDefault();
+
 		if (props.onFinishConfiguration) {
 			props.onFinishConfiguration(props.algorithm, {...settings});
 		}
@@ -103,18 +105,26 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 	if (!enabled) {
 		return <></>;
 	} else {
+		let quantum: number = showAddButton ? settings.quantum : (props.quantum || 1);
+
 		return (
-			<>
+			<form onSubmit={finishConfiguration}>
 				{props.algorithm == "rr" &&
 					<FormGroup>
 						<label>Quantum</label>
 						<FormControl
 							type="number"
-							value={showAddButton ? settings.quantum : props.quantum}
+							value={quantum}
 							onChange={(e) => onQuantumInputChange(parseInt(e.target.value))}
-							min={0}
+							min={1}
 							step={1}
-						/>
+							isInvalid={quantum <= 0} />
+
+						<div className="invalid-feedback">
+							<small>
+								El valor debe ser igual o superior a 1
+							</small>
+						</div>
 					</FormGroup>
 				}
 
@@ -135,8 +145,9 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 											size="sm" 
 											type="number"
 											min={1}
-											value={showAddButton ? settings.quantum : props.quantum}
-											onChange={(e) => onQuantumInputChange(parseInt(e.target.value))} /> 
+											value={quantum}
+											onChange={(e) => onQuantumInputChange(parseInt(e.target.value))} 
+											isInvalid={quantum <= 0}/> 
 									</div>
 								} />
 
@@ -162,13 +173,11 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 				}
 
 				{props.onFinishConfiguration &&
-					<button 
-						className="btn btn-sm btn-primary mt-1"
-						onClick={() => finishConfiguration()}>
+					<button className="btn btn-sm btn-primary mt-1">
 						Añadir configuración
 					</button>
 				}
-			</>
+			</form>
 		);
 	}
 };

@@ -146,7 +146,6 @@ function CPUSimulatorPage() {
 	let queues: {[key: string]: ProcessWrap[]} = {};
 	let events: ProcessSnapshot[][] = [];
 	if (isSimpleView && (selectedAlgorithm in results) && (results[selectedAlgorithm].length > 0)) {
-		console.log(results)
 		currentProcess = results[selectedAlgorithm][0].currentProcess;
 		queues = results[selectedAlgorithm][0].queues;
 		events = results[selectedAlgorithm][0].events;
@@ -185,7 +184,7 @@ function CPUSimulatorPage() {
 																	<VariantTag 
 																		key={`variant_${i}`}
 																		algorithm={algorithm.id}
-																		deletable={isStarted}
+																		deletable={!isStarted}
 																		settings={variant}
 																		onDelete={() => removeAlgorithmVariant(algorithm.id, i)} />
 																
@@ -232,6 +231,7 @@ function CPUSimulatorPage() {
 							<div className="title">Procesos</div>
 
 							<AddProcessForm 
+								processes={processes}
 								disabled={isStarted}
 								onAddProcess={addProcess} />
 						</div>
@@ -264,7 +264,7 @@ function CPUSimulatorPage() {
 								<ProcessList 
 									processes={processes}
 									deletionEnabled={!isStarted}
-									onDeleteProcess={removeProcess} />
+								onDeleteProcess={removeProcess} />
 							</div>
 						</div>
 					</div>
@@ -336,7 +336,7 @@ function CPUSimulatorPage() {
 						<ProcessQueue 
 							title="Llegada de procesos"
 							columnTitle="Ciclos restantes"
-							columnValue={(p: ProcessWrap) => (p.process.arrival - 0).toString()}
+							columnValue={(p: ProcessWrap) => (p.process.arrival - p.waiting).toString()}
 							list={queues.incoming || []} />
 					</Col>
 
@@ -382,7 +382,7 @@ function CPUSimulatorPage() {
 									title="Listos"
 									subtitle={subtitle}
 									columnTitle="Ciclos esperando"
-									columnValue={(p: ProcessWrap) => "0"}
+									columnValue={(p: ProcessWrap) => p.waiting.toString()}
 									list={list} />
 							</Col>
 						);
@@ -414,25 +414,10 @@ function CPUSimulatorPage() {
 							<Col md={4} key={`results_${id}_${i}`}>
 								<h3>{t(`cpu.algorithms.${id}`)}</h3>
 
-								{id == "rr" && 
-									<span className="badge bg-success">
-										q={algorithmVariants[id][i].quantum}
-									</span>
-								}
-
-								{id == "feedback" &&
-									<span className="badge bg-success">
-										q={algorithmVariants[id][i].quantumMode ?
-											<i>2<sup>i</sup></i>
-											:
-											algorithmVariants[id][i].quantum
-										}, 
-										{algorithmVariants[id][i].maxQueues == 0 ?
-											"ilimitadas"
-											:
-											`${algorithmVariants[id][i].maxQueues} colas`
-										}
-									</span>
+								{id in algorithmVariants &&
+									<VariantTag 
+										algorithm={id}
+										settings={algorithmVariants[id][i]} />
 								}
 
 								<TimeChart 
