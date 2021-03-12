@@ -278,10 +278,10 @@ class CPUManager {
 
 		// add this process to all existing simulators
 		this._simulator.addProcess(process);
-		/*Object.values(this._simulators)
+		Object.values(this._simulators)
 		.map(list => 
 			list.map(simulator => simulator.addProcess(process))
-		);*/
+		);
 
 		this.invokeChangeResults();
 	}

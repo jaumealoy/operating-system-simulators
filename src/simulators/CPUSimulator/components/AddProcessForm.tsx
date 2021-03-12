@@ -33,7 +33,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 	}
 
     // form data
-    const [name, setName] = useState<string>("");
+    const [name, setName] = useState<string>(getNextValidName());
     const [arrival, setArrival] = useState<string>(DEFAULT_ARRIVAL);
     const [duration, setDuration] = useState<string>(DEFAULT_DURATION);
     const [cycles, setCycles] = useState<boolean[]>([]);
@@ -68,9 +68,9 @@ function AddProcessForm(props: AddProcessFormProps) {
         });
 
 		// clear form
-		/*setName(getNextValidName());
+		setName(getNextValidName());
 		setArrival(DEFAULT_ARRIVAL);
-		setDuration(DEFAULT_DURATION);*/
+		setDuration(DEFAULT_DURATION);
     };
 
     let onSelectCycle = (index: number, value: boolean) => {
@@ -79,13 +79,13 @@ function AddProcessForm(props: AddProcessFormProps) {
     };
 
 	useEffect(() => {
-		setName("");
+		setName(getNextValidName());
 	}, [props.processes]);
 
 	let isValidName: boolean = true;
-	/*for (let i = 0; i < props.processes.length && isValidName; i++) {
+	for (let i = 0; i < props.processes.length && isValidName; i++) {
 		isValidName = props.processes[i].id != name;
-	}*/
+	}
 
     return (												
         <form onSubmit={onFormSubmit}>
@@ -100,10 +100,10 @@ function AddProcessForm(props: AddProcessFormProps) {
                                     disabled={disabled}
 									onChange={(e) => setName(e.target.value)}
 									value={name}
-									 />
+									isInvalid={!isValidName} />
 
 								<div className="invalid-feedback">
-									Ya existe un proceso con ese nombre
+									Ya existe un proceso con este nombre
 								</div>
 							</FormGroup>
 						</Col>

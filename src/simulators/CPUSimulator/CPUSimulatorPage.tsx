@@ -309,11 +309,6 @@ function CPUSimulatorPage() {
 										</tr>
 
 										<tr>
-											<th>Próximo cambio</th>
-											<td>0 ciclos</td>
-										</tr>
-
-										<tr>
 											<th>Distribución</th>
 											<td>
 												<FormGroup className="cpu-cycle-distribution">
