@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from "react";
 import { FormGroup, FormControl, FormCheck } from "react-bootstrap";
+import { useTranslation } from "react-i18next";
 
 interface AlgorithmSettingsProps {
 	algorithm: string;
@@ -20,6 +21,8 @@ interface AlgorithmSettings {
  * Component for selecting settings for algorithms Round Robin and Feedback
  */
 function AlgorithmSettings(props: AlgorithmSettingsProps) {
+	const { t } = useTranslation();
+
 	// algorithm settings, only used when user is in comparaison view and 
 	// creating a simulator setting
 	const [settings, setSettings] = useState<AlgorithmSettings>({
@@ -111,7 +114,7 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 			<form onSubmit={finishConfiguration}>
 				{props.algorithm == "rr" &&
 					<FormGroup>
-						<label>Quantum</label>
+						<label>{t("cpu.quantum")}</label>
 						<FormControl
 							type="number"
 							value={quantum}
@@ -122,7 +125,7 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 
 						<div className="invalid-feedback">
 							<small>
-								El valor debe ser igual o superior a 1
+								{t("cpu.value_equal_or_higher_than", { value: 1 })}
 							</small>
 						</div>
 					</FormGroup>
@@ -131,7 +134,7 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 				{props.algorithm == "feedback" &&
 					<>
 						<FormGroup>
-							<label>Quantum</label>
+							<label>{t("cpu.quantum")}</label>
 							<FormCheck 
 								name="quantum_feedback"
 								type="radio"
@@ -139,7 +142,7 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 								onChange={() => onSelectQuantumMode(false)}
 								label={
 									<div style={{ display: "flex" }}>
-										<span className="mr-2">Fijo:</span> 
+										<span className="mr-2">{t("cpu.fixed")}:</span> 
 										<FormControl 
 											className="inline-input" 
 											size="sm" 
@@ -161,20 +164,20 @@ function AlgorithmSettings(props: AlgorithmSettingsProps) {
 						</FormGroup>
 
 						<FormGroup>
-							<label>Máximo de colas</label>
+							<label>{t("cpu.maximum_queues")}</label>
 							<FormControl 
 								min={0}
 								value={showAddButton ? settings.maxQueues : props.maxQueues}
 								onChange={(e) => onMaxQueuesInputChange(parseInt(e.target.value))}
 								type="number" />
-							<small>El valor 0 indica ilimitado</small>
+							<small>{t("cpu.zero_is_unlimited")}</small>
 						</FormGroup>
 					</>
 				}
 
 				{props.onFinishConfiguration &&
 					<button className="btn btn-sm btn-primary mt-1">
-						Añadir configuración
+						{t("cpu.add_variant")}
 					</button>
 				}
 			</form>

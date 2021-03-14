@@ -12,7 +12,8 @@
             "play": "Iniciar",
             "stop": "Reiniciar simulación",
             "load_file": "Cargar simulación",
-            "save_file": "Guardar simulación"
+            "save_file": "Guardar simulación",
+            "add": "Añadir"
         },
         "example_number": "Ejemplo {{number}}",
         "examples": "Ejemplos",
@@ -75,6 +76,46 @@
             "hrrn": "Highest Response Ratio Next",
             "feedback": "Feedback",
             "rr": "Round Robin"
+        },
+
+        "quantum": "Quantum",
+        "add_process": "Añadir proceso",
+        "processes": "Procesos",
+        "introduced_processes": "Procesos introducidos",
+        "results": "Resultados",
+        "timeline": "Línea temporal",
+        "cpu": "Procesador",
+        "no_process_running": "Actualmente no hay ningún proceso en ejecución.",
+        "name": "Nombre",
+        "cycle_distribution": "Distribución",
+        "cycle_distribution_form": "Distribución de los ciclos",
+        "incoming_processes": "Llegada de procesos",
+        "remaining_cycles": "Ciclos restantes",
+        "waiting_cycles": "Ciclos esperando",
+        "blocked": "Bloqueados",
+        "ready": "Listos",
+        "priority_number": "Prioridad {{value}}",
+        "schedule_summary": "Resumen planificación",
+        "process_already_exists": "Ya existe un proceso con este nombre",
+        "arrival": "Llegada",
+        "duration": "Ciclos",
+        "value_equal_or_higher_than": "El valor debe ser igual o superior a {{value}}",
+        "maximum_queues": "Máximo de colas",
+        "zero_is_unlimited": "El valor 0 indica ilimitado",
+        "fixed": "Fijo",
+        "add_variant": "Añadir configuración",
+        "process_list_empty": "No has introducido ninguna petición",
+        "queue_empty": "No hay procesos en esta cola",
+        "variant_tag": {
+            "unlimited_queues": "ilimitadas",
+            "value_max_queues": "{{value}} colas"
+        },
+        "summary": {
+            "process": "Proceso",
+            "service_time": "Tiempo de servicio",
+            "turnaround_time": "Tiempo de retorno",
+            "response_time": "Tiempo de respuesta",
+            "normalized_response_time": "Tiempo de respuesta normalizado"
         }
     },
 

@@ -2,6 +2,7 @@ import React, { FormEvent, useState, useEffect } from "react";
 import { Row, Col, FormGroup, FormControl } from "react-bootstrap";
 import CycleDistribution from "./../CycleDistribution";
 import { Process } from "./../CPUSimulator";
+import { useTranslation } from "react-i18next";
 
 const DEFAULT_NAMES: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const DEFAULT_ARRIVAL: string = "0";
@@ -14,6 +15,8 @@ interface AddProcessFormProps {
 };
 
 function AddProcessForm(props: AddProcessFormProps) {
+	const { t } = useTranslation();
+
 	const getNextValidName = () : string => {
 		let validNames = [...DEFAULT_NAMES];
 
@@ -94,7 +97,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 					<Row>
 						<Col md={6}>
 							<FormGroup>
-								<label>Nombre</label>
+								<label>{t("cpu.name")}</label>
 								<FormControl
 									required
                                     disabled={disabled}
@@ -103,14 +106,14 @@ function AddProcessForm(props: AddProcessFormProps) {
 									isInvalid={!isValidName} />
 
 								<div className="invalid-feedback">
-									Ya existe un proceso con este nombre
+									{t("cpu.process_already_exists")}
 								</div>
 							</FormGroup>
 						</Col>
 
 						<Col md={6}>
 							<FormGroup>
-								<label>Llegada</label>
+								<label>{t("cpu.arrival")}</label>
 								<FormControl
 									required
 									min={0}
@@ -137,7 +140,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 
 						<Col md={6}>
 							<FormGroup>
-								<label>Ciclos</label>
+								<label>{t("cpu.duration")}</label>
 								<FormControl
 									required
                                     disabled={disabled}
@@ -149,7 +152,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 								
 								<div className="invalid-feedback">
 									<small>
-										El valor debe ser igual o superior a 1
+										{t("cpu.value_equal_or_higher_than", { value: 1 })}
 									</small>
 								</div>
 							</FormGroup>
@@ -159,7 +162,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 
 				<Col md={6}>
 					<FormGroup className="cpu-cycle-distribution">
-						<label>Distribución de los ciclos</label>
+						<label>{t("cpu.cycle_distribution_form")}</label>
 
 						<CycleDistribution 
                             editable
@@ -171,7 +174,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 					<button 
                         disabled={disabled || !isValidName || parseInt(duration) <= 0}
                         className="btn mt-1 btn-primary">
-						Añadir proceso
+						{t("cpu.add_process")}
 					</button>
 				</Col>
 			</Row>

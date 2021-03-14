@@ -21,14 +21,14 @@ function ProcessList(props: ProcessListProps) {
 	return (
 		<>
 			{props.processes.length == 0 ?
-				"No has introducido ninguna petición"
+				t("cpu.process_list_empty")
 				:
 				props.processes.map((process, index) => 
 					<div className="mr-2" key={`process_${process.id}`}> 
 						<table className="table">
 							<tbody>
 								<tr>
-									<th>Nombre</th>
+									<th>{t("cpu.name")}</th>
 									<td>
 										{process.id}
 
@@ -43,12 +43,12 @@ function ProcessList(props: ProcessListProps) {
 								</tr>
 
 								<tr>
-									<th>Llegada</th>
+									<th>{t("cpu.arrival")}</th>
 									<td>{process.arrival}</td>
 								</tr>
 
 								<tr>
-									<th>Distribución</th>
+									<th>{t("cpu.cycle_distribution")}</th>
 									<td>
 										<FormGroup className="cpu-cycle-distribution">
 										<CycleDistribution 

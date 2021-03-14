@@ -1,6 +1,7 @@
 import React from "react";
 import AlgorithmSettings from "./AlgorithmSettings";
 import { FiDelete } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface VariantTagProps {
     algorithm: string;
@@ -10,6 +11,8 @@ interface VariantTagProps {
 };
 
 function VariantTag(props: VariantTagProps) {
+	const { t } = useTranslation();
+
 	let deletable: boolean = props.deletable || false;
 	let deleteCallback = props.onDelete || (() => {});
 
@@ -23,9 +26,9 @@ function VariantTag(props: VariantTagProps) {
 						<>2<sup>i</sup></> : props.settings.quantum}
 					, 
 					{props.settings.maxQueues == 0 ?
-						"ilimitadas"
+						t("cpu.variant_tag.unlimited_queues")
 						:
-						`${props.settings.maxQueues} colas`
+						t("cpu.variant_tag.value_max_queues", { value: props.settings.maxQueues })
 					}
 				</>
 			}

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ProcessWrap } from "./CPUSimulator";
 
 interface ProcessQueueProps {
@@ -10,6 +11,8 @@ interface ProcessQueueProps {
 };
 
 function ProcessQueue(props: ProcessQueueProps) {
+	const { t } = useTranslation();
+
 	return (
 		<>
 			<h3>{props.title}</h3>
@@ -18,7 +21,7 @@ function ProcessQueue(props: ProcessQueueProps) {
 			<table className="table">
 				<thead>
 					<tr>
-						<th>Proceso</th>
+						<th>{t("cpu.summary.process")}</th>
 						{props.columnTitle && <th>{props.columnTitle}</th>}
 					</tr>
 				</thead>
@@ -36,7 +39,7 @@ function ProcessQueue(props: ProcessQueueProps) {
 					{props.list.length == 0 &&
 						<tr>
 							<td colSpan={props.columnTitle ? 2 : 1}>
-								No hay procesos en esta cola
+								{t("cpu.queue_empty")}
 							</td>
 						</tr>
 					}

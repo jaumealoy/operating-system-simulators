@@ -177,7 +177,7 @@ function CPUSimulatorPage() {
 												checked={isAlgorithmSelected(algorithm.id)}
 												label={["rr", "feedback"].indexOf(algorithm.id) >= 0 ? 
 													<div>
-														<div>{algorithm.name}</div>
+														<div>{t(`cpu.algorithms.${algorithm.id}`)}</div>
 														{!isSimpleView && isAlgorithmSelected(algorithm.id) && 
 															<div>
 																{algorithmVariants[algorithm.id].map((variant, i) => 
@@ -196,14 +196,14 @@ function CPUSimulatorPage() {
 																		onClick={() => startVariantCreation(algorithm.id)}>
 																		<IoMdAddCircleOutline 
 																			className="mr-1" />
-																		Añadir
+																		{t("common.buttons.add")}
 																	</div>
 																}
 															</div>
 														}
 													</div>
 													:
-													algorithm.name
+													t(`cpu.algorithms.${algorithm.id}`)
 												}
 											/>
 										)}
@@ -228,7 +228,7 @@ function CPUSimulatorPage() {
 				<Col md={6}>
 					<div className="simulator-group">
 						<div className="simulator-group-content">
-							<div className="title">Procesos</div>
+							<div className="title">{t("cpu.processes")}</div>
 
 							<AddProcessForm 
 								processes={processes}
@@ -259,7 +259,7 @@ function CPUSimulatorPage() {
 				<Col md={12}>
 					<div className="simulator-group">
 						<div className="simulator-group-content">
-							<div className="title">Procesos introducidos</div>
+							<div className="title">{t("cpu.introduced_processes")}</div>
 							<div className="process-list scrollable-x">
 								<ProcessList 
 									processes={processes}
@@ -274,12 +274,12 @@ function CPUSimulatorPage() {
 			{/* Simulation results */}
 			{isSimpleView && (selectedAlgorithm in results) && (results[selectedAlgorithm].length > 0) &&
 			<Row>
-				<h2>Resultados</h2>
+				<h2>{t("cpu.results")}</h2>
 				<Row>
 					<Col md={8}>
 						<h3>
 							<MdTimeline className="mr-1" />
-							Línia temporal
+							{t("cpu.timeline")}
 						</h3>
 
 						<TimeChart
@@ -292,11 +292,11 @@ function CPUSimulatorPage() {
 					<Col md={4}>
 						<h3>
 							<FiCpu className="mr-1" />
-							Procesador
+							{t("cpu.cpu")}
 						</h3>
 
 						{currentProcess == null ?
-							"Actualmente no hay ningún proceso en ejecución."
+							t("cpu.no_process_running")
 							:
 							<>
 								<table 
@@ -304,12 +304,12 @@ function CPUSimulatorPage() {
 									className="table">
 									<tbody>
 										<tr>
-											<th>Nombre</th>
+											<th>{t("cpu.name")}</th>
 											<td>{currentProcess.process.id}</td>
 										</tr>
 
 										<tr>
-											<th>Distribución</th>
+											<th>{t("cpu.cycle_distribution")}</th>
 											<td>
 												<FormGroup className="cpu-cycle-distribution">
 												<CycleDistribution 
@@ -329,8 +329,8 @@ function CPUSimulatorPage() {
 				<Row className="mt-2 mb-2 scrollable-x">
 					<Col md={3}>
 						<ProcessQueue 
-							title="Llegada de procesos"
-							columnTitle="Ciclos restantes"
+							title={t("cpu.incoming_processes")}
+							columnTitle={t("cpu.remaining_cycles")}
 							columnValue={(p: ProcessWrap) => (p.process.arrival - p.waiting).toString()}
 							list={queues.incoming || []} />
 					</Col>
@@ -339,8 +339,8 @@ function CPUSimulatorPage() {
 					{processes.flatMap((process) => process.cycles).reduce((a, b) => a || b, false) &&
 						<Col md={3}>
 							<ProcessQueue 
-								title="Bloqueados"
-								columnTitle="Ciclos restantes"
+								title={t("cpu.blocked")}
+								columnTitle={t("cpu.remaining_cycles")}
 								columnValue={(p: ProcessWrap) => {
 									let next: number = p.currentCycle;
 									while (next < p.process.cycles.length && p.process.cycles[next]) {
@@ -366,7 +366,7 @@ function CPUSimulatorPage() {
 								if (feedbackSettings.quantumMode) {
 									subtitle = <i>q=2<sup>{priority}</sup></i>;
 								} else {
-									subtitle = <>{"Prioridad " + priority}</>;
+									subtitle = <>{t("cpu.priority_number", { value: priority })}</>;
 								}
 							}
 						}
@@ -374,9 +374,9 @@ function CPUSimulatorPage() {
 						return (
 							<Col md={3} key={`queue_${key}`}>
 								<ProcessQueue 
-									title="Listos"
+									title={t("cpu.ready")}
 									subtitle={subtitle}
-									columnTitle="Ciclos esperando"
+									columnTitle={t("cpu.waiting_cycles")}
 									columnValue={(p: ProcessWrap) => p.waiting.toString()}
 									list={list} />
 							</Col>
@@ -388,7 +388,7 @@ function CPUSimulatorPage() {
 					<Col md={12}>
 						<h3>
 							<BsTable className="mr-1" />
-							Resumen planificación
+							{t("cpu.schedule_summary")}
 						</h3>
 
 						<SummaryTable 
@@ -402,14 +402,14 @@ function CPUSimulatorPage() {
 
 			{!isSimpleView &&
 			<Row className="mb-3">
-				<h2>Resultados</h2>
+				<h2>{t("cpu.results")}</h2>
 				<Row className="scrollable-x">
 					{selectedAlgorithms.map(id => 
 						(id in results) && results[id].map((result, i) => 
 							<Col md={4} key={`results_${id}_${i}`}>
 								<h3>{t(`cpu.algorithms.${id}`)}</h3>
 
-								{id in algorithmVariants &&
+								{id in algorithmVariants && i < algorithmVariants[id].length &&
 									<VariantTag 
 										algorithm={id}
 										settings={algorithmVariants[id][i]} />

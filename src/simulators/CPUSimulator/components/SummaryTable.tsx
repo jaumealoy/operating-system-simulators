@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Process, ProcessWrap } from "../CPUSimulator";
 
 interface SummaryTableProps {
@@ -8,37 +9,39 @@ interface SummaryTableProps {
 };
 
 function SummaryTable(props: SummaryTableProps) {
+	const { t } = useTranslation();
+
 	let fullHeader: boolean = props.extendedHeader || false;
 
 	return (
 		<table className="table text-center">
 			<thead>
 				<tr>
-					<th>Proceso</th>
+					<th>{t("cpu.summary.process")}</th>
 					<th>
 						{fullHeader ?
-							<>Tiempo de servicio (T<sub>s</sub>)</>
+							<>{t("cpu.summary.service_time")} (T<sub>s</sub>)</>
 							:
 							<>T<sub>s</sub></>
 						}
 					</th>
 					<th>
 						{fullHeader ?
-							<>Tiempo de retorno (T<sub>r</sub>)</>
+							<>{t("cpu.summary.turnaround_time")} (T<sub>r</sub>)</>
 							:
 							<>T<sub>r</sub></>
 						}
 					</th>
 					<th>
 						{fullHeader ?
-							<>Tiempo de respuesta (T<sub>response</sub>)</>
+							<>{t("cpu.summary.response_time")} (T<sub>response</sub>)</>
 							:
 							<>T<sub>response</sub></>
 						}
 					</th>
 					<th>
 						{fullHeader ?
-							<>Tiempo de respuesta normalizado (T<sub>normalized response</sub>)</>
+							<>{t("cpu.summary.normalized_response_time")} (T<sub>normalized response</sub>)</>
 							:
 							<>T<sub>normalized response</sub></>
 						}
