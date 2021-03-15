@@ -91,6 +91,47 @@ const useAlgorithmHelp = (simulator: string) => {
 						</p>
 					</>
 			}
+		},
+
+		"cpu": {
+			"fifo": {
+				title: t("cpu.algorithms.fifo"),
+				body: 
+					<>
+						<p>El algoritmo FIFO es la política de planificación más simple. Esta política de planificación consiste en ejecturar los procesos en el orden que llegan.</p>
+						<p>Este algoritmo facilita la ejecución de procesos de larga duración y favorece los procesos limitados por el procesador.</p>
+					</>
+			}, 
+
+			"spn": {
+				title: t("cpu.algorithms.spn"),
+				body: 
+					<></>
+			},
+
+			"srtn": {
+				title: t("cpu.algorithms.srtn"),
+				body: 
+					<></>
+			},
+
+			"hrrn": {
+				title: t("cpu.algorithms.hrrn"),
+				body: 
+					<></>
+			},
+
+			"rr": {
+				title: t("cpu.algorithms.rr"),
+				body: 
+					<></>
+			},
+
+			"feedback": {
+				title: t("cpu.algorithms.feedback"),
+				body: 
+					<></>
+			}
 		}
 	};
 
@@ -131,7 +172,7 @@ const useAlgorithmHelp = (simulator: string) => {
 					<button 
 						onClick={close}
 						className="btn btn-secondary">
-							Cerrar
+						{t("common.close")}
 					</button>
 				</Modal.Footer>
 			</Modal>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ForwardedRef, ForwardRefExoticComponent, useRef } from "react";
 import {
 	Row, Col,
 	FormCheck, FormGroup, FormControl
@@ -17,6 +17,8 @@ import AlgorithmSettings from "./components/AlgorithmSettings";
 import SummaryTable from "./components/SummaryTable";
 import ProcessList from "./components/ProcessList";
 import VariantTag from "./components/VariantTag";
+import AddProcessForm from "./components/AddProcessForm";
+import useAlgorithmHelp from "./../../components/AlgorithmModalHelp/useAlgorithmHelp";
 
 /* ICONS */
 import { 
@@ -28,7 +30,6 @@ import {
 import { MdTimeline } from "react-icons/md";
 import { BsTable } from "react-icons/bs";
 import { IoMdAddCircleOutline } from "react-icons/io";
-import AddProcessForm from "./components/AddProcessForm";
 
 /* EXAMPLES */
 interface CPUExample {
@@ -137,9 +138,11 @@ function CPUSimulatorPage() {
 		algorithmVariants, addAlgorithmVariant, removeAlgorithmVariant, startVariantCreation,
 		currentVariant,
 		results,
-		isStarted, isRunning
+		isStarted, isRunning,
+		saveFile, loadFile
 	} = useCPUSimulator();
 
+	const { AlgorithmModal, showAlgorithmModal } = useAlgorithmHelp("cpu");
 
 	// simple view results variables
 	let currentProcess: ProcessWrap | null = null;
@@ -177,7 +180,14 @@ function CPUSimulatorPage() {
 												checked={isAlgorithmSelected(algorithm.id)}
 												label={["rr", "feedback"].indexOf(algorithm.id) >= 0 ? 
 													<div>
-														<div>{t(`cpu.algorithms.${algorithm.id}`)}</div>
+														<div>
+															{t(`cpu.algorithms.${algorithm.id}`)}
+															<a 
+																onClick={() => showAlgorithmModal(algorithm.id)}
+																className="btn btn-icon btn-sm">
+																<FiInfo />
+															</a>
+														</div>
 														{!isSimpleView && isAlgorithmSelected(algorithm.id) && 
 															<div>
 																{algorithmVariants[algorithm.id].map((variant, i) => 
@@ -203,7 +213,14 @@ function CPUSimulatorPage() {
 														}
 													</div>
 													:
-													t(`cpu.algorithms.${algorithm.id}`)
+													<>
+														{t(`cpu.algorithms.${algorithm.id}`)}
+														<a 
+															onClick={() => showAlgorithmModal(algorithm.id)}
+															className="btn btn-icon btn-sm">
+															<FiInfo />
+														</a>
+													</>
 												}
 											/>
 										)}
@@ -441,7 +458,11 @@ function CPUSimulatorPage() {
 				running={isRunning}
 				start={play}
 				pause={pause}
-				timerCallback={timerCallback} />
+				timerCallback={timerCallback}
+				onSaveFile={saveFile}
+				onOpenFile={loadFile} />
+
+			<AlgorithmModal />
 		</>
 	);
 }

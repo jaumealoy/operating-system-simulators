@@ -1,4 +1,5 @@
 import { useState, FormEvent, useEffect, useRef } from "react";
+import { SaveFile } from "../Simulator";
 import AlgorithmSettings from "./components/AlgorithmSettings";
 import { CPUManager, SimulationResult } from "./CPUManager";
 import { CPUSimulator, Process, ProcessSnapshot, ProcessWrap } from "./CPUSimulator";
@@ -93,13 +94,13 @@ const useCPUSimulator = () => {
 			return;
 		}
 
-		setAlgorithmVariants({
+		setAlgorithmVariants((algorithmVariants) => ({
 			...algorithmVariants,
 			[algorithm]: [
 				...algorithmVariants[algorithm],
 				settings
 			]
-		});
+		}));
 
 		manager.current.addAlgorithmVariant(algorithm, settings);
 
@@ -222,6 +223,75 @@ const useCPUSimulator = () => {
 		stop();
 	}, [processes, selectedAlgorithm, algorithmVariants, quantum, feedbackSettings]);
 
+	// save and load simulator settings
+	const saveFile = (download: (content: string) => void) => {
+		let data: SaveFile = {
+			type: "cpu",
+			data: {
+				processes,
+				selectedAlgorithm,
+				selectedAlgorithms,
+				quantum,
+				feedbackSettings,
+				variants: algorithmVariants
+			}
+		};
+
+		download(JSON.stringify(data));
+	};
+
+	const loadFile = (content: string) => {
+		let file = JSON.parse(content);
+
+		if ("type" in file && file.type == "cpu" && "data" in file) {
+			let data = file.data;
+
+			manager.current.resetManager();
+
+			// load process list
+			let processList: Process[] = data.processes;
+			console.log(processList);
+			loadProcessesFromList(processList);
+
+			let originalView: boolean = isSimpleView;
+
+			// set selected algorithm (for simple view)
+			setSelectedAlgorithm(data.selectedAlgorithm);
+			manager.current.simpleView = true;
+			manager.current.selectAlgorithm(data.selectedAlgorithm);
+
+			// set selected algorithms (for comparaison view)
+			setSelectedAlgorithms(data.selectedAlgorithms);
+			manager.current.simpleView = false;
+			data.selectedAlgorithms.map((algorithm: string) => manager.current.selectAlgorithm(algorithm));
+
+			// add variants, if any
+			Object.entries(data.variants).map(([key, list]) => {
+				let l: AlgorithmSettings[] = <AlgorithmSettings[]>list;
+				l.map(value => addAlgorithmVariant(key, value))
+			});
+
+			manager.current.simpleView = originalView;
+
+			// this settings only affect to simple view
+			manager.current.simpleView = true;
+
+			if (data.selectedAlgorithm == "rr") {
+				setQuantum(data.quantum);
+				manager.current.algorithmSettings = {
+					quantum: data.quantum,
+					maxQueues: 0,
+					quantumMode: false
+				};
+			} else {
+				setFeedbackSettings(data.feedbackSettings);
+				manager.current.algorithmSettings = data.feedbackSettings
+			}
+
+		}
+	};
+
+
 	return {
 		addProcess, removeProcess,
 		loadProcessesFromList,
@@ -239,7 +309,8 @@ const useCPUSimulator = () => {
 		currentVariant,
 		changeAlgorithmSettings,
 		results,
-		isStarted, isRunning
+		isStarted, isRunning,
+		saveFile, loadFile
 	};
 };
 

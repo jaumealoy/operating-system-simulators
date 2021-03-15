@@ -355,7 +355,6 @@ class CPUManager {
 
 	private invokeChangeResults() : void {
 		if (this._simpleView) {
-			console.log("cur algorithm is " + this._simulator.algorithm)
 			this.onResultsChange({
 				[this._simulator.algorithm]: [this._simulationResult]
 			});
@@ -370,6 +369,14 @@ class CPUManager {
 			this._simulator.quantumMode = settings.quantumMode;
 			this._simulator.maxQueues = settings.maxQueues;
 		}
+	}
+
+	public resetManager() : void {
+		this._selectedAlgorithms = [];
+		Object.keys(this._simulators).map(key => {
+			this._simulators[key] = [];
+			this._simulationResults[key] = [];
+		});
 	}
 }
 
