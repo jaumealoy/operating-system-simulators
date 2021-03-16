@@ -3,10 +3,10 @@ import { SVG, G, Text } from "@svgdotjs/svg.js";
 import { ProcessSnapshot } from "./CPUSimulator";
 
 /* Visual settings */
-const FONT_SIZE: number = 14;
+const FONT_SIZE: number = 10;
 const FONT_COLOR: string = "black";
-const PROCESS_HEIGHT: number = 20;
-const AXIS_WIDTH: number= 5;
+const PROCESS_HEIGHT: number = 10;
+const AXIS_WIDTH: number= 3;
 const TICK_SIZE: number = 15;
 
 const PROCESS_COLORS: string[] = [
@@ -48,6 +48,30 @@ function TimeChart(props: TimeChartProps) {
 			chart.current.addTo(container.current);
 			imageGroup.current.g = chart.current.group();
 		}
+
+		let onResize = () => {
+			if (container.current != null && imageGroup.current.g != null) {
+				// get available width
+				let width: number = container.current.getBoundingClientRect().width;
+
+				// fit chart horizontally
+				let canvas = imageGroup.current.g;
+				canvas.transform({ scale: [1, 1] });
+				let scale: number = width / canvas.width();
+				canvas.scale(scale, scale, 0, 0);
+
+				canvas.size(
+					canvas.width() * scale,
+					canvas.height() * scale
+				);
+			}
+		};
+
+		window.addEventListener("resize", onResize);
+
+		return () => {
+			window.removeEventListener("resize", onResize);
+		};
 	}, []);
 
 	useEffect(() => {
@@ -57,7 +81,7 @@ function TimeChart(props: TimeChartProps) {
 
 			// draw texts
 			let processesTexts: Text[] = [];
-			let maxTextWidth: number = 0;
+			let maxTextWidth: number = 20;
 			props.processes.map(name => {
 				let txt = canvas.text(name)
 								.font({ fill: FONT_COLOR, size: FONT_SIZE });
@@ -70,7 +94,7 @@ function TimeChart(props: TimeChartProps) {
 			});
 
 			// calculate header height and draw horizontal axis
-			let headerHeight: number = FONT_SIZE + AXIS_WIDTH + 5;
+			let headerHeight: number = FONT_SIZE + AXIS_WIDTH;
 			canvas.line([
 				[0, headerHeight - AXIS_WIDTH / 2],
 				[maxTextWidth + props.maxTicks * TICK_SIZE, headerHeight - AXIS_WIDTH / 2]
@@ -85,7 +109,6 @@ function TimeChart(props: TimeChartProps) {
 			});
 
 			// draw vertical bar
-			//canvas.line([[0, 2.5], [100, 2.5]]).stroke({ color: "black", width: 5});
 			let verticalBar = canvas.line([
 				[maxTextWidth, headerHeight],
 				[maxTextWidth, headerHeight + props.processes.length * PROCESS_HEIGHT]
@@ -102,8 +125,9 @@ function TimeChart(props: TimeChartProps) {
 				]).stroke({ width: 1, color: FONT_COLOR, dasharray: "7,5" });
 
 				if ((i % step) == 0) {
-					let txt: Text = canvas.text(i.toString());
-					txt.move(startX - txt.length() / 2, 0)
+					let txt: Text = canvas.text(i.toString())
+										  .font({ size: FONT_SIZE });
+					txt.move(startX - txt.length() / 2, 0);
 				}
 			}
 			

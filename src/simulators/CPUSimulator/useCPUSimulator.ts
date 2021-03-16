@@ -11,12 +11,12 @@ const useCPUSimulator = () => {
 	const manager = useRef(new CPUManager());
 
 	const [isSimpleView, setSimpleViewState] = useState(true);
-	const setSimpleView = (value: boolean) => {
-		setSimpleViewState(value);
-	};
+	const setSimpleView = setSimpleViewState;
 
 	useEffect(() => {
 		manager.current.simpleView = isSimpleView;
+		setRunning(false);
+		stop();
 	}, [isSimpleView]);
 
 	// process list

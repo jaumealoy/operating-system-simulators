@@ -116,6 +116,9 @@
             "turnaround_time": "Tiempo de retorno",
             "response_time": "Tiempo de respuesta",
             "normalized_response_time": "Tiempo de respuesta normalizado"
+        },
+        "tutorial": {
+            "process_list": "Aquí puedes ver y eliminar los procesos que has introducido. Puedes ver su ciclo de llegada y su distribución de ciclos."
         }
     },
 

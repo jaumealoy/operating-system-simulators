@@ -19,6 +19,8 @@ import ProcessList from "./components/ProcessList";
 import VariantTag from "./components/VariantTag";
 import AddProcessForm from "./components/AddProcessForm";
 import useAlgorithmHelp from "./../../components/AlgorithmModalHelp/useAlgorithmHelp";
+import Tour, { ReactourStep } from "reactour";
+import useTutorial, { StepAction } from "./../../helpers/useTutorial";
 
 /* ICONS */
 import { 
@@ -154,11 +156,56 @@ function CPUSimulatorPage() {
 		events = results[selectedAlgorithm][0].events;
 	}
 
+	let showAlgorithmHelp = (algorithm: string) => {
+		pause();
+		showAlgorithmModal(algorithm);
+	};
+
+	// tutorial
+	const ACTIONS: {[key: number]: StepAction} = {
+		1: {
+			onReach: () => loadProcessesFromList(EXAMPLES[0].processList)
+		},
+
+		2: {
+			onReach: () => {
+				setSimpleView(false);
+				
+				if (selectedAlgorithms.indexOf("rr") < 0) {
+					selectAlgorithm("rr");
+				}
+
+				if (algorithmVariants["rr"].length == 0) {
+					addAlgorithmVariant("rr", {quantum: 4, maxQueues: 0, quantumMode: false});
+				}
+			}
+		}
+	};
+
+	const { visible, onOpen, close, step, nextStep, prevStep, show  } = useTutorial("cpu", ACTIONS);
+	const STEPS: ReactourStep[] = [
+		{
+			selector: '[data-tut="view_bar"]',
+			content: t("common.tutorial.view_bar")
+		},
+
+		{
+			selector: '[data-tut="process_list"]',
+			content: t("cpu.tutorial.process_list")
+		},
+
+		{
+			selector: '[data-tut="form-check"]',
+			content: t("cpu.tutorial.process_list")
+		},
+	];
+
 	return (
 		<>
 			<TopBar 
 				simpleView={isSimpleView} 
-				onChangeView={setSimpleView} />
+				onChangeView={setSimpleView}
+				onClickTutorial={show} />
 
 			{/* Simulator configuration and process list */}
 			<Row className="mb-3">
@@ -171,6 +218,7 @@ function CPUSimulatorPage() {
 								<Col md={7}>
 									<FormGroup>
 										{CPUSimulator.getAvailableAlgorithms().map(algorithm =>
+											<div data-tut={algorithm.id == "rr" && !isSimpleView ? "form-check" : undefined}>
 											<FormCheck
 												key={`algorithm_${algorithm.id}`}
 												type={isSimpleView ? "radio" : "checkbox"}
@@ -183,7 +231,7 @@ function CPUSimulatorPage() {
 														<div>
 															{t(`cpu.algorithms.${algorithm.id}`)}
 															<a 
-																onClick={() => showAlgorithmModal(algorithm.id)}
+																onClick={() => showAlgorithmHelp(algorithm.id)}
 																className="btn btn-icon btn-sm">
 																<FiInfo />
 															</a>
@@ -216,13 +264,14 @@ function CPUSimulatorPage() {
 													<>
 														{t(`cpu.algorithms.${algorithm.id}`)}
 														<a 
-															onClick={() => showAlgorithmModal(algorithm.id)}
+															onClick={() => showAlgorithmHelp(algorithm.id)}
 															className="btn btn-icon btn-sm">
 															<FiInfo />
 														</a>
 													</>
 												}
 											/>
+											</div>
 										)}
 									</FormGroup>
 								</Col>
@@ -274,7 +323,9 @@ function CPUSimulatorPage() {
 
 			<Row className="mb-3">
 				<Col md={12}>
-					<div className="simulator-group">
+					<div 
+						data-tut="process_list"
+						className="simulator-group">
 						<div className="simulator-group-content">
 							<div className="title">{t("cpu.introduced_processes")}</div>
 							<div className="process-list scrollable-x">
@@ -463,6 +514,15 @@ function CPUSimulatorPage() {
 				onOpenFile={loadFile} />
 
 			<AlgorithmModal />
+
+			<Tour 
+				steps={STEPS}
+				onAfterOpen={onOpen}
+				isOpen={visible}
+				onRequestClose={close}
+				goToStep={step}
+				nextStep={nextStep}
+				prevStep={prevStep} />
 		</>
 	);
 }
