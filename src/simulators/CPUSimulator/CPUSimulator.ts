@@ -431,7 +431,6 @@ class CPUSimulator extends Simulator {
 		const responseRatio = (process: ProcessWrap) : number => {
 			// wait time is the difference between the current cycle and 
 			// the arrival cycle
-			// TODO: change the actual length for the Estimated Duration field?
 			let wait: number = this._cycle - process.process.arrival;
 			return (wait + process.process.cycles.length) / process.process.cycles.length;
 		};

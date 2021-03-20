@@ -474,7 +474,7 @@ function CPUSimulatorPage() {
 				<Row className="scrollable-x">
 					{selectedAlgorithms.map(id => 
 						(id in results) && results[id].map((result, i) => 
-							<Col md={4} key={`results_${id}_${i}`}>
+							<Col md={5} key={`results_${id}_${i}`}>
 								<h3>{t(`cpu.algorithms.${id}`)}</h3>
 
 								{id in algorithmVariants && i < algorithmVariants[id].length &&

@@ -13,6 +13,7 @@ import "./common/css/App.scss";
 
 import IOSimulatorPage from "./simulators/IOSimulator/IOSimulatorPage";
 import CPUSimulatorPage from "./simulators/CPUSimulator/CPUSimulatorPage";
+import HelpPage from './pages/Help';
 
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
@@ -52,6 +53,10 @@ function App() {
 
 						<Route path="/io" exact={true}>
 							<IOSimulatorPage />
+						</Route>
+
+						<Route path="/help" exact={true}>
+							<HelpPage />
 						</Route>
 					</Switch>
 				</div>

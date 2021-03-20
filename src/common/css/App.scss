@@ -255,3 +255,48 @@ h3 {
 .inline-input {
     display: inline-block !important;
 }
+
+.toc {
+    top: 20px;
+    position: sticky;
+    overflow-y: auto;
+    max-height: 100%;
+    border-left: 1px solid rgba(0, 0, 0, 0.5);;
+    padding: 10px 10px;
+}
+
+.toc ul {
+    list-style: none;
+    margin-bottom: 5px;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.toc ul {
+    padding-left: 20px;
+}
+
+.toc .title {
+    text-transform: uppercase;
+    font-weight: bolder;
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+    padding-bottom: 1px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.toc ul li.active {
+    color: black;
+    font-weight: bold;
+}
+
+.toc ul li a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+.faq h4 {
+    margin-top: initial;
+    font-weight: bold;
+}
