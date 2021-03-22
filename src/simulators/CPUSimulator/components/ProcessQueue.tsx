@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ProcessWrap } from "./CPUSimulator";
+import { ProcessWrap } from "../CPUSimulator";
 
 interface ProcessQueueProps {
 	title: string;

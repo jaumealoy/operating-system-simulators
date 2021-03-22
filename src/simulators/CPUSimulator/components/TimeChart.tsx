@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { SVG, G, Text } from "@svgdotjs/svg.js";
-import { ProcessSnapshot } from "./CPUSimulator";
+import { ProcessSnapshot } from "../CPUSimulator";
 
 /* Visual settings */
 const FONT_SIZE: number = 10;

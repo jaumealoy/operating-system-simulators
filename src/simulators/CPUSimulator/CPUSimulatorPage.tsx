@@ -1,26 +1,28 @@
-import React, { ForwardedRef, ForwardRefExoticComponent, useRef } from "react";
-import {
-	Row, Col,
-	FormCheck, FormGroup, FormControl
-} from "react-bootstrap";
-import { useTranslation } from "react-i18next";
+import React from "react";
+
 import TopBar from "../../components/TopBar";
-import TimeChart from "./TimeChart";
+import TimeChart from "./components/TimeChart";
 import useCPUSimulator from "./useCPUSimulator";
 import { CPUSimulator, Process, ProcessSnapshot, ProcessWrap } from "./CPUSimulator";
 import SimulatorControl from "./../../components/SimulatorControl";
-import CycleDistribution from "./CycleDistribution";
-
-import "./../../common/css/CPUSimulator.scss";
-import ProcessQueue from "./ProcessQueue";
+import CycleDistribution from "./components/CycleDistribution";
+import ProcessQueue from "./components/ProcessQueue";
 import AlgorithmSettings from "./components/AlgorithmSettings";
 import SummaryTable from "./components/SummaryTable";
 import ProcessList from "./components/ProcessList";
 import VariantTag from "./components/VariantTag";
 import AddProcessForm from "./components/AddProcessForm";
 import useAlgorithmHelp from "./../../components/AlgorithmModalHelp/useAlgorithmHelp";
-import Tour, { ReactourStep } from "reactour";
 import useTutorial, { StepAction } from "./../../helpers/useTutorial";
+import "./../../common/css/CPUSimulator.scss";
+
+import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
+import Tour, { ReactourStep } from "reactour";
+import {
+	Row, Col,
+	FormCheck, FormGroup, FormControl
+} from "react-bootstrap";
 
 /* ICONS */
 import { 
@@ -141,8 +143,10 @@ function CPUSimulatorPage() {
 		currentVariant,
 		results,
 		isStarted, isRunning,
-		saveFile, loadFile
+		saveFile, loadFile,
+		runAction
 	} = useCPUSimulator();
+	const history = useHistory();
 
 	const { AlgorithmModal, showAlgorithmModal } = useAlgorithmHelp("cpu");
 
@@ -164,25 +168,26 @@ function CPUSimulatorPage() {
 	// tutorial
 	const ACTIONS: {[key: number]: StepAction} = {
 		1: {
-			onReach: () => loadProcessesFromList(EXAMPLES[0].processList)
+			onBeforeReach: () => loadProcessesFromList(EXAMPLES[1].processList)
 		},
 
 		2: {
-			onReach: () => {
-				setSimpleView(false);
-				
-				if (selectedAlgorithms.indexOf("rr") < 0) {
-					selectAlgorithm("rr");
-				}
+			onBeforeReach: () => runAction("switchToComparaisonAndAddVariant")
+		},
 
-				if (algorithmVariants["rr"].length == 0) {
-					addAlgorithmVariant("rr", {quantum: 4, maxQueues: 0, quantumMode: false});
-				}
+		3: {
+			onBeforeReach: () => runAction("showSummaryTable"),
+		},
+
+		4: {
+			onBeforeReach: () => {
+				reset();
+				loadProcessesFromList([...EXAMPLES[1].processList]);
+				runAction("runSomeSteps");
 			}
 		}
 	};
 
-	const { visible, onOpen, close, step, nextStep, prevStep, show  } = useTutorial("cpu", ACTIONS);
 	const STEPS: ReactourStep[] = [
 		{
 			selector: '[data-tut="view_bar"]',
@@ -198,7 +203,75 @@ function CPUSimulatorPage() {
 			selector: '[data-tut="form-check"]',
 			content: t("cpu.tutorial.process_list")
 		},
+
+		{
+			selector: '[data-tut="summary_table"]',
+			content: t("cpu.tutorial.summary_table")
+		},
+
+		{
+			selector: '[data-tut="process_queues"]',
+			content: t("cpu.tutorial.process_queues")
+		},
+
+		{
+			selector: '[data-tut="time_chart"]',
+			content: t("cpu.tutorial.time_chart")
+		},
+
+		{
+			selector: '[data-tut="current_process"]',
+			content: t("cpu.tutorial.current_process")
+		},
+
+		{
+			selector: '[data-tut="control_bar_overview"]',
+			content: t("common.tutorial.control_bar_overview")
+		},
+
+		{
+			selector: '[data-tut="control_bar_reset"]',
+			content: t("common.tutorial.control_bar_reset")
+		},
+
+		{
+			selector: '[data-tut="control_bar_stop"]',
+			content: t("common.tutorial.control_bar_stop")
+		},
+
+		{
+			selector: '[data-tut="control_bar_previous_step"]',
+			content: t("common.tutorial.control_bar_previous_step")
+		},
+
+		{
+			selector: '[data-tut="control_bar_next_step"]',
+			content: t("common.tutorial.control_bar_next_step")
+		},
+
+		{
+			selector: '[data-tut="control_bar_play"]',
+			content: t("common.tutorial.control_bar_play")
+		},
+
+		{
+			selector: '[data-tut="control_bar_speed"]',
+			content: t("common.tutorial.control_bar_speed")
+		},
+
+		{
+			selector: '[data-tut="storage"]',
+			content: t("common.tutorial.storage")
+		},
+
+		{
+			selector: '[data-tut="repeat_tutorial"]',
+			content: t("common.tutorial.repeat_tutorial")
+		}
 	];
+
+	const { visible, onOpen, close, step, nextStep, prevStep, show  } = useTutorial("cpu", STEPS.length, ACTIONS);
+
 
 	return (
 		<>
@@ -344,7 +417,7 @@ function CPUSimulatorPage() {
 			<Row>
 				<h2>{t("cpu.results")}</h2>
 				<Row>
-					<Col md={8}>
+					<Col data-tut="time_chart" md={8}>
 						<h3>
 							<MdTimeline className="mr-1" />
 							{t("cpu.timeline")}
@@ -357,7 +430,7 @@ function CPUSimulatorPage() {
 						/>
 					</Col>
 
-					<Col md={4}>
+					<Col data-tut="current_process" md={4}>
 						<h3>
 							<FiCpu className="mr-1" />
 							{t("cpu.cpu")}
@@ -394,7 +467,7 @@ function CPUSimulatorPage() {
 					</Col>
 				</Row>
 
-				<Row className="mt-2 mb-2 scrollable-x">
+				<Row data-tut="process_queues" className="mt-2 mb-2 scrollable-x">
 					<Col md={3}>
 						<ProcessQueue 
 							title={t("cpu.incoming_processes")}
@@ -452,11 +525,17 @@ function CPUSimulatorPage() {
 					})}
 				</Row>
 
-				<Row className="mb-2">
+				<Row data-tut="summary_table" className="mb-2">
 					<Col md={12}>
 						<h3>
 							<BsTable className="mr-1" />
 							{t("cpu.schedule_summary")}
+							
+							<button 
+								className="btn btn-xs btn-icon"
+								onClick={() => history.push("/help#cpu_summary")}>
+								<FiInfo />
+							</button>
 						</h3>
 
 						<SummaryTable 

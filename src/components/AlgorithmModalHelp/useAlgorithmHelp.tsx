@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { Trans, useTranslation } from "react-i18next";
+import Latex from "./../../components/Latex";
 
 interface AlgorithmModal {
 	title: string;
@@ -98,39 +99,72 @@ const useAlgorithmHelp = (simulator: string) => {
 				title: t("cpu.algorithms.fifo"),
 				body: 
 					<>
-						<p>El algoritmo FIFO es la política de planificación más simple. Esta política de planificación consiste en ejecturar los procesos en el orden que llegan.</p>
-						<p>Este algoritmo facilita la ejecución de procesos de larga duración y favorece los procesos limitados por el procesador.</p>
+						<p>{t("help.modals.cpu.fifo.text_1")}</p>
+						<p>{t("help.modals.cpu.fifo.text_2")}</p>
+						<p>{t("help.modals.cpu.fifo.text_3")}</p>
+						<p>{t("help.modals.cpu.fifo.text_4")}</p>
 					</>
 			}, 
 
 			"spn": {
 				title: t("cpu.algorithms.spn"),
 				body: 
-					<></>
+					<>
+						<p>{t("help.modals.cpu.spn.text_1")}</p>
+						<p>{t("help.modals.cpu.spn.text_2")}</p>
+						<p>{t("help.modals.cpu.spn.text_3")}</p>
+					</>
 			},
 
 			"srtn": {
 				title: t("cpu.algorithms.srtn"),
 				body: 
-					<></>
+					<>
+						<p>{t("help.modals.cpu.srtn.text_1")}</p>
+						<p>{t("help.modals.cpu.srtn.text_2")}</p>
+						<p>{t("help.modals.cpu.srtn.text_3")}</p>
+					</>
 			},
 
 			"hrrn": {
 				title: t("cpu.algorithms.hrrn"),
 				body: 
-					<></>
+					<>
+						<p>{t("help.modals.cpu.hrrn.text_1")}</p>
+						<p>{t("help.modals.cpu.hrrn.text_2")}</p>
+						<Latex display>
+							{`\\textrm{${t("cpu.ratio")}} = \\frac{\\textrm{${t("cpu.waiting_time")}} + T_s}{T_s}`}
+						</Latex>
+						<p>{t("help.modals.cpu.hrrn.text_3")}</p>
+						<p>{t("help.modals.cpu.hrrn.text_4")}</p>
+					</>
 			},
 
 			"rr": {
 				title: t("cpu.algorithms.rr"),
 				body: 
-					<></>
+					<>
+						<p>{t("help.modals.cpu.rr.text_1")}</p>
+						<p>{t("help.modals.cpu.rr.text_2")}</p>
+					</>
 			},
 
 			"feedback": {
 				title: t("cpu.algorithms.feedback"),
 				body: 
-					<></>
+					<>
+						<p>{t("help.modals.cpu.feedback.text_1")}</p>
+						<p>{t("help.modals.cpu.feedback.text_2")}</p>
+
+						<p>
+							{t("help.modals.cpu.feedback.text_3_1")}
+							<Latex display={false}>
+								{"2^i"}
+							</Latex>
+							{t("help.modals.cpu.feedback.text_3_2")}
+						</p>
+						<p>{t("help.modals.cpu.feedback.text_4")}</p>
+					</>
 			}
 		}
 	};

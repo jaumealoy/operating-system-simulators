@@ -1,5 +1,6 @@
-import React, { useLayoutEffect, useState, Ref, useRef } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import { Col } from "react-bootstrap";
+import { useLocation } from "react-router-dom";
 import _uniqueId from "lodash/uniqueId";
 import TableItem from "./TableItem";
 
@@ -32,6 +33,8 @@ const elementYOffset = (element: HTMLElement) => {
 };
 
 function TableOfContent(props: TableOfContentProps) {
+	const location = useLocation();
+
 	// list tree
 	const [toc, setTOC] = useState<TOCItem[]>([]);
 
@@ -143,7 +146,6 @@ function TableOfContent(props: TableOfContentProps) {
 
 		setTOC(newTOC);
 
-		
 		// the variable "toc" is not the reference to the updated TOC
 		// we must use the "newTOC" variable to have access to latest 
 		// TOC items
@@ -179,6 +181,20 @@ function TableOfContent(props: TableOfContentProps) {
 
 		// listen to scroll events to update the selected TOC item
 		window.addEventListener("scroll", onScroll);
+
+		// scroll to the selected element, if any and exists
+		if (location.hash.indexOf("#") >= 0) {
+			let index: number = location.hash.indexOf("#") + 1;
+			let id: string = location.hash.substr(index);
+
+			if (id.length > 0) {
+				let element: HTMLElement | null = document.getElementById(id);
+				if (element != null) {
+					console.log(element)
+					element.scrollIntoView({block: "start", behavior: "smooth" });
+				}
+			}
+		}
 		
 		// clean-up function
 		return () => {

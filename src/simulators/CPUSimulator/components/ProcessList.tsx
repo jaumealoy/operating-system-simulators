@@ -1,6 +1,6 @@
 import React from "react";
 import { FormGroup } from "react-bootstrap";
-import CycleDistribution from "./../CycleDistribution";
+import CycleDistribution from "./CycleDistribution";
 import { useTranslation } from "react-i18next";
 import { Process } from "./../CPUSimulator";
 

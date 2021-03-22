@@ -194,7 +194,7 @@ function IOSimulatorPage() {
 		}
 	};
 
-	const Tutorial = useTutorial("io", STEP_ACTIONS);
+	const Tutorial = useTutorial("io", STEPS.length, STEP_ACTIONS);
 
 	const chartRequests = (algorithm: string) : number[] => {
 		let requests: number[] = [initialPosition];

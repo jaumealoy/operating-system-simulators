@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 
 interface StepAction {
 	// action executed when a certain step is reached
-	onReach?: () => void;
+	onReach?: ()=> void;
+	onBeforeReach?: () => void;
 
 	// action executed once a certain step has been completed
 	onFinish?: () => void;
 }
 
-const useTutorial = (simulator: string, actions?: {[key: number]: StepAction}) => {
+const useTutorial = (simulator: string, maxSteps: number, actions?: {[key: number]: StepAction}) => {
 	// indicates whether the page tour is visible or not
 	const [visible, setVisible] = useState<boolean>(false);
 
@@ -54,6 +55,10 @@ const useTutorial = (simulator: string, actions?: {[key: number]: StepAction}) =
 	};
 
 	const nextStep = () => {
+		if (step == (maxSteps - 1)) {
+			return;
+		}
+
 		// fire callback functions
 		let previousStep: number = step;
 		if (actions && (previousStep in actions)) {
@@ -65,7 +70,7 @@ const useTutorial = (simulator: string, actions?: {[key: number]: StepAction}) =
 
 		let nextStep: number = step + 1;
 		if (actions && (nextStep in actions)) {
-			let fn = actions[nextStep].onReach;
+			let fn = actions[nextStep].onBeforeReach;
 			if (fn != undefined) {
 				fn();
 			}
@@ -88,7 +93,7 @@ const useTutorial = (simulator: string, actions?: {[key: number]: StepAction}) =
 
 		let nextStep: number = step - 1;
 		if (actions && (nextStep in actions)) {
-			let fn = actions[nextStep].onReach;
+			let fn = actions[nextStep].onBeforeReach;
 			if (fn != undefined) {
 				fn();
 			}
@@ -99,7 +104,16 @@ const useTutorial = (simulator: string, actions?: {[key: number]: StepAction}) =
 
 	const onOpen = () => {
 		setStep(0);
-	}
+	};
+
+	useEffect(() => {
+		if (actions && (step in actions)) {
+			let fn = actions[step].onReach;
+			if (fn != undefined) {
+				fn();
+			}
+		}
+	}, [step])
 
 	return {
 		visible, step, prevStep, nextStep, onOpen,

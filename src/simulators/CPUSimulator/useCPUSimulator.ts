@@ -19,6 +19,8 @@ const useCPUSimulator = () => {
 		stop();
 	}, [isSimpleView]);
 
+	const [renderCounter, setRenderCounter] = useState(0);
+
 	// process list
 	const [processes, setProcesses] = useState<Process[]>([]);
    
@@ -221,7 +223,7 @@ const useCPUSimulator = () => {
 	// simulator settings
 	useEffect(() => {
 		stop();
-	}, [processes, selectedAlgorithm, algorithmVariants, quantum, feedbackSettings]);
+	}, [processes, selectedAlgorithm, selectedAlgorithms, algorithmVariants, quantum, feedbackSettings]);
 
 	// save and load simulator settings
 	const saveFile = (download: (content: string) => void) => {
@@ -291,6 +293,45 @@ const useCPUSimulator = () => {
 		}
 	};
 
+	// tutorial actions
+	const ACTIONS: {[key: string]: () => void} = {
+		switchToComparaisonAndAddVariant: () => {
+			setSimpleView(false);
+
+			if (selectedAlgorithms.indexOf("rr") < 0) {
+				setSelectedAlgorithms([...selectedAlgorithms, "rr"]);
+				manager.current.selectAlgorithm("rr");
+			}
+
+			if (algorithmVariants["rr"].length == 0) {
+				addAlgorithmVariant("rr", { quantumMode: false, quantum: 4, maxQueues: 0 });
+			}
+		},
+
+		showSummaryTable: () => {
+			setSimpleView(true);
+			
+			manager.current.simpleView = true;
+			while (manager.current.hasNextStep()) {
+				manager.current.nextStep();
+			}
+		},
+
+		runSomeSteps: () => {
+			for (let i = 0; i < 5 && manager.current.hasNextStep(); i++) {
+				manager.current.nextStep();
+			}
+			
+			setRenderCounter(renderCounter + 1);
+		}
+	};
+
+	const runAction = (key: string) => {
+		if (key in ACTIONS) {
+			ACTIONS[key]();
+		}
+	};
+
 
 	return {
 		addProcess, removeProcess,
@@ -310,7 +351,8 @@ const useCPUSimulator = () => {
 		changeAlgorithmSettings,
 		results,
 		isStarted, isRunning,
-		saveFile, loadFile
+		saveFile, loadFile,
+		runAction
 	};
 };
 

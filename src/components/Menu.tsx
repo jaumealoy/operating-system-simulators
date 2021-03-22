@@ -29,7 +29,8 @@ function Menu() {
 	const location = useLocation();
 	const items: MenuItem[] = [
 		{ key: "cpu_simulator", title: t("menu.CPUSimulator"), to: "/cpu" },
-		{ key: "io_simulator", title: t("menu.IOSimulator"), to: "/io" }
+		{ key: "io_simulator", title: t("menu.IOSimulator"), to: "/io" },
+		{ key: "help", title: t("menu.FAQ"), to: "/help" }
 	];
 
 	const selectLanguage = (language: string) => {

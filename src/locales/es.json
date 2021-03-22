@@ -92,6 +92,7 @@
         "incoming_processes": "Llegada de procesos",
         "remaining_cycles": "Ciclos restantes",
         "waiting_cycles": "Ciclos esperando",
+        "waiting_time": "Tiempo esperando",
         "blocked": "Bloqueados",
         "ready": "Listos",
         "priority_number": "Prioridad {{value}}",
@@ -110,6 +111,7 @@
             "unlimited_queues": "ilimitadas",
             "value_max_queues": "{{value}} colas"
         },
+        "ratio": "Ratio",
         "summary": {
             "start": "Inicio",
             "end": "Finalización",
@@ -120,7 +122,11 @@
             "normalized_response_time": "Tiempo de respuesta normalizado"
         },
         "tutorial": {
-            "process_list": "Aquí puedes ver y eliminar los procesos que has introducido. Puedes ver su ciclo de llegada y su distribución de ciclos."
+            "process_list": "Aquí puedes ver y eliminar los procesos que has introducido. Puedes ver su ciclo de llegada y su distribución de ciclos.",
+            "summary_table": "Esta tabla muestra un resumen de la planificación de procesador. Cada fila es un proceso e indica información sobre su ejecución (llegada, finalización, tiempo de respuesta y de retorno).",
+            "process_queues": "En el modo simple puedes ver en todo momento el estado de las colas. Los procesos están ordenados por orden de llegada: los elementos de arriba son los que han llegado primero.",
+            "time_chart": "Este diagrama temporal muestra el estado del procesos (en ejecución o bloqueado) en cada ciclo de procesador.",
+            "current_process": "También se muestra el estado actual del procesador y se muestra información del proceso en ejecución."
         }
     },
 
@@ -137,6 +143,48 @@
                     "text_1": "El algoritmo First Come First Served procesa los accesos a disco secuencialment. La primera petición que se recibe es la primera petición procesada.",
                     "text_2": "Al realizarse muchas peticiones, este algoritmo se comporta como una planificación aleatoria, aunque es el sistema más justo de todos."
                 }
+            },
+
+            "cpu": {
+                "fifo": {
+                    "text_1": "El algoritmo First In First Out (FIFO), también conocido como First Come First Served (FCFS) o “primero en llegar, primero servirse”, es la política de planificación más simple.",
+                    "text_2": "Esta política planificación consiste en ejecutar los procesos en el mismo orden que llegan a la cola de procesos listos.",
+                    "text_3": "Así, si un proceso en ejecución queda bloqueado por E/S, cuando finalice la E/S, será el último de la cola de procesos listos y por tanto, el último en ejecutarse.",
+                    "text_4": "Este algoritmo facilita la ejecución de procesos de larga duración y favorece aquellos limitados por el procesador."
+                },
+
+                "spn": {
+                    "text_1": "El algoritmo Shortest Process Next (SPN) o “primero el más corto” es una política de planificación que consiste en ejecutar el proceso que se espera que sea más corto.",
+                    "text_2": "Algunos inconvenientes de esta política es la necesidad de poder estimar la duración del proceso y la posible inanición de los procesos más largos que será menos prioritarios frente los procesos cortos.",
+                    "text_3": "En el simulador, el valor de la estimación es el número de ciclos del proceso."
+                },
+
+                "srtn": {
+                    "text_1": "El algoritmo Shortest Remaining Time (SRT) es la versión apropiativa del algoritmo SPN que consiste en ejecutar el proceso con un tiempo restante de ejecución menor.",
+                    "text_2": "El tiempo restante de un proceso se puede calcular a partir del número de ciclos que ha sido ejecutado y el tiempo de servicio, o en su defecto su estimación, del proceso.",
+                    "text_3": "Este sistema de planificación puede producir inanición y favorece los procesos cortos frente a los procesos más largos."
+                },
+
+                "hrrn": {
+                    "text_1": "El algoritmo Highest Response Ratio Next (HRRN) o “primero el de mayor tasa de respuesta” es un algoritmo no apropiativo que ejecuta el proceso con la mayor tasa de respuesta.",
+                    "text_2": "Para cada uno de los procesos en la cola de listos se calcula su tasa de respuesta siguiendo la siguiente fórmula:",
+                    "text_3": "Y se selecciona el proceso que maximice este resultado.",
+                    "text_4": "En un principio favorece los procesos cortos, pero evita la inanición de los procesos largos porque se tiene en cuenta su tiempo de espera."
+                }, 
+
+                "rr": {
+                    "text_1": "El algoritmo Round Robin o turno rotatorio es un algoritmo apropiativo basado en un reloj. Los procesos reciben un tiempo limitado, conocido como quantum, de procesador de manera rotatoria hasta que finalizan. Si los procesos han consumido el tiempo asignado y no han finalizado, son expulsados y vuelven a situarse al final de la cola de procesos listos.",
+                    "text_2": "Los principales inconvenientes de este sistema son fijar una rodaja de tiempo adecuada, el bajo rendimiento de los procesos limitados por E/S y la sobrecarga que supone cambiar de proceso."
+                },
+
+                "feedback": {
+                    "text_1": "El algoritmo Feedback o retroalimentación es un sistema apropiativo que hace uso de un sistema de colas de prioridad dinámica y un sistema de rodajas de tiempo. ",
+                    "text_2": "Los procesos empiezan en la cola de máxima prioridad y cuando finaliza su rodaja de tiempo (y no han finalizado)  o quedan bloqueados por E/S pasan a la siguiente cola de menor prioridad.",
+                    "text_3_1": "Por ejemplo, es habitual que la rodaja de tiempo sea una potencia de 2 de la forma ",
+                    "text_3_2": ", donde i es la prioridad de la cola (i=0 es la cola más prioritaria).",
+                    "text_4": "Este sistema da preferencia a los procesos cortos y penaliza los procesos largos que han estado mucho tiempo en ejecución, ya que se encuentran en colas de baja prioridad."
+                }
+
             }
         }
     }

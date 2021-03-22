@@ -1,6 +1,6 @@
 import React, { FormEvent, useState, useEffect } from "react";
 import { Row, Col, FormGroup, FormControl } from "react-bootstrap";
-import CycleDistribution from "./../CycleDistribution";
+import CycleDistribution from "./CycleDistribution";
 import { Process } from "./../CPUSimulator";
 import { useTranslation } from "react-i18next";
 
