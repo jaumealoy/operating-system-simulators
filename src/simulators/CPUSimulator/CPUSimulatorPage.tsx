@@ -364,7 +364,7 @@ function CPUSimulatorPage() {
 					</div>
 				</Col>
 
-				<Col md={6}>
+				<Col className="mt-sm-3 mt-md-0" md={6}>
 					<div className="simulator-group">
 						<div className="simulator-group-content">
 							<div className="title">{t("cpu.processes")}</div>

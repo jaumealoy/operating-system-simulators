@@ -260,9 +260,10 @@ h3 {
     top: 20px;
     position: sticky;
     overflow-y: auto;
-    max-height: 100%;
     border-left: 1px solid rgba(0, 0, 0, 0.5);;
     padding: 10px 10px;
+    height: calc(100vh  - 20px);
+    max-height: calc(100vh  - 20px);
 }
 
 .toc ul {
@@ -284,6 +285,9 @@ h3 {
     padding-bottom: 1px;
     margin-bottom: 5px;
     display: block;
+    position: sticky;
+    top: -10px;
+    background: white;
 }
 
 .toc ul li.active {

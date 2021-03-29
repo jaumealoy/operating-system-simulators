@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Process, ProcessWrap } from "../CPUSimulator";
+import Latex from "../../../components/Latex";
 
 interface SummaryTableProps {
 	processes: Process[];
@@ -44,114 +45,118 @@ function SummaryTable(props: SummaryTableProps) {
 	}
 
 	return (
-		<table className="table text-center">
-			<thead>
-				<tr>
-					<th></th>
-					<th>{t("cpu.arrival")}</th>
-					<th>{t("cpu.summary.start")}</th>
-					<th>{t("cpu.summary.end")}</th>
+		<div className="table-responsive">
+			<table className="table text-center">
+				<thead>
+					<tr>
+						<th></th>
+						<th>{t("cpu.arrival")}</th>
+						<th>{t("cpu.summary.start")}</th>
+						<th>{t("cpu.summary.end")}</th>
 
-					<th>
-						{fullHeader ?
-							<>{t("cpu.summary.response_time")} (T<sub>response</sub>)</>
-							:
-							<>T<sub>response</sub></>
-						}
-					</th>
-
-					<th>
-						{fullHeader ?
-							<>{t("cpu.summary.service_time")} (T<sub>s</sub>)</>
-							:
-							<>T<sub>s</sub></>
-						}
-					</th>
-
-					<th>
-						{fullHeader ?
-							<>{t("cpu.summary.turnaround_time")} (T<sub>r</sub>)</>
-							:
-							<>T<sub>r</sub></>
-						}
-					</th>
-					
-					<th>
-						T<sub>r</sub> / T<sub>s</sub>
-					</th>
-				</tr>
-			</thead>
-
-			<tbody>
-				{props.processes.map(process => 
-					<tr key={`summary_${process.id}`}>
-						<td>{process.id}</td>
-						<td>{process.arrival}</td>
-						<td>
-							{process.id in props.processData ?
-								props.processData[process.id].startCycle
+						<th>
+							{fullHeader ?
+								<>{t("cpu.summary.response_time")} (T<sub>response</sub>)</>
 								:
-								"-"
+								<>T<sub>response</sub></>
 							}
-						</td>
-						<td>
-							{process.id in props.processData ?
-								props.processData[process.id].finishCycle
-								:
-								"-"
-							}
-						</td>
+						</th>
 
-						<td>
-							{process.id in props.processData ?
-								props.processData[process.id].startCycle - process.arrival
+						<th>
+							{fullHeader ?
+								<>{t("cpu.summary.service_time")} (T<sub>s</sub>)</>
 								:
-								"-"
+								<>T<sub>s</sub></>
 							}
-						</td>
+						</th>
 
-						<td>{process.cycles.length}</td>
+						<th>
+							{fullHeader ?
+								<>{t("cpu.summary.turnaround_time")} (T<sub>r</sub>)</>
+								:
+								<>T<sub>r</sub></>
+							}
+						</th>
 						
+						<th>
+							<Latex display={false}>
+								{"T_r / T_s"}
+							</Latex>
+						</th>
+					</tr>
+				</thead>
+
+				<tbody>
+					{props.processes.map(process => 
+						<tr key={`summary_${process.id}`}>
+							<td>{process.id}</td>
+							<td>{process.arrival}</td>
+							<td>
+								{process.id in props.processData ?
+									props.processData[process.id].startCycle
+									:
+									"-"
+								}
+							</td>
+							<td>
+								{process.id in props.processData ?
+									props.processData[process.id].finishCycle
+									:
+									"-"
+								}
+							</td>
+
+							<td>
+								{process.id in props.processData ?
+									props.processData[process.id].startCycle - process.arrival
+									:
+									"-"
+								}
+							</td>
+
+							<td>{process.cycles.length}</td>
+							
+							<td>
+								{isNaN(turnaroundTime(process)) ? 
+									"-"
+									:
+									turnaroundTime(process)
+								}
+							</td>
+							<td>
+								{process.id in props.processData ?
+									((props.processData[process.id].finishCycle - process.arrival) / process.cycles.length).toFixed(2)
+									:
+									"-"
+								}
+							</td>
+						</tr>
+					)}
+
+					<tr>
+						<th colSpan={6} style={{ textAlign: "right" }}>
+							{t("cpu.average")}
+						</th>
+
 						<td>
-							{isNaN(turnaroundTime(process)) ? 
+							{isNaN(turnaroundTimeAverage) ?
 								"-"
 								:
-								turnaroundTime(process)
+								turnaroundTimeAverage.toFixed(2)
 							}
 						</td>
+
 						<td>
-							{process.id in props.processData ?
-								((props.processData[process.id].finishCycle - process.arrival) / process.cycles.length).toFixed(2)
-								:
+							{isNaN(normalizedTimeAverage) ?
 								"-"
+								:
+								normalizedTimeAverage.toFixed(2)
 							}
 						</td>
 					</tr>
-				)}
-
-				<tr>
-					<th colSpan={6} style={{ textAlign: "right" }}>
-						Media
-					</th>
-
-					<td>
-						{isNaN(turnaroundTimeAverage) ?
-							"-"
-							:
-							turnaroundTimeAverage.toFixed(2)
-						}
-					</td>
-
-					<td>
-						{isNaN(normalizedTimeAverage) ?
-							"-"
-							:
-							normalizedTimeAverage.toFixed(2)
-						}
-					</td>
-				</tr>
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
 	)
 }
 
