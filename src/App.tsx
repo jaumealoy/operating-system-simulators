@@ -21,6 +21,7 @@ import { useTranslation, initReactI18next } from "react-i18next";
 
 import es from "./locales/es.json";
 import ca from "./locales/ca.json";
+import MemorySimulatorPage from './simulators/MemorySimulator/MemorySimulatorPage';
 
 i18n.use(initReactI18next)
 	.use(LanguageDetector)
@@ -53,6 +54,10 @@ function App() {
 
 						<Route path="/io" exact={true}>
 							<IOSimulatorPage />
+						</Route>
+
+						<Route path="/memory" exact={true}>
+							<MemorySimulatorPage />
 						</Route>
 
 						<Route path="/help" exact={true}>

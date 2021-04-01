@@ -30,6 +30,7 @@ function Menu() {
 	const items: MenuItem[] = [
 		{ key: "cpu_simulator", title: t("menu.CPUSimulator"), to: "/cpu" },
 		{ key: "io_simulator", title: t("menu.IOSimulator"), to: "/io" },
+		{ key: "memory_simulator", title: t("menu.MemorySimulator"), to: "/memory" },
 		{ key: "help", title: t("menu.FAQ"), to: "/help" }
 	];
 
