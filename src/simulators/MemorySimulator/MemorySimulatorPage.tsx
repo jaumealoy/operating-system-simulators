@@ -12,10 +12,16 @@ import SimulatorControl from "../../components/SimulatorControl";
 import { Algorithm } from "./../Simulator";
 import { MemorySimulator, Process } from "./MemorySimulator";
 import AlgorithmSettings from "../CPUSimulator/components/AlgorithmSettings";
+import AddProcessForm from "./components/AddProcessForm";
+import ProcessList from "./components/ProcessList";
 
 const EXAMPLES: Process[][] = [
 	[
 		{ id: "A", size: 3, arrival: 0, duration: 0 },
+		{ id: "B", size: 4, arrival: 0, duration: 4 },
+		{ id: "C", size: 6, arrival: 2, duration: 2 },
+		{ id: "D", size: 3, arrival: 4, duration: 0 },
+		{ id: "E", size: 1, arrival: 5, duration: 1 },
 	]
 ];
 
@@ -23,7 +29,10 @@ function MemorySimulatorPage() {
 	const { t } = useTranslation();
 
 	const {
-		memoryCapacity, setMemoryCapacity
+		memoryCapacity, setMemoryCapacity,
+		processes, addProcess, removeProcess, loadProcessesFromList,
+		memoryData,
+		hasNextStep, nextStep
 	} = useMemorySimulator();
 
 	return (
@@ -32,7 +41,7 @@ function MemorySimulatorPage() {
 
 			{/* Simulator settings and process form */}
 			<Row className="mb-3">
-				<Col md={4}>
+				<Col md={5}>
 					<div className="simulator-group">
 						<div className="simulator-group-content">
 							<div className="title">{t("common.simulator_settings")}</div>
@@ -70,20 +79,28 @@ function MemorySimulatorPage() {
 											value={memoryCapacity}
 											onChange={(e) => setMemoryCapacity(parseInt(e.target.value))} />
 									</FormGroup>
-									
 								</Col>
 							</Row>
 						</div>
 					</div>
 				</Col>
 
-				<Col md={4}>
-				<div className="simulator-group mt-3 mt-sm-0">
+				<Col md={7}>
+					<div className="simulator-group mt-3 mt-sm-0">
 						<div className="simulator-group-content">
 							<div className="title">{t("io.requests")}</div>
 
 							<Row>
-								
+								<Col md={5}>
+									<AddProcessForm
+									 	onAddProcess={addProcess}/>
+								</Col>
+
+								<Col md={7}>
+									<ProcessList 
+										processes={processes}
+										onRemoveProcess={removeProcess} />
+								</Col>
 							</Row>
 						</div>
 
@@ -97,7 +114,7 @@ function MemorySimulatorPage() {
 									key={"example_" + index}
 									//disabled={!(!isStarted || isFinished)}
 									onClick={() => {
-										
+										loadProcessesFromList(example)
 									}}
 									className="btn btn-link">
 									{t("common.example_number", { number: (index + 1) })}
@@ -108,13 +125,41 @@ function MemorySimulatorPage() {
 				</Col>
 			</Row>
 
+			{/* Simulation results */}
+			<Row>
+				<h2>Resultados</h2>
+				
+				<Col md={4}>
+					<div className="x-centered">
+						<MemoryChart
+							capacity={memoryCapacity}
+							processes={processes.map(process => process.id)}
+							data={memoryData}
+							pointer={5} />
+					</div>
+				</Col>
 
-			<MemoryChart
-				capacity={memoryCapacity}
-				processes={["A", "B", "C", "D", "E", "F", "G", "H"]}
-				data={[0, 0, 0, -1, 1, 1, 2, 2, 0, -1, 3, 4, 5, 6, 7, 8]} />
+				<Col md={8}>
+					<table className="table">
+						<thead>
+							<tr>
+								<th>Proceso</th>
+								<th>Llegada</th>
+								<th>Memoria solicitada</th>
+								<th>Ciclos restantes</th>
+							</tr>
+						</thead>
+					</table>
+				</Col>
+				
+			</Row>
 
-			<SimulatorControl />
+			
+
+			<SimulatorControl 
+				hasNext={hasNextStep()}
+				next={nextStep}
+			/>
 		</>
 	);
 }

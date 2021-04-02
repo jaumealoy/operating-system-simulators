@@ -10,6 +10,8 @@ interface Process {
 type MemoryBlock = { type: number; start: number; size: number; } | null;
 
 class MemorySimulator extends Simulator {
+	// simulator settings
+	private algorithm: string;
 
 	// simulator data
 	private processes: Process[];
@@ -19,6 +21,9 @@ class MemorySimulator extends Simulator {
 	// for Next First algorithm
 	private lastSearch: number;
 
+	// callbacks
+	public onMemoryChange: (data: number[]) => void;
+
 	constructor() {
 		super();
 
@@ -27,10 +32,24 @@ class MemorySimulator extends Simulator {
 		this.memory = [];
 
 		this.lastSearch = 0;
+
+		this.onMemoryChange = () => {};
+
+		this.algorithm = "first_fit";
+
+		this.capacity = 16;
+	}
+
+	/**
+	 * Adds a process to the request list
+	 * @param process process to be added
+	 */
+	public addProcess(process: Process) : void {
+		this.processes.push(process);
 	}
 
 	public hasNextStep(): boolean {
-		throw new Error("Method not implemented.");
+		return true;
 	}
 	public hasPreviousStep(): boolean {
 		throw new Error("Method not implemented.");
@@ -52,6 +71,12 @@ class MemorySimulator extends Simulator {
 		];
 	}
 
+	public nextStep() : void {
+		// TODO: save current state
+		this.update();
+		this.onMemoryChange(this.memory);
+	}
+
 	private update() : void {
 		// we have to free the memory from processes that have finished on this cycle
 		this.processes.map((process, index) => {
@@ -65,6 +90,19 @@ class MemorySimulator extends Simulator {
 				}
 			}
 		});
+
+		// allocate all the processes that arrived at this cycle
+		for (let i = 0; i < this.processes.length; i++) {
+			if (this.processes[i].arrival == this.currentCycle) {
+				let block: MemoryBlock = this.algorithmFunctions[this.algorithm](this.processes[i]);
+
+				if (block != null) {
+					for (let j = block.start; j < (block.start + this.processes[i].size); j++) {
+						this.memory[j] = i + 1;
+					}
+				}
+			}
+		}
 
 		// increase the cycle counter
 		this.currentCycle++;
@@ -115,7 +153,7 @@ class MemorySimulator extends Simulator {
 		return block;
 	}
 
-	private NextFirst(process: Process) : MemoryBlock {
+	private NextFit(process: Process) : MemoryBlock {
 		// find the first available block but start searching from the last block 
 		// visited
 		let block: MemoryBlock = this.findNextBlockFrom(this.lastSearch, process.size, 0);
@@ -143,6 +181,16 @@ class MemorySimulator extends Simulator {
 			this.memory.push(0);
 		}
 	}
+
+	/**
+	 * Mapping of algorithm functions by its name
+	 */
+	private algorithmFunctions: {[key: string]: (process: Process) => MemoryBlock} = {
+		first_fit: this.FirstFit.bind(this),
+		next_fit: this.NextFit.bind(this)
+	};
+
+
 }
 
 export { MemorySimulator };

@@ -11,6 +11,7 @@ interface MemoryChartProps {
 	processes: string[];
 	data: number[];
 	showBlockSize?: boolean;
+	pointer?: number;
 };
 
 interface GroupRef {
@@ -85,8 +86,18 @@ function MemoryChart(props: MemoryChartProps) {
 				  .stroke({ color: "black", width: BORDER_WIDTH })
 				  .move(BORDER_WIDTH + maxWidth, BORDER_WIDTH);
 
+			let extraWidth: number = 0;
+			if (props.pointer != undefined) {
+				extraWidth = 40;
+				canvas.polygon([
+					[UNIT_HEIGHT, UNIT_HEIGHT / 6],
+					[0, UNIT_HEIGHT / 2],
+					[UNIT_HEIGHT, UNIT_HEIGHT - UNIT_HEIGHT / 6]
+				]).move(maxWidth + MEMORY_WIDTH + 2 * BORDER_WIDTH, BORDER_WIDTH + UNIT_HEIGHT * props.pointer + UNIT_HEIGHT / 6)
+			}
+
 			chart.current.size(
-				MEMORY_WIDTH + 2 * BORDER_WIDTH + maxWidth, 
+				MEMORY_WIDTH + 2 * BORDER_WIDTH + maxWidth + extraWidth, 
 				props.capacity * UNIT_HEIGHT + BORDER_WIDTH * 2
 			);
 

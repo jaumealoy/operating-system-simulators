@@ -405,7 +405,7 @@ function CPUSimulatorPage() {
 								<ProcessList 
 									processes={processes}
 									deletionEnabled={!isStarted}
-								onDeleteProcess={removeProcess} />
+									onDeleteProcess={removeProcess} />
 							</div>
 						</div>
 					</div>

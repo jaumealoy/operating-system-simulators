@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Process } from "./MemorySimulator";
+import { FormEvent, useState, useRef, useEffect } from "react";
+import { Process, MemorySimulator } from "./MemorySimulator";
 
 const useMemorySimulator = () => {
+	const simulator = useRef<MemorySimulator>(new MemorySimulator());
+
 	// memory capacity
 	const [memoryCapacity, setMemoryCapacityInternal] = useState<number>(16);
 	const setMemoryCapacity = (value: number) => {
@@ -20,9 +22,38 @@ const useMemorySimulator = () => {
 
 	// process list
 	const [processes, setProcesses] = useState<Process[]>([]);
+	const addProcess = (process: Process) => { 
+		setProcesses([...processes, process]);
+		simulator.current.addProcess(process);
+	};
+	const removeProcess = (index: number) => {
+		processes.splice(index, 1);
+		setProcesses([...processes]);
+	};
+
+	const loadProcessesFromList = (list: Process[]) => {
+		setProcesses([...list]);
+		list.map(process => simulator.current.addProcess(process));
+	};
+
+	// simulation results
+	const [memoryData, setMemoryData] = useState<number[]>([]);
+	simulator.current.onMemoryChange = (memory) => {
+		console.log(memory)
+		setMemoryData([...memory]);
+	}
+
+
+	// simulation control
+	const hasNextStep = () : boolean => simulator.current.hasNextStep();
+
+	const nextStep = () => simulator.current.nextStep();
 
 	return {
-		memoryCapacity, setMemoryCapacity
+		memoryCapacity, setMemoryCapacity,
+		processes, addProcess, removeProcess, loadProcessesFromList,
+		memoryData,
+		hasNextStep, nextStep
 	};
 };
 
