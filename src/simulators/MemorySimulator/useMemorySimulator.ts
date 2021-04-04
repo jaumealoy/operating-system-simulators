@@ -20,6 +20,12 @@ const useMemorySimulator = () => {
 		}
 	};
 
+	// algorithm settings
+	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("first_fit");
+	useEffect(() => {
+		simulator.current.selectAlgorithm(selectedAlgorithm);
+	}, [selectedAlgorithm]);
+
 	// process list
 	const [processes, setProcesses] = useState<Process[]>([]);
 	const addProcess = (process: Process) => { 
@@ -41,7 +47,11 @@ const useMemorySimulator = () => {
 	simulator.current.onMemoryChange = (memory) => {
 		console.log(memory)
 		setMemoryData([...memory]);
-	}
+	};
+
+	const [nextPointer, setNextPointer] = useState<number>(0);
+	simulator.current.onNextPointerChange = (value: number) => setNextPointer(value);
+	
 
 
 	// simulation control
@@ -50,9 +60,10 @@ const useMemorySimulator = () => {
 	const nextStep = () => simulator.current.nextStep();
 
 	return {
+		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
-		memoryData,
+		memoryData, nextPointer,
 		hasNextStep, nextStep
 	};
 };

@@ -130,10 +130,11 @@ function MemoryChart(props: MemoryChartProps) {
 					  .move(BORDER_WIDTH + maxWidth, start * UNIT_HEIGHT + BORDER_WIDTH)
 					  .stroke({ width: BORDER_WIDTH, color: "black" });
 
-				if (props.data[start] >= 0 && props.data[start] < props.processes.length) {
-					rect.fill(PROCESS_COLORS[props.data[start] % PROCESS_COLORS.length]);
+				if (props.data[start] >= 1 && props.data[start] <= props.processes.length) {
+					let processId = props.data[start] - 1;
+					rect.fill(PROCESS_COLORS[processId % PROCESS_COLORS.length]);
 
-					canvas.text(props.processes[props.data[start]].toString())
+					canvas.text(props.processes[processId].toString())
 						  .font({ size: FONT_SIZE, fill: "white" })
 						  .move(
 							  BORDER_WIDTH + maxWidth + FONT_SIZE, 

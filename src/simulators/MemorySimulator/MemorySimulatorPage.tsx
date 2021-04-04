@@ -5,7 +5,7 @@ import {
 	Row, Col, FormControl, FormGroup, FormCheck
 } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
-import { FiInfo } from "react-icons/fi";
+import { FiInfo, FiAlertTriangle } from "react-icons/fi";
 import useMemorySimulator from "./useMemorySimulator";
 import SimulatorControl from "../../components/SimulatorControl";
 
@@ -19,7 +19,7 @@ const EXAMPLES: Process[][] = [
 	[
 		{ id: "A", size: 3, arrival: 0, duration: 0 },
 		{ id: "B", size: 4, arrival: 0, duration: 4 },
-		{ id: "C", size: 6, arrival: 2, duration: 2 },
+		{ id: "C", size: 6, arrival: 2, duration: 3 },
 		{ id: "D", size: 3, arrival: 4, duration: 0 },
 		{ id: "E", size: 1, arrival: 5, duration: 1 },
 	]
@@ -29,9 +29,10 @@ function MemorySimulatorPage() {
 	const { t } = useTranslation();
 
 	const {
+		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
-		memoryData,
+		memoryData, nextPointer,
 		hasNextStep, nextStep
 	} = useMemorySimulator();
 
@@ -55,6 +56,8 @@ function MemorySimulatorPage() {
 												key={algorithm.id}
 												name="selectedAlgorithm"
 												type="radio"
+												checked={selectedAlgorithm == algorithm.id}
+												onChange={() => setSelectedAlgorithm(algorithm.id)}
 												label={
 													<>
 														{algorithm.name}
@@ -135,11 +138,15 @@ function MemorySimulatorPage() {
 							capacity={memoryCapacity}
 							processes={processes.map(process => process.id)}
 							data={memoryData}
-							pointer={5} />
+							pointer={selectedAlgorithm == "next_fit" ? nextPointer : undefined} />
 					</div>
 				</Col>
 
 				<Col md={8}>
+					Ciclo actual: <span className="badge bg-success">0</span>
+					<br />
+					<br />
+					Próximas peticiones:
 					<table className="table">
 						<thead>
 							<tr>
@@ -149,6 +156,41 @@ function MemorySimulatorPage() {
 								<th>Ciclos restantes</th>
 							</tr>
 						</thead>
+
+						<tbody>
+							<tr>
+								<td>A</td>
+								<td>14</td>
+								<td>5</td>
+								<td>
+									0
+
+									<FiAlertTriangle 
+										className="mr-3" />
+								</td>
+							</tr>
+							<tr>
+								<td colSpan={4}>No hay más peticiones de memoria</td>
+							</tr>
+						</tbody>
+					</table>
+
+					Peticiones de memoria atendidas:
+					<table className="table">
+						<thead>
+							<tr>
+								<th>Ciclo</th>
+								<th>Proceso</th>
+								<th>Memoria solicitada</th>
+								<th>Bloque asignado</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<tr>
+								<td colSpan={4}>No se ha atendido ninguna petición de memoria.</td>
+							</tr>
+						</tbody>
 					</table>
 				</Col>
 				

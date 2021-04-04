@@ -7,7 +7,14 @@ interface Process {
 	duration: number;
 };
 
+interface ProcessWrap {
+	start: number;
+	blockBegin: number;
+	process: Process;
+}
+
 type MemoryBlock = { type: number; start: number; size: number; } | null;
+type Queues = {[key in "incoming" | "allocated"]: ProcessWrap[]};
 
 class MemorySimulator extends Simulator {
 	// simulator settings
@@ -15,6 +22,8 @@ class MemorySimulator extends Simulator {
 
 	// simulator data
 	private processes: Process[];
+	private queues: Queues; 
+
 	private currentCycle: number;
 	private memory: number[];
 
@@ -23,6 +32,7 @@ class MemorySimulator extends Simulator {
 
 	// callbacks
 	public onMemoryChange: (data: number[]) => void;
+	public onNextPointerChange: (value: number) => void;
 
 	constructor() {
 		super();
@@ -34,10 +44,16 @@ class MemorySimulator extends Simulator {
 		this.lastSearch = 0;
 
 		this.onMemoryChange = () => {};
+		this.onNextPointerChange = () => {};
 
 		this.algorithm = "first_fit";
 
 		this.capacity = 16;
+
+		this.queues = {
+			incoming: [],
+			allocated: []
+		};
 	}
 
 	/**
@@ -78,29 +94,57 @@ class MemorySimulator extends Simulator {
 	}
 
 	private update() : void {
-		// we have to free the memory from processes that have finished on this cycle
-		this.processes.map((process, index) => {
-			if ((process.arrival + process.duration) >= this.currentCycle) {
-				// this process must be freed
-				let processBlock: number = index + 1;
-				for (let i = 0; i < this.memory.length; i++) {
-					if (this.memory[i] == processBlock) {
-						this.memory[i] = 0;
-					}
-				}
+		// add processes to incoming queue
+		this.processes.map((process) => {
+			if (process.arrival == this.currentCycle) {
+				this.queues.incoming.push(this.createProcessWrap(process));
+				console.log(`Process ${process.id} has arrived`);
 			}
 		});
 
-		// allocate all the processes that arrived at this cycle
-		for (let i = 0; i < this.processes.length; i++) {
-			if (this.processes[i].arrival == this.currentCycle) {
-				let block: MemoryBlock = this.algorithmFunctions[this.algorithm](this.processes[i]);
+		// we have to free the memory from processes that have finished on this cycle
+		for (let i = 0; i < this.queues.allocated.length;) {
+			let process: ProcessWrap = this.queues.allocated[i];
+			
+			if (process.process.duration > 0 && this.currentCycle >= (process.start + process.process.duration)) {
+				// this process must be freed
+				for (let i = 0; i < process.process.size; i++) {
+					this.memory[i + process.blockBegin] = 0;
+				}
 
-				if (block != null) {
-					for (let j = block.start; j < (block.start + this.processes[i].size); j++) {
-						this.memory[j] = i + 1;
+				this.queues.allocated.splice(i, 1);
+			} else {
+				i++;
+			}
+		}
+
+		// allocate all the processes that are in the incoming queue
+		// there might be processes from previous cycles that couldn't be allocated
+		for (let i = 0; i < this.queues.incoming.length;) {
+			let block: MemoryBlock = this.algorithmFunctions[this.algorithm](this.queues.incoming[i].process);
+			
+			if (block != null) {
+				// process was allocated
+				let processId = -1;
+				for (let j = 0; j < this.processes.length && processId < 0; j++) {
+					if (this.processes[j].id == this.queues.incoming[i].process.id) {
+						processId = j;
 					}
 				}
+
+				for (let j = block.start; j < (block.start + this.processes[processId].size); j++) {
+					this.memory[j] = processId + 1;
+				}
+
+				let process: ProcessWrap = this.queues.incoming[i];
+				process.start = this.currentCycle;
+				process.blockBegin = block.start;
+
+				this.queues.allocated.push(process);
+				this.queues.incoming.splice(i, 1);
+			} else {
+				// this process couldn't be allocated, save it for the next cycle
+				i++;
 			}
 		}
 
@@ -165,10 +209,29 @@ class MemorySimulator extends Simulator {
 		}
 
 		if (block != null) {
-			this.lastSearch = block.start + block.size;
+			this.lastSearch = (block.start + process.size) % this.memory.length;
+			console.log(`Next pointer is ${this.lastSearch}`);
+			this.onNextPointerChange(this.lastSearch);
 		}
 
 		return block;
+	}
+
+	private WorstFit(process: Process) : MemoryBlock {
+		// search the biggest block for this process
+		let bestBlock: MemoryBlock = null;
+
+		let currentBlock: MemoryBlock = this.findNextBlockFrom(0, process.size, 0);
+		while (currentBlock != null) {
+			if (bestBlock == null || currentBlock.size > bestBlock.size) {
+				bestBlock = currentBlock;
+			}
+
+			// search for possible next block
+			currentBlock = this.findNextBlockFrom(currentBlock.start + currentBlock.size, process.size, 0);
+		}
+
+		return bestBlock;
 	}
 
 	/**
@@ -187,10 +250,29 @@ class MemorySimulator extends Simulator {
 	 */
 	private algorithmFunctions: {[key: string]: (process: Process) => MemoryBlock} = {
 		first_fit: this.FirstFit.bind(this),
-		next_fit: this.NextFit.bind(this)
+		next_fit: this.NextFit.bind(this),
+		worst_fit: this.WorstFit.bind(this),
 	};
 
+	/**
+	 * @param process process to be wrapped
+	 * @returns a new ProcessWrap object
+	 */
+	private createProcessWrap(process: Process) : ProcessWrap {
+		return {
+			start: -1,
+			blockBegin: -1,
+			process: process
+		};
+	}
 
+	/**
+	 * Selectes an algorithm for the simulation
+	 * @param algorithm
+	 */
+	public selectAlgorithm(algorithm: string) : void {
+		this.algorithm = algorithm;
+	}
 }
 
 export { MemorySimulator };

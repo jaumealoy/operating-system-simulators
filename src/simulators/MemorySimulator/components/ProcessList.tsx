@@ -15,7 +15,7 @@ function ProcessList(props: ProcessListProps) {
 		:
 			<>
 				{props.processes.map(process => 
-					<div>
+					<div key={process.id}>
 						{process.id}
 					</div>    
 				)}
