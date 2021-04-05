@@ -4,6 +4,7 @@ import { Process } from "./../MemorySimulator";
 
 interface AddProcessFormProps {
     onAddProcess: (process: Process) => void; 
+	disabled?: boolean;
 };
 
 function AddProcessForm(props: AddProcessFormProps) {
@@ -31,6 +32,8 @@ function AddProcessForm(props: AddProcessFormProps) {
         setArrival("");
     };
 
+	let disabled: boolean = props.disabled || false;
+
     return (
         <form onSubmit={formHandler}>
             <Row>
@@ -41,7 +44,8 @@ function AddProcessForm(props: AddProcessFormProps) {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
 		    				type="text"
-                            required />
+                            required
+							disabled={disabled} />
 		    		</FormGroup>
 		    	</Col>
 		    	
@@ -52,7 +56,8 @@ function AddProcessForm(props: AddProcessFormProps) {
                             onChange={(e) => setDuration(e.target.value)}
                             value={duration}
 		    				type="number"
-                            required />
+                            required
+							disabled={disabled} />
 		    		</FormGroup>
 		    	</Col>
 		    </Row>
@@ -66,7 +71,8 @@ function AddProcessForm(props: AddProcessFormProps) {
 		    				min={1}
 		    				value={memory}
 		    				onChange={(e) => setMemory(e.target.value)}
-                            required />
+                            required
+							disabled={disabled} />
 		    		</FormGroup>
 		    	</Col>
 		    
@@ -78,7 +84,8 @@ function AddProcessForm(props: AddProcessFormProps) {
 		    				min={0}
 		    				value={arrival}
 		    				onChange={(e) => setArrival(e.target.value)}
-                            required />
+                            required
+							disabled={disabled} />
 		    		</FormGroup>
 		    	</Col>
 		    </Row>

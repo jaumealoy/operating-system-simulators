@@ -304,3 +304,46 @@ h3 {
     margin-top: initial;
     font-weight: bold;
 }
+
+.horizontal-table {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 0;
+}
+
+.horizontal-table thead {
+    display: flex;
+    position: sticky;
+    background: white;
+
+    left: 0;
+}
+
+.horizontal-table thead tr{
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid currentColor;
+}
+
+.horizontal-table thead tr th:last-child {
+    border: none;
+}
+
+
+.horizontal-table tbody {
+    display: flex;
+    flex-direction: row;
+    margin-top: -1px;
+}
+
+.horizontal-table tbody tr {
+    display: flex;
+    flex-direction: column;
+}
+
+.horizontal-table tbody td {
+}
+
+.horizontal-table td {
+    white-space: nowrap;
+}

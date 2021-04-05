@@ -25,19 +25,19 @@ class MemorySimulator extends Simulator {
 
 	// simulator data
 	private processes: Process[];
-	private addedProcesses: number[];
+	private _capacity: number;
 	private queues: Queues;
 	private running: boolean;
 	private allocationHistory: ProcessWrap[];
 
-	private currentCycle: number;
+	private _currentCycle: number;
 	private memory: number[];
 
 	// for Next First algorithm
 	private lastSearch: number;
 
 	// for Buddy System algorithm
-	private memoryGroups: number[];
+	private _memoryGroups: number[];
 
 	// callbacks
 	public onMemoryChange: (data: number[]) => void;
@@ -51,7 +51,7 @@ class MemorySimulator extends Simulator {
 		super();
 
 		this.processes = [];
-		this.currentCycle = 0;
+		this._currentCycle = 0;
 		this.memory = [];
 
 		this.lastSearch = 0;
@@ -65,8 +65,10 @@ class MemorySimulator extends Simulator {
 
 		this.algorithm = "first_fit";
 
-		this.capacity = 16;
-		this.memoryGroups = [16];
+		this._memoryGroups = [];
+
+		this._capacity = 16
+		this.capacity = this._capacity;
 
 		this.queues = {
 			incoming: [],
@@ -74,8 +76,6 @@ class MemorySimulator extends Simulator {
 		};
 
 		this.allocationHistory = [];
-
-		this.addedProcesses = [];
 
 		this.oneActionPerStep = true;
 
@@ -88,19 +88,70 @@ class MemorySimulator extends Simulator {
 	 */
 	public addProcess(process: Process) : void {
 		this.processes.push(process);
+
+		// add it to the incoming queue
+		this.queues.incoming.push(this.createProcessWrap(process));
+	}
+
+	/**
+	 * Removes a process from the request list
+	 * @param index position of the process to be removed
+	 */
+	public removeProcess(index: number) : void {
+		this.processes.splice(index, 1);
 	}
 
 	public hasNextStep(): boolean {
-		return true;
+		// there will be a next step as long as there are allocable 
+		// in the incoming queue
+		let nextStep: boolean = false;
+
+		// are there processes waiting?
+		let processWaiting: boolean = false;
+		for (let i = 0; i < this.queues.incoming.length && !processWaiting; i++) {
+			processWaiting = this.queues.incoming[i].process.arrival >= this._currentCycle;
+		}
+
+		// will a process be freed in the upcoming cycles?
+		let processFreed: boolean = false;
+		for (let i = 0; i < this.queues.allocated.length && !processFreed; i++) {
+			processFreed = this.queues.allocated[i].process.duration != 0;
+		}
+
+		// check if all pending processes are from previous cycles
+		let fromPreviousCycles: boolean = false;
+		for (let i = 0; i < this.queues.incoming.length && !fromPreviousCycles; i++) {
+			fromPreviousCycles = this.queues.incoming[i].process.arrival < this._currentCycle;
+		}
+
+		nextStep = processWaiting || processFreed;
+
+		return nextStep;
 	}
 	public hasPreviousStep(): boolean {
 		throw new Error("Method not implemented.");
 	}
 	public reset(): void {
-		throw new Error("Method not implemented.");
+		this.capacity = this._capacity;
+		this.currentCycle = 0;
+		this.running = false;
+
+		this.queues = { incoming: [], allocated: [] };
+		this.processes.map(process => {
+			this.queues.incoming.push(this.createProcessWrap(process));
+		});
+
+		this.allocationHistory = [];
+
+		this.onMemoryChange(this.memory);
+		this.onQueuesChange(this.queues);
+		this.onAllocationHistoryChange(this.allocationHistory);
 	}
 	public clear(): void {
-		throw new Error("Method not implemented.");
+		this.capacity = this._capacity;
+		this.allocationHistory = [];
+		this.processes = [];
+		this.running = false;
 	}
 
 	public static getAvailableAlgorithms() : Algorithm[] {
@@ -117,14 +168,19 @@ class MemorySimulator extends Simulator {
 		// TODO: save current state
 		this.update();
 		this.onMemoryChange(this.memory);
-		this.onMemoryGroupsChange(this.memoryGroups);
+		this.onMemoryGroupsChange(this._memoryGroups);
 		this.onQueuesChange(this.queues);
 		this.onAllocationHistoryChange(this.allocationHistory);
-		this.onCurrentCycleChange(this.currentCycle);
+		this.onCurrentCycleChange(this._currentCycle);
 	}
 
 	private update() : void {
 		if (!this.running) {
+			// set to an initial state
+			this.queues = { incoming: [], allocated: [] }
+			this._currentCycle = 0;
+			this.lastSearch = 0;
+
 			// add processes to incoming queue
 			this.processes.map(process => {
 				this.queues.incoming.push(this.createProcessWrap(process));
@@ -138,7 +194,7 @@ class MemorySimulator extends Simulator {
 		for (let i = 0; i < this.queues.allocated.length;) {
 			let process: ProcessWrap = this.queues.allocated[i];
 			
-			if (process.process.duration > 0 && this.currentCycle >= (process.start + process.process.duration)) {
+			if (process.process.duration > 0 && this._currentCycle >= (process.start + process.process.duration)) {
 				// this process must be freed
 				for (let i = process.blockBegin; i <= process.blockEnd; i++) {
 					this.memory[i] = 0;
@@ -148,7 +204,7 @@ class MemorySimulator extends Simulator {
 
 				if (this.algorithm == "buddy") {
 					// merge empty blocks in bigger partitions
-					this.memoryGroups = this.mergeMemoryBlocks(this.memoryGroups, 0);
+					this._memoryGroups = this.mergeMemoryBlocks(this._memoryGroups, 0);
 				}
 
 				if (this.oneActionPerStep) {
@@ -162,7 +218,7 @@ class MemorySimulator extends Simulator {
 		// allocate all the processes that are in the incoming queue
 		// there might be processes from previous cycles that couldn't be allocated
 		for (let i = 0; i < this.queues.incoming.length;) {
-			if (this.currentCycle >= this.queues.incoming[i].process.arrival) {
+			if (this._currentCycle >= this.queues.incoming[i].process.arrival) {
 				let block: MemoryBlock = this.algorithmFunctions[this.algorithm](this.queues.incoming[i].process);
 				
 				if (block != null) {
@@ -179,7 +235,7 @@ class MemorySimulator extends Simulator {
 					}
 
 					let process: ProcessWrap = this.queues.incoming[i];
-					process.start = this.currentCycle;
+					process.start = this._currentCycle;
 					process.blockBegin = block.start;
 					process.blockEnd = block.start + block.size - 1;
 
@@ -204,7 +260,7 @@ class MemorySimulator extends Simulator {
 		}
 
 		// increase the cycle counter
-		this.currentCycle++;
+		this._currentCycle++;
 	}
 
 	/**
@@ -326,26 +382,26 @@ class MemorySimulator extends Simulator {
 		// find the first of available memory that can fit this process
 		let i: number = 0;
 		let offset: number = 0;
-		console.log(this.memoryGroups, this.memory)
-		while (i < this.memoryGroups.length && (this.memory[offset] != 0 || this.memoryGroups[i] < process.size)) {
-			offset += this.memoryGroups[i];
+		console.log(this._memoryGroups, this.memory)
+		while (i < this._memoryGroups.length && (this.memory[offset] != 0 || this._memoryGroups[i] < process.size)) {
+			offset += this._memoryGroups[i];
 			i++;
 		}
 
-		if (i < this.memoryGroups.length) {
+		if (i < this._memoryGroups.length) {
 			// there is an available block
 			// this block might be bigger, reduce until the process cannot fit
-			while ((this.memoryGroups[i] >> 1) >= process.size) {
-				let half: number = this.memoryGroups[i] >> 1;
-				this.memoryGroups[i] = half;
-				this.memoryGroups.splice(i, 0, half);
+			while ((this._memoryGroups[i] >> 1) >= process.size) {
+				let half: number = this._memoryGroups[i] >> 1;
+				this._memoryGroups[i] = half;
+				this._memoryGroups.splice(i, 0, half);
 			}
 
-			console.log("Assigning block of " + this.memoryGroups[i]);
+			console.log("Assigning block of " + this._memoryGroups[i]);
 
 			block = {
 				start: offset,
-				size: this.memoryGroups[i],
+				size: this._memoryGroups[i],
 				type: 0
 			};
 		}
@@ -399,6 +455,7 @@ class MemorySimulator extends Simulator {
 	 * Sets the memory capacity and initializes.
 	 */
 	set capacity(value: number) {
+		this._capacity = value;
 		this.memory = [];
 
 		for(let i = 0; i < value; i++) {
@@ -438,6 +495,19 @@ class MemorySimulator extends Simulator {
 	 */
 	public selectAlgorithm(algorithm: string) : void {
 		this.algorithm = algorithm;
+	}
+
+	/**
+	 * Sets the memory blocks and invokes its callback
+	 */
+	private set memoryGroups(value: number[]) {
+		this._memoryGroups = value;
+		this.onMemoryGroupsChange(this._memoryGroups);
+	}
+
+	private set currentCycle(value: number) {
+		this._currentCycle = value;
+		this.onCurrentCycleChange(this._currentCycle);
 	}
 }
 

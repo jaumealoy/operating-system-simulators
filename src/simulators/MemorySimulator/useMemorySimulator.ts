@@ -20,6 +20,10 @@ const useMemorySimulator = () => {
 		}
 	};
 
+	useEffect(() => {
+		simulator.current.capacity = memoryCapacity;
+	}, [memoryCapacity]);
+
 	// algorithm settings
 	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("first_fit");
 	useEffect(() => {
@@ -35,6 +39,7 @@ const useMemorySimulator = () => {
 	const removeProcess = (index: number) => {
 		processes.splice(index, 1);
 		setProcesses([...processes]);
+		simulator.current.removeProcess(index);
 	};
 
 	const loadProcessesFromList = (list: Process[]) => {
@@ -42,10 +47,15 @@ const useMemorySimulator = () => {
 		list.map(process => simulator.current.addProcess(process));
 	};
 
+	useEffect(() => {
+		setRunning(false);
+		setStarted(false);
+		simulator.current.reset();
+	}, [memoryCapacity, processes, selectedAlgorithm]);
+
 	// simulation results
 	const [memoryData, setMemoryData] = useState<number[]>([]);
 	simulator.current.onMemoryChange = (memory) => {
-		console.log(memory)
 		setMemoryData([...memory]);
 	};
 
@@ -65,16 +75,40 @@ const useMemorySimulator = () => {
 	simulator.current.onAllocationHistoryChange = (processes) => setAllocationHistory(processes);
 
 	// simulation control
-	const hasNextStep = () : boolean => simulator.current.hasNextStep();
+	const [isRunning, setRunning] = useState<boolean>(false);
+	const [isStarted, setStarted] = useState<boolean>(false);
 
-	const nextStep = () => simulator.current.nextStep();
+	const hasNextStep = () : boolean => simulator.current.hasNextStep();
+	const nextStep = () => {
+		setStarted(true);
+
+		simulator.current.nextStep();
+
+		if (!simulator.current.hasNextStep()) {
+			setStarted(false);
+		}
+	};
+
+	const stop = () => {
+		setRunning(false);
+		setStarted(false);
+		simulator.current.reset();
+	};
+
+	const clear = () => {
+		setRunning(false);
+		setStarted(false);
+		setProcesses([]);
+		simulator.current.clear();
+	};
 
 	return {
 		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
 		memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
-		hasNextStep, nextStep
+		isRunning, isStarted,
+		hasNextStep, nextStep, stop, clear
 	};
 };
 

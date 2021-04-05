@@ -22,7 +22,7 @@ const EXAMPLES: Process[][] = [
 		{ id: "B", size: 4, arrival: 0, duration: 4 },
 		{ id: "C", size: 6, arrival: 2, duration: 3 },
 		{ id: "D", size: 3, arrival: 4, duration: 0 },
-		{ id: "E", size: 1, arrival: 5, duration: 1 },
+		{ id: "E", size: 1, arrival: 5, duration: 1 }
 	]
 ];
 
@@ -34,7 +34,8 @@ function MemorySimulatorPage() {
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
 		memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
-		hasNextStep, nextStep
+		isRunning, isStarted,
+		hasNextStep, nextStep, stop, clear
 	} = useMemorySimulator();
 
 	return (
@@ -59,6 +60,7 @@ function MemorySimulatorPage() {
 												type="radio"
 												checked={selectedAlgorithm == algorithm.id}
 												onChange={() => setSelectedAlgorithm(algorithm.id)}
+												disabled={isStarted}
 												label={
 													<>
 														{algorithm.name}
@@ -81,6 +83,7 @@ function MemorySimulatorPage() {
 											type="number"
 											min={1}
 											value={memoryCapacity}
+											disabled={isStarted}
 											onChange={(e) => setMemoryCapacity(parseInt(e.target.value))} />
 									</FormGroup>
 								</Col>
@@ -97,13 +100,17 @@ function MemorySimulatorPage() {
 							<Row>
 								<Col md={5}>
 									<AddProcessForm
-									 	onAddProcess={addProcess}/>
+									 	onAddProcess={addProcess}
+										disabled={isStarted} />
 								</Col>
 
 								<Col md={7}>
-									<ProcessList 
-										processes={processes}
-										onRemoveProcess={removeProcess} />
+									<div className="process-list scrollable-x">
+										<ProcessList 
+											processes={processes}
+											onRemoveProcess={removeProcess}
+											deletable={!isStarted} />
+									</div>
 								</Col>
 							</Row>
 						</div>
@@ -116,7 +123,7 @@ function MemorySimulatorPage() {
 							{EXAMPLES.map((example: Process[], index: number) =>
 								<button 
 									key={"example_" + index}
-									//disabled={!(!isStarted || isFinished)}
+									disabled={isStarted}
 									onClick={() => {
 										loadProcessesFromList(example)
 									}}
@@ -243,6 +250,8 @@ function MemorySimulatorPage() {
 			<SimulatorControl 
 				hasNext={hasNextStep()}
 				next={nextStep}
+				stop={stop}
+				reset={clear}
 			/>
 		</>
 	);
