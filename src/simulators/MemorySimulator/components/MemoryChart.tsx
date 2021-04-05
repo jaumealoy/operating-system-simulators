@@ -12,6 +12,7 @@ interface MemoryChartProps {
 	data: number[];
 	showBlockSize?: boolean;
 	pointer?: number;
+	blocks?: number[];
 };
 
 interface GroupRef {
@@ -93,7 +94,43 @@ function MemoryChart(props: MemoryChartProps) {
 					[UNIT_HEIGHT, UNIT_HEIGHT / 6],
 					[0, UNIT_HEIGHT / 2],
 					[UNIT_HEIGHT, UNIT_HEIGHT - UNIT_HEIGHT / 6]
-				]).move(maxWidth + MEMORY_WIDTH + 2 * BORDER_WIDTH, BORDER_WIDTH + UNIT_HEIGHT * props.pointer + UNIT_HEIGHT / 6)
+				]).move(maxWidth + MEMORY_WIDTH + 2 * BORDER_WIDTH, BORDER_WIDTH + UNIT_HEIGHT * props.pointer + UNIT_HEIGHT / 6);
+			} else if (props.blocks != undefined) {
+				let maxTextBlockSize: number = 0;
+				let texts: Text[] = [];
+
+				for (let i = 0; i < props.blocks.length; i++) {
+					let text: Text = canvas.text(props.blocks[i].toString())
+										   .font({ color: "black", size: FONT_SIZE });
+
+					if (text.length() > maxTextBlockSize) {
+						maxTextBlockSize = text.length();
+					}
+
+					texts.push(text);
+				}
+
+				extraWidth = 40 + maxTextBlockSize;
+
+				let offset: number = 0;
+				for (let i = 0; i < props.blocks.length; i++) {
+					canvas.polyline([
+						[0, 8],
+						[20, 8],
+						[20, props.blocks[i] * UNIT_HEIGHT],
+						[0, props.blocks[i] * UNIT_HEIGHT]
+					])
+					.fill("transparent")
+					.stroke({ color: "black", width: BORDER_WIDTH })
+					.move(MEMORY_WIDTH + extraWidth - maxTextBlockSize, BORDER_WIDTH + offset * UNIT_HEIGHT + 4);
+
+					// move block text to block center
+					texts[i].move(
+						MEMORY_WIDTH + extraWidth + 25 + - maxTextBlockSize, 
+						offset * UNIT_HEIGHT + ((props.blocks[i] * UNIT_HEIGHT - FONT_SIZE) / 2));
+
+					offset += props.blocks[i];
+				}
 			}
 
 			chart.current.size(

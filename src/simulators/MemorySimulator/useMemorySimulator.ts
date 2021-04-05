@@ -52,6 +52,8 @@ const useMemorySimulator = () => {
 	const [nextPointer, setNextPointer] = useState<number>(0);
 	simulator.current.onNextPointerChange = (value: number) => setNextPointer(value);
 	
+	const [memoryGroups, setMemoryGroups] = useState<number[]>([16]);
+	simulator.current.onMemoryGroupsChange = (groups: number[]) => setMemoryGroups(groups);
 
 
 	// simulation control
@@ -63,7 +65,7 @@ const useMemorySimulator = () => {
 		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
-		memoryData, nextPointer,
+		memoryData, nextPointer, memoryGroups,
 		hasNextStep, nextStep
 	};
 };

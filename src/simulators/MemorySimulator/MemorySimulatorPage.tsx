@@ -32,7 +32,7 @@ function MemorySimulatorPage() {
 		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
-		memoryData, nextPointer,
+		memoryData, nextPointer, memoryGroups,
 		hasNextStep, nextStep
 	} = useMemorySimulator();
 
@@ -138,7 +138,9 @@ function MemorySimulatorPage() {
 							capacity={memoryCapacity}
 							processes={processes.map(process => process.id)}
 							data={memoryData}
-							pointer={selectedAlgorithm == "next_fit" ? nextPointer : undefined} />
+							pointer={selectedAlgorithm == "next_fit" ? nextPointer : undefined}
+							blocks={memoryGroups}
+							showBlockSize />
 					</div>
 				</Col>
 

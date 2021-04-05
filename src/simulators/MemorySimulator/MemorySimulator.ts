@@ -1,3 +1,4 @@
+import { GiHalfBodyCrawling } from "react-icons/gi";
 import { Simulator, Algorithm } from "./../Simulator";
 
 interface Process {
@@ -19,9 +20,11 @@ type Queues = {[key in "incoming" | "allocated"]: ProcessWrap[]};
 class MemorySimulator extends Simulator {
 	// simulator settings
 	private algorithm: string;
+	private oneActionPerStep: boolean;
 
 	// simulator data
 	private processes: Process[];
+	private addedProcesses: number[];
 	private queues: Queues; 
 
 	private currentCycle: number;
@@ -30,9 +33,13 @@ class MemorySimulator extends Simulator {
 	// for Next First algorithm
 	private lastSearch: number;
 
+	// for Buddy System algorithm
+	private memoryGroups: number[];
+
 	// callbacks
 	public onMemoryChange: (data: number[]) => void;
 	public onNextPointerChange: (value: number) => void;
+	public onMemoryGroupsChange: (groups: number[]) => void;
 
 	constructor() {
 		super();
@@ -45,15 +52,21 @@ class MemorySimulator extends Simulator {
 
 		this.onMemoryChange = () => {};
 		this.onNextPointerChange = () => {};
+		this.onMemoryGroupsChange = () => {};
 
 		this.algorithm = "first_fit";
 
 		this.capacity = 16;
+		this.memoryGroups = [16];
 
 		this.queues = {
 			incoming: [],
 			allocated: []
 		};
+
+		this.addedProcesses = [];
+
+		this.oneActionPerStep = true;
 	}
 
 	/**
@@ -91,14 +104,16 @@ class MemorySimulator extends Simulator {
 		// TODO: save current state
 		this.update();
 		this.onMemoryChange(this.memory);
+		this.onMemoryGroupsChange(this.memoryGroups);
 	}
 
 	private update() : void {
 		// add processes to incoming queue
-		this.processes.map((process) => {
-			if (process.arrival == this.currentCycle) {
+		this.processes.map((process, index) => {
+			if (this.addedProcesses.indexOf(index) < 0 && process.arrival == this.currentCycle) {
 				this.queues.incoming.push(this.createProcessWrap(process));
 				console.log(`Process ${process.id} has arrived`);
+				this.addedProcesses.push(index);
 			}
 		});
 
@@ -113,6 +128,17 @@ class MemorySimulator extends Simulator {
 				}
 
 				this.queues.allocated.splice(i, 1);
+
+				if (this.algorithm == "buddy") {
+					// merge empty blocks in bigger partitions
+					console.log("Freeing BLOCKS", this.memoryGroups);
+					this.memoryGroups = this.mergeMemoryBlocks(this.memoryGroups, 0);
+					console.log("New blocks are ", this.memoryGroups)
+				}
+
+				if (this.oneActionPerStep) {
+					return;
+				}
 			} else {
 				i++;
 			}
@@ -142,6 +168,10 @@ class MemorySimulator extends Simulator {
 
 				this.queues.allocated.push(process);
 				this.queues.incoming.splice(i, 1);
+
+				if (this.oneActionPerStep) {
+					return;
+				}
 			} else {
 				// this process couldn't be allocated, save it for the next cycle
 				i++;
@@ -210,7 +240,6 @@ class MemorySimulator extends Simulator {
 
 		if (block != null) {
 			this.lastSearch = (block.start + process.size) % this.memory.length;
-			console.log(`Next pointer is ${this.lastSearch}`);
 			this.onNextPointerChange(this.lastSearch);
 		}
 
@@ -234,6 +263,94 @@ class MemorySimulator extends Simulator {
 		return bestBlock;
 	}
 
+	private BestFit(process: Process) : MemoryBlock {
+		let bestBlock: MemoryBlock = null;
+
+		let currentBlock: MemoryBlock = this.findNextBlockFrom(0, process.size, 0);
+		while (currentBlock != null) {
+			if (bestBlock == null || currentBlock.size < bestBlock.size) {
+				bestBlock = currentBlock;
+			}
+
+			currentBlock = this.findNextBlockFrom(currentBlock.start + currentBlock.size, process.size, 0);
+		}
+
+		return bestBlock;
+	}
+
+	private BuddySystem(process: Process) : MemoryBlock {
+		let block: MemoryBlock = null;
+
+		// find the first of available memory that can fit this process
+		let i: number = 0;
+		let offset: number = 0;
+		console.log(this.memoryGroups, this.memory)
+		while (i < this.memoryGroups.length && (this.memory[offset] != 0 || this.memoryGroups[i] < process.size)) {
+			offset += this.memoryGroups[i];
+			i++;
+		}
+
+		if (i < this.memoryGroups.length) {
+			// there is an available block
+			// this block might be bigger, reduce until the process cannot fit
+			while ((this.memoryGroups[i] >> 1) >= process.size) {
+				let half: number = this.memoryGroups[i] >> 1;
+				this.memoryGroups[i] = half;
+				this.memoryGroups.splice(i, 0, half);
+			}
+
+			block = {
+				start: offset,
+				size: this.memoryGroups[i],
+				type: 0
+			};
+		}
+
+		return block;
+	}
+
+	private mergeMemoryBlocks(blocks: number[], offset: number) : number[] {
+		if (blocks.length == 1) {
+			return blocks;
+		} else if (blocks.length == 2) {
+			// check if both blocks can be merged
+			if (this.memory[offset] == 0 && this.memory[offset + blocks[0]] == 0) {
+				// blocs can be merged, the result will be a node equal to the sum
+				// of both nodes, which should be a power of 2
+				return [blocks[0] + blocks[1]];
+			} else {
+				// block cannot be merged
+				return blocks;
+			}
+		} else {
+			// find the half of the memory blocks
+			let sum: number = 0;
+			for (let i: number = 0; i < blocks.length; i++) {
+				sum += blocks[i];
+			}
+
+			// sum is a power of 2
+			let halfValue: number = sum >> 1;
+			let halfIndex: number = 0;
+			while (halfValue > 0) {
+				halfValue -= blocks[halfIndex];
+				halfIndex++;
+			}
+
+			// now we have 2 possible nodes
+			let leftNode = this.mergeMemoryBlocks(blocks.slice(0, halfIndex), offset);
+			let rightNode = this.mergeMemoryBlocks(blocks.slice(halfIndex), offset + sum >> 1);
+
+			// these nodes could be merged if they are only one node
+			if (leftNode.length == 1 && rightNode.length == 1) {
+				return this.mergeMemoryBlocks([leftNode[0], rightNode[0]], offset);
+			} else {
+				// this nodes cannot be merged
+				return [...leftNode, ...rightNode];
+			}
+		}
+	}
+
 	/**
 	 * Sets the memory capacity and initializes.
 	 */
@@ -243,6 +360,8 @@ class MemorySimulator extends Simulator {
 		for(let i = 0; i < value; i++) {
 			this.memory.push(0);
 		}
+
+		this.memoryGroups = [value];
 	}
 
 	/**
@@ -252,6 +371,8 @@ class MemorySimulator extends Simulator {
 		first_fit: this.FirstFit.bind(this),
 		next_fit: this.NextFit.bind(this),
 		worst_fit: this.WorstFit.bind(this),
+		best_fit: this.BestFit.bind(this),
+		buddy: this.BuddySystem.bind(this)
 	};
 
 	/**
