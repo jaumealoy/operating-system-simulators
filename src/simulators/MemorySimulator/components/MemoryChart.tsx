@@ -177,8 +177,10 @@ function MemoryChart(props: MemoryChartProps) {
 							  BORDER_WIDTH + maxWidth + FONT_SIZE, 
 							  start * UNIT_HEIGHT + (UNIT_HEIGHT - FONT_SIZE) / 2 + BORDER_WIDTH / 2
 						  );
-				} else {
+				} else if (props.data[start] < 0) {
 					rect.fill(pattern);
+				} else {
+					rect.remove();
 				}
 
 				if (showBlockSize) {
@@ -198,11 +200,13 @@ function MemoryChart(props: MemoryChartProps) {
 
 				// draw dashed lines inside a block
 				for (let j = start + 1; j < end; j++) {
-					canvas.line(
+					if (props.data[start] != 0) {
+						canvas.line(
 							BORDER_WIDTH + maxWidth, j * UNIT_HEIGHT + BORDER_WIDTH / 2, 
 							BORDER_WIDTH + maxWidth + MEMORY_WIDTH, j * UNIT_HEIGHT + BORDER_WIDTH / 2
 						   )
-						  .stroke({ width: BORDER_WIDTH / 2, color: "black", dasharray: "5,5" })
+						  .stroke({ width: BORDER_WIDTH / 2, color: "black", dasharray: "5,5" });
+					}
 				}
 
 				i = end;

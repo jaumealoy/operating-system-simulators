@@ -1,5 +1,5 @@
 import { FormEvent, useState, useRef, useEffect } from "react";
-import { Process, MemorySimulator } from "./MemorySimulator";
+import { Process, ProcessWrap, MemorySimulator } from "./MemorySimulator";
 
 const useMemorySimulator = () => {
 	const simulator = useRef<MemorySimulator>(new MemorySimulator());
@@ -51,10 +51,18 @@ const useMemorySimulator = () => {
 
 	const [nextPointer, setNextPointer] = useState<number>(0);
 	simulator.current.onNextPointerChange = (value: number) => setNextPointer(value);
+
+	const [currentCycle, setCurrentCycle] = useState<number>(0);
+	simulator.current.onCurrentCycleChange = (cycle: number) => setCurrentCycle(cycle);
 	
 	const [memoryGroups, setMemoryGroups] = useState<number[]>([16]);
 	simulator.current.onMemoryGroupsChange = (groups: number[]) => setMemoryGroups(groups);
 
+	const [processQueues, setProcessQueues] = useState<{[key: string]: ProcessWrap[]}>({});
+	simulator.current.onQueuesChange = (queues) => setProcessQueues(queues);
+
+	const [allocationHistory, setAllocationHistory] = useState<ProcessWrap[]>([]);
+	simulator.current.onAllocationHistoryChange = (processes) => setAllocationHistory(processes);
 
 	// simulation control
 	const hasNextStep = () : boolean => simulator.current.hasNextStep();
@@ -65,7 +73,7 @@ const useMemorySimulator = () => {
 		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
-		memoryData, nextPointer, memoryGroups,
+		memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
 		hasNextStep, nextStep
 	};
 };

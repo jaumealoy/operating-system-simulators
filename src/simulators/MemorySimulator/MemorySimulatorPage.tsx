@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import TopBar from "../../components/TopBar";
 import MemoryChart from "./components/MemoryChart";
 import {
-	Row, Col, FormControl, FormGroup, FormCheck
+	Row, Col, FormControl, FormGroup, FormCheck,
+	OverlayTrigger, Tooltip
 } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { FiInfo, FiAlertTriangle } from "react-icons/fi";
@@ -32,7 +33,7 @@ function MemorySimulatorPage() {
 		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
-		memoryData, nextPointer, memoryGroups,
+		memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
 		hasNextStep, nextStep
 	} = useMemorySimulator();
 
@@ -139,13 +140,13 @@ function MemorySimulatorPage() {
 							processes={processes.map(process => process.id)}
 							data={memoryData}
 							pointer={selectedAlgorithm == "next_fit" ? nextPointer : undefined}
-							blocks={memoryGroups}
+							blocks={selectedAlgorithm == "buddy" ? memoryGroups : undefined}
 							showBlockSize />
 					</div>
 				</Col>
 
 				<Col md={8}>
-					Ciclo actual: <span className="badge bg-success">0</span>
+					Ciclo actual: <span className="badge bg-success">{currentCycle}</span>
 					<br />
 					<br />
 					Próximas peticiones:
@@ -153,6 +154,7 @@ function MemorySimulatorPage() {
 						<thead>
 							<tr>
 								<th>Proceso</th>
+								<th>Duración</th>
 								<th>Llegada</th>
 								<th>Memoria solicitada</th>
 								<th>Ciclos restantes</th>
@@ -160,20 +162,46 @@ function MemorySimulatorPage() {
 						</thead>
 
 						<tbody>
-							<tr>
-								<td>A</td>
-								<td>14</td>
-								<td>5</td>
-								<td>
-									0
-
-									<FiAlertTriangle 
-										className="mr-3" />
-								</td>
-							</tr>
-							<tr>
-								<td colSpan={4}>No hay más peticiones de memoria</td>
-							</tr>
+							{("incoming" in processQueues && processQueues.incoming.length > 0) ?
+								processQueues.incoming.map((process) => 
+									<tr key={process.process.id}>
+										<td>{process.process.id}</td>
+										<td>
+											{process.process.duration == 0 ?
+												"permanente"
+												:
+												process.process.duration
+											}
+										</td>
+										<td>{process.process.arrival}</td>
+										<td>{process.process.size}</td>
+										<td>
+											{(process.process.arrival - currentCycle) >= 0 ?
+												(process.process.arrival - currentCycle)
+												:
+												<>
+													0
+													<OverlayTrigger
+    													placement="right"
+														overlay={
+															<Tooltip id={`memory_error_${process.process.id}`}>
+																No hay memoria suficiente
+															</Tooltip>
+														}
+														>
+														<FiAlertTriangle className="ml-2" />
+													</OverlayTrigger>
+												</>
+											}
+											
+										</td>
+									</tr>
+								)
+								:
+								<tr>
+									<td colSpan={5}>No hay más peticiones de memoria</td>
+								</tr>
+							}
 						</tbody>
 					</table>
 
@@ -189,9 +217,21 @@ function MemorySimulatorPage() {
 						</thead>
 
 						<tbody>
-							<tr>
-								<td colSpan={4}>No se ha atendido ninguna petición de memoria.</td>
-							</tr>
+							{allocationHistory.length == 0 ?
+								<tr>
+									<td colSpan={4}>No se ha atendido ninguna petición de memoria.</td>
+								</tr>
+								:
+								allocationHistory.map((allocation) => 
+									<tr key={allocation.process.id}>
+										<td>{allocation.start}</td>
+										<td>{allocation.process.id}</td>
+										<td>{allocation.process.size}</td>
+										<td>{allocation.blockBegin} - {allocation.blockEnd}</td>
+									</tr>
+								)
+							}
+							
 						</tbody>
 					</table>
 				</Col>
