@@ -31,10 +31,11 @@ function MemorySimulatorPage() {
 
 	const {
 		isSimpleView, setSimpleView,
-		selectedAlgorithm, setSelectedAlgorithm,
+		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
-		memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
+		results,
+		//memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
 		isRunning, isStarted,
 		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause,
 	} = useMemorySimulator();
@@ -60,9 +61,9 @@ function MemorySimulatorPage() {
 											<FormCheck
 												key={algorithm.id}
 												name="selectedAlgorithm"
-												type="radio"
-												checked={selectedAlgorithm == algorithm.id}
-												onChange={() => setSelectedAlgorithm(algorithm.id)}
+												type={isSimpleView ? "radio" : "checkbox"}
+												checked={isSimpleView ? selectedAlgorithm == algorithm.id : selectedAlgorithms.indexOf(algorithm.id) >= 0}
+												onChange={() => selectAlgorithm(algorithm.id)}
 												disabled={isStarted}
 												label={
 													<>
@@ -143,109 +144,131 @@ function MemorySimulatorPage() {
 			<Row>
 				<h2>Resultados</h2>
 				
-				<Col md={4}>
-					<div className="x-centered">
-						<MemoryChart
-							capacity={memoryCapacity}
-							processes={processes.map(process => process.id)}
-							data={memoryData}
-							pointer={selectedAlgorithm == "next_fit" ? nextPointer : undefined}
-							blocks={selectedAlgorithm == "buddy" ? memoryGroups : undefined}
-							showBlockSize />
-					</div>
-				</Col>
+				{isSimpleView && (selectedAlgorithm in results) &&
+					<>
+						<Col md={4}>
+							<div className="x-centered">
+								<MemoryChart
+									capacity={memoryCapacity}
+									processes={processes.map(process => process.id)}
+									data={results[selectedAlgorithm].memory}
+									pointer={selectedAlgorithm == "next_fit" ? results[selectedAlgorithm].nextPointer : undefined}
+									blocks={selectedAlgorithm == "buddy" ? results[selectedAlgorithm].memoryGroups : undefined}
+									showBlockSize />
+							</div>
+						</Col>
 
-				<Col md={8}>
-					Ciclo actual: <span className="badge bg-success">{currentCycle}</span>
-					<br />
-					<br />
-					Próximas peticiones:
-					<table className="table">
-						<thead>
-							<tr>
-								<th>Proceso</th>
-								<th>Duración</th>
-								<th>Llegada</th>
-								<th>Memoria solicitada</th>
-								<th>Ciclos restantes</th>
-							</tr>
-						</thead>
-
-						<tbody>
-							{("incoming" in processQueues && processQueues.incoming.length > 0) ?
-								processQueues.incoming.map((process) => 
-									<tr key={process.process.id}>
-										<td>{process.process.id}</td>
-										<td>
-											{process.process.duration == 0 ?
-												"permanente"
-												:
-												process.process.duration
-											}
-										</td>
-										<td>{process.process.arrival}</td>
-										<td>{process.process.size}</td>
-										<td>
-											{(process.process.arrival - currentCycle) >= 0 ?
-												(process.process.arrival - currentCycle)
-												:
-												<>
-													0
-													<OverlayTrigger
-    													placement="right"
-														overlay={
-															<Tooltip id={`memory_error_${process.process.id}`}>
-																No hay memoria suficiente
-															</Tooltip>
-														}
-														>
-														<FiAlertTriangle className="ml-2" />
-													</OverlayTrigger>
-												</>
-											}
-											
-										</td>
+						<Col md={8}>
+							Ciclo actual: <span className="badge bg-success">{results[selectedAlgorithm].currentCycle}</span>
+							<br />
+							<br />
+							Próximas peticiones:
+							<table className="table">
+								<thead>
+									<tr>
+										<th>Proceso</th>
+										<th>Duración</th>
+										<th>Llegada</th>
+										<th>Memoria solicitada</th>
+										<th>Ciclos restantes</th>
 									</tr>
-								)
-								:
-								<tr>
-									<td colSpan={5}>No hay más peticiones de memoria</td>
-								</tr>
-							}
-						</tbody>
-					</table>
+								</thead>
 
-					Peticiones de memoria atendidas:
-					<table className="table">
-						<thead>
-							<tr>
-								<th>Ciclo</th>
-								<th>Proceso</th>
-								<th>Memoria solicitada</th>
-								<th>Bloque asignado</th>
-							</tr>
-						</thead>
+								<tbody>
+									{("incoming" in results[selectedAlgorithm].queues && results[selectedAlgorithm].queues.incoming.length > 0) ?
+										results[selectedAlgorithm].queues.incoming.map((process) => 
+											<tr key={process.process.id}>
+												<td>{process.process.id}</td>
+												<td>
+													{process.process.duration == 0 ?
+														"permanente"
+														:
+														process.process.duration
+													}
+												</td>
+												<td>{process.process.arrival}</td>
+												<td>{process.process.size}</td>
+												<td>
+													{(process.process.arrival - results[selectedAlgorithm].currentCycle) >= 0 ?
+														(process.process.arrival - results[selectedAlgorithm].currentCycle)
+														:
+														<>
+															0
+															<OverlayTrigger
+																placement="right"
+																overlay={
+																	<Tooltip id={`memory_error_${process.process.id}`}>
+																		No hay memoria suficiente
+																	</Tooltip>
+																}
+																>
+																<FiAlertTriangle className="ml-2" />
+															</OverlayTrigger>
+														</>
+													}
+													
+												</td>
+											</tr>
+										)
+										:
+										<tr>
+											<td colSpan={5}>No hay más peticiones de memoria</td>
+										</tr>
+									}
+								</tbody>
+							</table>
 
-						<tbody>
-							{allocationHistory.length == 0 ?
-								<tr>
-									<td colSpan={4}>No se ha atendido ninguna petición de memoria.</td>
-								</tr>
-								:
-								allocationHistory.map((allocation) => 
-									<tr key={allocation.process.id}>
-										<td>{allocation.start}</td>
-										<td>{allocation.process.id}</td>
-										<td>{allocation.process.size}</td>
-										<td>{allocation.blockBegin} - {allocation.blockEnd}</td>
+							Peticiones de memoria atendidas:
+							<table className="table">
+								<thead>
+									<tr>
+										<th>Ciclo</th>
+										<th>Proceso</th>
+										<th>Memoria solicitada</th>
+										<th>Bloque asignado</th>
 									</tr>
-								)
-							}
-							
-						</tbody>
-					</table>
-				</Col>
+								</thead>
+
+								<tbody>
+									{results[selectedAlgorithm].allocationHistory.length == 0 ?
+										<tr>
+											<td colSpan={4}>No se ha atendido ninguna petición de memoria.</td>
+										</tr>
+										:
+										results[selectedAlgorithm].allocationHistory.map((allocation) => 
+											<tr key={allocation.process.id}>
+												<td>{allocation.start}</td>
+												<td>{allocation.process.id}</td>
+												<td>{allocation.process.size}</td>
+												<td>{allocation.blockBegin} - {allocation.blockEnd}</td>
+											</tr>
+										)
+									}
+									
+								</tbody>
+							</table>
+						</Col>
+					</>
+				}
 				
+				{!isSimpleView &&
+					<Row className="scrollable-x">
+						{selectedAlgorithms.map((algorithm) =>
+							(algorithm in results) && 
+							<Col key={algorithm} md={3}>
+								<h2>{algorithm}</h2>
+								<span className="badge bg-success">{results[algorithm].currentCycle}</span>
+								<MemoryChart
+									capacity={memoryCapacity}
+									processes={processes.map(process => process.id)}
+									data={results[algorithm].memory}
+									pointer={algorithm == "next_fit" ? results[algorithm].nextPointer : undefined}
+									blocks={algorithm == "buddy" && (algorithm in results) ? results[algorithm].memoryGroups : undefined}
+									showBlockSize />
+							</Col>
+						)}
+					</Row>
+				}
 			</Row>
 
 			<SimulatorControl 

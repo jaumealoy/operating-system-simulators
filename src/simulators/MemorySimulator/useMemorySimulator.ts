@@ -1,16 +1,19 @@
 import { FormEvent, useState, useRef, useEffect } from "react";
 import { Process, ProcessWrap, MemorySimulator } from "./MemorySimulator";
-import MemoryManager from "./MemoryManager";
+import { MemoryManager, MemorySimulatorResults } from "./MemoryManager";
 
 type Manager = null | MemoryManager;
 
 const useMemorySimulator = () => {
-	const simulator = useRef<MemorySimulator>(new MemorySimulator());
+	//const simulator = useRef<MemorySimulator>(new MemorySimulator());
 
 	const initialized = useRef<boolean>(false);
 	const manager = useRef<Manager>(null);
 	if (!initialized.current) {
 		manager.current = new MemoryManager();
+		manager.current.onResultsChange = (results) => {
+			setResults({ ...results });
+		}
 		initialized.current = true;
 	}
 
@@ -31,44 +34,80 @@ const useMemorySimulator = () => {
 	};
 
 	useEffect(() => {
-		simulator.current.capacity = memoryCapacity;
+		if (manager.current != null) {
+			manager.current.capacity = memoryCapacity;
+		}
 	}, [memoryCapacity]);
 
 	// comparaison view
-	const [isSimpleView, setSimpleView] = useState<boolean>(true);
+	const [isSimpleView, setSimpleViewInternal] = useState<boolean>(true);
+	const setSimpleView = (value: boolean) => {
+		if (manager.current != null) {
+			manager.current.simpleView = value;
+			setSimpleViewInternal(value);
+		}
+	}
 
 	// algorithm settings
 	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("first_fit");
-	useEffect(() => {
-		simulator.current.selectAlgorithm(selectedAlgorithm);
-	}, [selectedAlgorithm]);
+	const [selectedAlgorithms, setSelectedAlgorithms] = useState<string[]>([]);
+	const selectAlgorithm = (algorithm: string) => {
+		if (manager.current != null) {
+			manager.current.selectAlgorithm(algorithm);
+
+			if (isSimpleView) {
+				setSelectedAlgorithm(algorithm);
+			} else {
+				let idx: number = selectedAlgorithms.indexOf(algorithm);
+				if (idx >= 0) {
+					selectedAlgorithms.splice(idx, 1);
+					setSelectedAlgorithms([...selectedAlgorithms]);
+				} else {
+					setSelectedAlgorithms([...selectedAlgorithms, algorithm]);
+				}
+			}
+		}
+	};
 
 	// process list
 	const [processes, setProcesses] = useState<Process[]>([]);
-	const addProcess = (process: Process) => { 
-		setProcesses([...processes, process]);
-		simulator.current.addProcess(process);
+	const addProcess = (process: Process) => {
+		if (manager.current != null) {
+			setProcesses([...processes, process]);
+			manager.current.addProcess(process);
+		}
 	};
 	const removeProcess = (index: number) => {
-		processes.splice(index, 1);
-		setProcesses([...processes]);
-		simulator.current.removeProcess(index);
+		if (manager.current != null) {
+			processes.splice(index, 1);
+			setProcesses([...processes]);
+			manager.current.removeProcess(index);
+		}
 	};
 
 	const loadProcessesFromList = (list: Process[]) => {
-		simulator.current.clear();
-		setProcesses([...list]);
-		list.map(process => simulator.current.addProcess(process));
+		if (manager.current != null) {
+			manager.current.clear();
+			setProcesses([...list]);
+
+			for (let i in list) {
+				manager.current.addProcess(list[i]);
+			}
+		}
 	};
 
 	useEffect(() => {
-		setRunning(false);
-		setStarted(false);
-		simulator.current.reset();
-	}, [memoryCapacity, processes, selectedAlgorithm]);
+		if (manager.current != null) {
+			setRunning(false);
+			setStarted(false);
+			manager.current.reset();
+		}
+	}, [memoryCapacity, processes, selectedAlgorithm, setSelectedAlgorithms]);
 
 	// simulation results
-	const [memoryData, setMemoryData] = useState<number[]>([]);
+	const [results, setResults] = useState<{[key: string]: MemorySimulatorResults}>({});
+
+	/*const [memoryData, setMemoryData] = useState<number[]>([]);
 	simulator.current.onMemoryChange = (memory) => {
 		setMemoryData([...memory]);
 	};
@@ -86,40 +125,62 @@ const useMemorySimulator = () => {
 	simulator.current.onQueuesChange = (queues) => setProcessQueues(queues);
 
 	const [allocationHistory, setAllocationHistory] = useState<ProcessWrap[]>([]);
-	simulator.current.onAllocationHistoryChange = (processes) => setAllocationHistory(processes);
+	simulator.current.onAllocationHistoryChange = (processes) => setAllocationHistory(processes);*/
 
 	// simulation control
 	const [isRunning, setRunning] = useState<boolean>(false);
 	const [isStarted, setStarted] = useState<boolean>(false);
 
-	const hasNextStep = () : boolean => simulator.current.hasNextStep();
+	const hasNextStep = () : boolean => {
+		if (manager.current != null) {
+			return manager.current.hasNextStep();
+		}
+
+		return false;
+	};
+
 	const nextStep = () => {
-		setStarted(true);
+		if (manager.current != null) {
+			setStarted(true);
 
-		simulator.current.nextStep();
+			manager.current.nextStep();
 
-		if (!simulator.current.hasNextStep()) {
-			setStarted(false);
-			setRunning(false);
+			if (!manager.current.hasNextStep()) {
+				setStarted(false);
+				setRunning(false);
+			}
 		}
 	};
 
-	const hasPreviousStep = () : boolean => simulator.current.hasPreviousStep();
+	const hasPreviousStep = () : boolean => {
+		if (manager.current != null) {
+			return manager.current.hasPreviousStep()
+		}
+
+		return false;
+	};
+
 	const previousStep = () => {
-		simulator.current.previousStep();
+		if (manager.current != null) {
+			manager.current.previousStep();
+		}
 	};
 
 	const stop = () => {
-		setRunning(false);
-		setStarted(false);
-		simulator.current.reset();
+		if (manager.current != null) {
+			setRunning(false);
+			setStarted(false);
+			manager.current.reset();
+		}
 	};
 
 	const clear = () => {
-		setRunning(false);
-		setStarted(false);
-		setProcesses([]);
-		simulator.current.clear();
+		if (manager.current != null) {
+			setRunning(false);
+			setStarted(false);
+			setProcesses([]);
+			manager.current.clear();
+		}
 	};
 
 	const play = () => setRunning(true);
@@ -127,10 +188,11 @@ const useMemorySimulator = () => {
 
 	return {
 		isSimpleView, setSimpleView,
-		selectedAlgorithm, setSelectedAlgorithm,
+		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
-		memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
+		results,
+		//memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
 		isRunning, isStarted,
 		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause
 	};

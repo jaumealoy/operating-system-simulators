@@ -29,7 +29,7 @@ function ProcessList(props: ProcessListProps) {
 
 					<tbody>
 						{props.processes.map((process, index) =>
-							<tr>
+							<tr key={process.id}>
 								<td>
 									{process.id}
 									{deletionEnabled &&

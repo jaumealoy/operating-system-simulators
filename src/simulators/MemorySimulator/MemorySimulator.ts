@@ -1,4 +1,3 @@
-import { GiHalfBodyCrawling } from "react-icons/gi";
 import { Simulator, Algorithm } from "./../Simulator";
 import MemoryState from "./MemoryState";
 
@@ -21,7 +20,7 @@ type Queues = {[key in "incoming" | "allocated"]: ProcessWrap[]};
 
 class MemorySimulator extends Simulator {
 	// simulator settings
-	private algorithm: string;
+	private _algorithm: string;
 	private oneActionPerStep: boolean;
 
 	// simulator data
@@ -83,7 +82,7 @@ class MemorySimulator extends Simulator {
 		this._allocationHistory = [];
 
 		// simulator settings
-		this.algorithm = "first_fit";
+		this._algorithm = "first_fit";
 		this.oneActionPerStep = true;
 	}
 
@@ -96,6 +95,8 @@ class MemorySimulator extends Simulator {
 
 		// add it to the incoming queue
 		this.queues.incoming.push(this.createProcessWrap(process));
+
+		this.onQueuesChange(this.queues);
 	}
 
 	/**
@@ -252,7 +253,7 @@ class MemorySimulator extends Simulator {
 
 				this.queues.allocated.splice(i, 1);
 
-				if (this.algorithm == "buddy") {
+				if (this._algorithm == "buddy") {
 					// merge empty blocks in bigger partitions
 					this._memoryGroups = this.mergeMemoryBlocks(this._memoryGroups, 0);
 				}
@@ -269,7 +270,7 @@ class MemorySimulator extends Simulator {
 		// there might be processes from previous cycles that couldn't be allocated
 		for (let i = 0; i < this.queues.incoming.length;) {
 			if (this._currentCycle >= this.queues.incoming[i].process.arrival) {
-				let block: MemoryBlock = this.algorithmFunctions[this.algorithm](this.queues.incoming[i].process);
+				let block: MemoryBlock = this.algorithmFunctions[this._algorithm](this.queues.incoming[i].process);
 				
 				if (block != null) {
 					// process was allocated
@@ -432,7 +433,6 @@ class MemorySimulator extends Simulator {
 		// find the first of available memory that can fit this process
 		let i: number = 0;
 		let offset: number = 0;
-		console.log(this._memoryGroups, this._memory)
 		while (i < this._memoryGroups.length && (this._memory[offset] != 0 || this._memoryGroups[i] < process.size)) {
 			offset += this._memoryGroups[i];
 			i++;
@@ -446,8 +446,6 @@ class MemorySimulator extends Simulator {
 				this._memoryGroups[i] = half;
 				this._memoryGroups.splice(i, 0, half);
 			}
-
-			console.log("Assigning block of " + this._memoryGroups[i]);
 
 			block = {
 				start: offset,
@@ -544,7 +542,7 @@ class MemorySimulator extends Simulator {
 	 * @param algorithm
 	 */
 	public selectAlgorithm(algorithm: string) : void {
-		this.algorithm = algorithm;
+		this._algorithm = algorithm;
 	}
 
 	/**
@@ -572,6 +570,13 @@ class MemorySimulator extends Simulator {
 	private set lastSearch(value: number) {
 		this._lastSearch = value;
 		this.onNextPointerChange(this._lastSearch);
+	}
+
+	/**
+	 * Returns the selected algorithm
+	 */
+	public get algorithm() : string {
+		return this._algorithm;
 	}
 }
 
