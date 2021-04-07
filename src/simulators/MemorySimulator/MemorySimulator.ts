@@ -1,5 +1,6 @@
 import { GiHalfBodyCrawling } from "react-icons/gi";
 import { Simulator, Algorithm } from "./../Simulator";
+import MemoryState from "./MemoryState";
 
 interface Process {
 	id: string;
@@ -28,13 +29,15 @@ class MemorySimulator extends Simulator {
 	private _capacity: number;
 	private queues: Queues;
 	private running: boolean;
-	private allocationHistory: ProcessWrap[];
+	private _allocationHistory: ProcessWrap[];
 
 	private _currentCycle: number;
-	private memory: number[];
+	private _memory: number[];
+
+	private states: MemoryState[];
 
 	// for Next First algorithm
-	private lastSearch: number;
+	private _lastSearch: number;
 
 	// for Buddy System algorithm
 	private _memoryGroups: number[];
@@ -50,12 +53,10 @@ class MemorySimulator extends Simulator {
 	constructor() {
 		super();
 
+		// process list
 		this.processes = [];
-		this._currentCycle = 0;
-		this.memory = [];
 
-		this.lastSearch = 0;
-
+		// default callbacks
 		this.onMemoryChange = () => {};
 		this.onNextPointerChange = () => {};
 		this.onMemoryGroupsChange = () => {};
@@ -63,23 +64,27 @@ class MemorySimulator extends Simulator {
 		this.onAllocationHistoryChange = () => {};
 		this.onCurrentCycleChange = () => {};
 
-		this.algorithm = "first_fit";
+		// simulator data
+		this.states = [];
 
+		this._currentCycle = 0;
+		this._memory = [];
 		this._memoryGroups = [];
-
 		this._capacity = 16
 		this.capacity = this._capacity;
+		this._lastSearch = 0;
+		this.running = false;
 
 		this.queues = {
 			incoming: [],
 			allocated: []
 		};
 
-		this.allocationHistory = [];
+		this._allocationHistory = [];
 
+		// simulator settings
+		this.algorithm = "first_fit";
 		this.oneActionPerStep = true;
-
-		this.running = false;
 	}
 
 	/**
@@ -128,29 +133,42 @@ class MemorySimulator extends Simulator {
 
 		return nextStep;
 	}
-	public hasPreviousStep(): boolean {
-		throw new Error("Method not implemented.");
-	}
-	public reset(): void {
-		this.capacity = this._capacity;
-		this.currentCycle = 0;
-		this.running = false;
 
+	public hasPreviousStep(): boolean {
+		return this.states.length > 0;
+	}
+	
+	public reset(): void {
+		// clear previous steps
+		this.states = [];
+
+		// and set the simulator to its initial step
+		// 1. reset the memory
+		this.capacity = this._capacity; 
+
+		// 2. initialize process queues
 		this.queues = { incoming: [], allocated: [] };
 		this.processes.map(process => {
 			this.queues.incoming.push(this.createProcessWrap(process));
 		});
+		this.currentCycle = 0;
+		this.running = false;
+		
+		// clear simulator results
+		this._allocationHistory = [];
 
-		this.allocationHistory = [];
-
-		this.onMemoryChange(this.memory);
+		// 3. show results
+		this.onMemoryChange(this._memory);
 		this.onQueuesChange(this.queues);
-		this.onAllocationHistoryChange(this.allocationHistory);
+		this.onAllocationHistoryChange(this._allocationHistory);
 	}
+
 	public clear(): void {
+		// clear the memory and reset to an empty state
 		this.capacity = this._capacity;
-		this.allocationHistory = [];
+		this._allocationHistory = [];
 		this.processes = [];
+		this.currentCycle = 0;
 		this.running = false;
 	}
 
@@ -164,14 +182,47 @@ class MemorySimulator extends Simulator {
 		];
 	}
 
+	/**
+	 * Processes the next step
+	 */
 	public nextStep() : void {
-		// TODO: save current state
+		// save current state before processing next step
+		let state: MemoryState = new MemoryState(
+			this._currentCycle, 
+			this._memory, 
+			this._memoryGroups, 
+			this._allocationHistory,
+			this.queues,
+			this._lastSearch
+		);
+
+		this.states.push(state);
+
+		// we can now safely change the current state
 		this.update();
-		this.onMemoryChange(this.memory);
+
+		this.onMemoryChange(this._memory);
 		this.onMemoryGroupsChange(this._memoryGroups);
 		this.onQueuesChange(this.queues);
-		this.onAllocationHistoryChange(this.allocationHistory);
+		this.onAllocationHistoryChange(this._allocationHistory);
 		this.onCurrentCycleChange(this._currentCycle);
+	}
+
+	/**
+	 * Returns to the previous state
+	 */
+	public previousStep() : void {
+		let state: MemoryState | undefined = this.states.pop();
+
+		if (state != undefined) {
+			// recover data from the previous state
+			this.currentCycle = state.currentCycle;
+			this.memory = state.memory;
+			this.memoryGroups = state.memoryGroups;
+			this._allocationHistory = state.allocationHistory;
+			this.queues = state.queues;
+			this.lastSearch = state.lastSearch;
+		}
 	}
 
 	private update() : void {
@@ -179,7 +230,7 @@ class MemorySimulator extends Simulator {
 			// set to an initial state
 			this.queues = { incoming: [], allocated: [] }
 			this._currentCycle = 0;
-			this.lastSearch = 0;
+			this._lastSearch = 0;
 
 			// add processes to incoming queue
 			this.processes.map(process => {
@@ -188,7 +239,6 @@ class MemorySimulator extends Simulator {
 
 			this.running = true;
 		}
-		
 
 		// we have to free the memory from processes that have finished on this cycle
 		for (let i = 0; i < this.queues.allocated.length;) {
@@ -197,7 +247,7 @@ class MemorySimulator extends Simulator {
 			if (process.process.duration > 0 && this._currentCycle >= (process.start + process.process.duration)) {
 				// this process must be freed
 				for (let i = process.blockBegin; i <= process.blockEnd; i++) {
-					this.memory[i] = 0;
+					this._memory[i] = 0;
 				}
 
 				this.queues.allocated.splice(i, 1);
@@ -231,7 +281,7 @@ class MemorySimulator extends Simulator {
 					}
 
 					for (let j = block.start; j < (block.start + this.processes[processId].size); j++) {
-						this.memory[j] = processId + 1;
+						this._memory[j] = processId + 1;
 					}
 
 					let process: ProcessWrap = this.queues.incoming[i];
@@ -240,12 +290,12 @@ class MemorySimulator extends Simulator {
 					process.blockEnd = block.start + block.size - 1;
 
 					for (let j = block.start + process.process.size; j <= process.blockEnd; j++) {
-						this.memory[j] = -1;
+						this._memory[j] = -1;
 					}
 
 					this.queues.allocated.push(process);
 					this.queues.incoming.splice(i, 1);
-					this.allocationHistory.push(process);
+					this._allocationHistory.push(process);
 
 					if (this.oneActionPerStep) {
 						return;
@@ -278,17 +328,17 @@ class MemorySimulator extends Simulator {
 		let memoryBlock: MemoryBlock = null;
 
 		let i: number = start;
-		while (memoryBlock == null && i < this.memory.length) {
+		while (memoryBlock == null && i < this._memory.length) {
 			let blockSize: number = 0;
 
 			// process the current block
 			let j: number = i;
-			while(this.memory[i] == this.memory[j]) {
+			while(this._memory[i] == this._memory[j]) {
 				blockSize++;
 				j++;
 			}
 
-			if (this.memory[i] == blockType) {
+			if (this._memory[i] == blockType) {
 				memoryBlock = {
 					start: i,
 					type: blockType,
@@ -316,7 +366,7 @@ class MemorySimulator extends Simulator {
 	private NextFit(process: Process) : MemoryBlock {
 		// find the first available block but start searching from the last block 
 		// visited
-		let block: MemoryBlock = this.findNextBlockFrom(this.lastSearch, process.size, 0);
+		let block: MemoryBlock = this.findNextBlockFrom(this._lastSearch, process.size, 0);
 
 		// there might not be a block below "lastSearch" block
 		if (block == null) {
@@ -325,8 +375,8 @@ class MemorySimulator extends Simulator {
 		}
 
 		if (block != null) {
-			this.lastSearch = (block.start + process.size) % this.memory.length;
-			this.onNextPointerChange(this.lastSearch);
+			this._lastSearch = (block.start + process.size) % this._memory.length;
+			this.onNextPointerChange(this._lastSearch);
 		}
 
 		if (block != null) {
@@ -382,8 +432,8 @@ class MemorySimulator extends Simulator {
 		// find the first of available memory that can fit this process
 		let i: number = 0;
 		let offset: number = 0;
-		console.log(this._memoryGroups, this.memory)
-		while (i < this._memoryGroups.length && (this.memory[offset] != 0 || this._memoryGroups[i] < process.size)) {
+		console.log(this._memoryGroups, this._memory)
+		while (i < this._memoryGroups.length && (this._memory[offset] != 0 || this._memoryGroups[i] < process.size)) {
 			offset += this._memoryGroups[i];
 			i++;
 		}
@@ -414,7 +464,7 @@ class MemorySimulator extends Simulator {
 			return blocks;
 		} else if (blocks.length == 2) {
 			// check if both blocks can be merged
-			if (this.memory[offset] == 0 && this.memory[offset + blocks[0]] == 0) {
+			if (this._memory[offset] == 0 && this._memory[offset + blocks[0]] == 0) {
 				// blocs can be merged, the result will be a node equal to the sum
 				// of both nodes, which should be a power of 2
 				return [blocks[0] + blocks[1]];
@@ -456,10 +506,10 @@ class MemorySimulator extends Simulator {
 	 */
 	set capacity(value: number) {
 		this._capacity = value;
-		this.memory = [];
+		this._memory = [];
 
 		for(let i = 0; i < value; i++) {
-			this.memory.push(0);
+			this._memory.push(0);
 		}
 
 		this.memoryGroups = [value];
@@ -505,11 +555,25 @@ class MemorySimulator extends Simulator {
 		this.onMemoryGroupsChange(this._memoryGroups);
 	}
 
+	private set memory(value: number[]) {
+		this._memory = value;
+		this.onMemoryChange(this._memory);
+	}
+
 	private set currentCycle(value: number) {
 		this._currentCycle = value;
 		this.onCurrentCycleChange(this._currentCycle);
 	}
+
+	/**
+	 * Sets the lastSearch pointer to a memory position
+	 * Then invokes its callback
+	 */
+	private set lastSearch(value: number) {
+		this._lastSearch = value;
+		this.onNextPointerChange(this._lastSearch);
+	}
 }
 
 export { MemorySimulator };
-export type { Process, ProcessWrap };
+export type { Process, ProcessWrap, Queues };

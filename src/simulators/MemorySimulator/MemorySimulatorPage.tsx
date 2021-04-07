@@ -30,17 +30,20 @@ function MemorySimulatorPage() {
 	const { t } = useTranslation();
 
 	const {
+		isSimpleView, setSimpleView,
 		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
 		memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
 		isRunning, isStarted,
-		hasNextStep, nextStep, stop, clear
+		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause,
 	} = useMemorySimulator();
 
 	return (
 		<>
-			<TopBar />
+			<TopBar
+				simpleView={isSimpleView}
+				onChangeView={setSimpleView} />
 
 			{/* Simulator settings and process form */}
 			<Row className="mb-3">
@@ -245,13 +248,17 @@ function MemorySimulatorPage() {
 				
 			</Row>
 
-			
-
 			<SimulatorControl 
 				hasNext={hasNextStep()}
 				next={nextStep}
+				hasPrevious={hasPreviousStep()}
+				previous={previousStep}
 				stop={stop}
 				reset={clear}
+				start={play}
+				pause={pause}
+				running={isRunning}
+				timerCallback={nextStep}
 			/>
 		</>
 	);

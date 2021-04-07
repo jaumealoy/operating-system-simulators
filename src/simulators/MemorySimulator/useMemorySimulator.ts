@@ -1,8 +1,18 @@
 import { FormEvent, useState, useRef, useEffect } from "react";
 import { Process, ProcessWrap, MemorySimulator } from "./MemorySimulator";
+import MemoryManager from "./MemoryManager";
+
+type Manager = null | MemoryManager;
 
 const useMemorySimulator = () => {
 	const simulator = useRef<MemorySimulator>(new MemorySimulator());
+
+	const initialized = useRef<boolean>(false);
+	const manager = useRef<Manager>(null);
+	if (!initialized.current) {
+		manager.current = new MemoryManager();
+		initialized.current = true;
+	}
 
 	// memory capacity
 	const [memoryCapacity, setMemoryCapacityInternal] = useState<number>(16);
@@ -24,6 +34,9 @@ const useMemorySimulator = () => {
 		simulator.current.capacity = memoryCapacity;
 	}, [memoryCapacity]);
 
+	// comparaison view
+	const [isSimpleView, setSimpleView] = useState<boolean>(true);
+
 	// algorithm settings
 	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("first_fit");
 	useEffect(() => {
@@ -43,6 +56,7 @@ const useMemorySimulator = () => {
 	};
 
 	const loadProcessesFromList = (list: Process[]) => {
+		simulator.current.clear();
 		setProcesses([...list]);
 		list.map(process => simulator.current.addProcess(process));
 	};
@@ -86,7 +100,13 @@ const useMemorySimulator = () => {
 
 		if (!simulator.current.hasNextStep()) {
 			setStarted(false);
+			setRunning(false);
 		}
+	};
+
+	const hasPreviousStep = () : boolean => simulator.current.hasPreviousStep();
+	const previousStep = () => {
+		simulator.current.previousStep();
 	};
 
 	const stop = () => {
@@ -102,13 +122,17 @@ const useMemorySimulator = () => {
 		simulator.current.clear();
 	};
 
+	const play = () => setRunning(true);
+	const pause = () => setRunning(false);
+
 	return {
+		isSimpleView, setSimpleView,
 		selectedAlgorithm, setSelectedAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
 		memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
 		isRunning, isStarted,
-		hasNextStep, nextStep, stop, clear
+		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause
 	};
 };
 

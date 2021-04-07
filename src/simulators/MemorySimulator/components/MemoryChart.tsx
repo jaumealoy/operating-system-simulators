@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef } from "react";
-import { SVG, G, Text, Rect } from "@svgdotjs/svg.js";
+import { SVG, Svg, G, Text, Rect } from "@svgdotjs/svg.js";
 
 const MEMORY_WIDTH: number = 200;
 const UNIT_HEIGHT: number = 25;
@@ -27,18 +27,24 @@ function MemoryChart(props: MemoryChartProps) {
 	const container = useRef<HTMLDivElement>(null);
 
 	// SVG.js chart references
-	const chart = useRef(SVG());
-	const imageGroup = useRef<GroupRef>({ g: null });
+	const initialized = useRef<boolean>(false);
+	const chart = useRef<Svg>();
+	const imageGroup = useRef<G>();
+
+	if (!initialized.current) {
+		let canvas: Svg = SVG();
+		chart.current = canvas;
+		imageGroup.current = canvas.group();
+
+		initialized.current = true;
+	}
 
 	let showBlockSize: boolean = props.showBlockSize || false;
 
 	useLayoutEffect(() => {
-		if (container.current != null) {
-			console.log("Creating new contaienr");
-
+		if (chart.current != undefined && container.current != null) {
 			// creating the SVG element
 			chart.current.addTo(container.current);
-			imageGroup.current.g = chart.current.group();
 		}
 
 		// resize the chart on window resize
@@ -55,11 +61,9 @@ function MemoryChart(props: MemoryChartProps) {
 	}, []);
 
 	useEffect(() => {
-		let canvas = imageGroup.current.g;
+		let canvas = imageGroup.current;
 
-		console.log("Updated state");
-
-		if (canvas != null) {
+		if (chart.current != undefined && canvas != undefined) {
 			canvas.clear();
 
 			// drawing all texts and calculate their maximum width
