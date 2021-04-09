@@ -8,6 +8,7 @@ interface TopBarProps {
 	simpleView?: boolean;
 	onChangeView?: (isSimpleView: boolean) => void;
 	onClickTutorial?: () => void;
+	children?: React.ReactNode;
 }
 
 function TopBar(props: TopBarProps) {
@@ -25,6 +26,7 @@ function TopBar(props: TopBarProps) {
 					<IoIosHelpBuoy className="mr-1" />
 					{t("common.buttons.tutorial")}
 				</button>
+
 
 				<div
 					data-tut="view_bar"
@@ -59,6 +61,8 @@ function TopBar(props: TopBarProps) {
 						{t("common.buttons.simpleview")}
 					</label>
 				</div>
+
+				{props.children}
 			</Col>
 		</Row>
 	);

@@ -1,6 +1,6 @@
 import React, { useState, FormEvent } from "react";
 import { FormGroup, FormControl, Row, Col } from "react-bootstrap";
-import { Process } from "./../MemorySimulator";
+import { Process } from "../MemorySimulator";
 
 interface AddProcessFormProps {
     onAddProcess: (process: Process) => void; 

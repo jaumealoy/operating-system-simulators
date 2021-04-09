@@ -1,4 +1,4 @@
-import { Simulator, Algorithm } from "./../Simulator";
+import { Simulator, Algorithm } from "../../Simulator";
 import MemoryState from "./MemoryState";
 
 interface Process {

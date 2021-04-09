@@ -1,5 +1,5 @@
 import { ProcessWrap, Queues } from "./MemorySimulator";
-import State from "./../State";
+import State from "../../State";
 
 class MemoryState extends State {
 	private _currentCycle: number;

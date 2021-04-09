@@ -1,5 +1,5 @@
 import React from "react";
-import { Process } from "./../MemorySimulator";
+import { Process } from "../MemorySimulator";
 import { FiDelete } from "react-icons/fi";
 
 interface ProcessListProps {
