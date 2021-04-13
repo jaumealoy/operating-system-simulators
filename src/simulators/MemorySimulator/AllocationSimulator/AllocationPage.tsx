@@ -32,14 +32,13 @@ function AllocationPage(props: AllocationPageProps) {
     const { t } = useTranslation();
 
     const {
-		isSimpleView, setSimpleView,
 		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
 		results,
 		isRunning, isStarted,
 		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause,
-	} = useMemorySimulator();
+	} = useMemorySimulator(props.simpleView);
 
     return (
         <>
@@ -58,8 +57,8 @@ function AllocationPage(props: AllocationPageProps) {
 											<FormCheck
 												key={algorithm.id}
 												name="selectedAlgorithm"
-												type={isSimpleView ? "radio" : "checkbox"}
-												checked={isSimpleView ? selectedAlgorithm == algorithm.id : selectedAlgorithms.indexOf(algorithm.id) >= 0}
+												type={props.simpleView ? "radio" : "checkbox"}
+												checked={props.simpleView ? selectedAlgorithm == algorithm.id : selectedAlgorithms.indexOf(algorithm.id) >= 0}
 												onChange={() => selectAlgorithm(algorithm.id)}
 												disabled={isStarted}
 												label={

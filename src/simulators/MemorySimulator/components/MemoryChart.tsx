@@ -13,6 +13,7 @@ interface MemoryChartProps {
 	showBlockSize?: boolean;
 	pointer?: number;
 	blocks?: number[];
+	groupBlocks?: boolean;
 };
 
 interface GroupRef {
@@ -40,6 +41,7 @@ function MemoryChart(props: MemoryChartProps) {
 	}
 
 	let showBlockSize: boolean = props.showBlockSize || false;
+	let groupBlocks: boolean = props.groupBlocks == undefined ? true : props.groupBlocks;
 
 	useLayoutEffect(() => {
 		if (chart.current != undefined && container.current != null) {
@@ -162,9 +164,11 @@ function MemoryChart(props: MemoryChartProps) {
 				let start: number = i;
 				let end: number = i + 1;
 			
-				// find the next change
-				while (end < props.data.length && props.data[end] == props.data[start]) {
-					end++;
+				if (groupBlocks) {
+					// find the next change
+					while (end < props.data.length && props.data[end] == props.data[start]) {
+						end++;
+					}
 				}
 
 				let rect: Rect =canvas.rect(MEMORY_WIDTH, UNIT_HEIGHT * (end - start))

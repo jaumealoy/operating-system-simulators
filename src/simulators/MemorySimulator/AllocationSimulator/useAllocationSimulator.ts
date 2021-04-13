@@ -4,7 +4,7 @@ import { MemoryManager, MemorySimulatorResults } from "./MemoryManager";
 
 type Manager = null | MemoryManager;
 
-const useMemorySimulator = () => {
+const useMemorySimulator = (simpleView: boolean) => {
 	//const simulator = useRef<MemorySimulator>(new MemorySimulator());
 
 	const initialized = useRef<boolean>(false);
@@ -40,13 +40,13 @@ const useMemorySimulator = () => {
 	}, [memoryCapacity]);
 
 	// comparaison view
-	const [isSimpleView, setSimpleViewInternal] = useState<boolean>(true);
-	const setSimpleView = (value: boolean) => {
+	useEffect(() => {
 		if (manager.current != null) {
-			manager.current.simpleView = value;
-			setSimpleViewInternal(value);
+			manager.current.simpleView = simpleView;
+			setStarted(false);
+			setRunning(false);
 		}
-	}
+	}, [simpleView]);
 
 	// algorithm settings
 	const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>("first_fit");
@@ -55,7 +55,7 @@ const useMemorySimulator = () => {
 		if (manager.current != null) {
 			manager.current.selectAlgorithm(algorithm);
 
-			if (isSimpleView) {
+			if (simpleView) {
 				setSelectedAlgorithm(algorithm);
 			} else {
 				let idx: number = selectedAlgorithms.indexOf(algorithm);
@@ -187,7 +187,6 @@ const useMemorySimulator = () => {
 	const pause = () => setRunning(false);
 
 	return {
-		isSimpleView, setSimpleView,
 		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,

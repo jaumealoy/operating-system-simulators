@@ -3,6 +3,7 @@ import { Row, Col, FormGroup, FormControl } from "react-bootstrap";
 import CycleDistribution from "./CycleDistribution";
 import { Process } from "./../CPUSimulator";
 import { useTranslation } from "react-i18next";
+import uniqueElement from "../../../helpers/uniqueElement";
 
 const DEFAULT_NAMES: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const DEFAULT_ARRIVAL: string = "0";
@@ -17,26 +18,8 @@ interface AddProcessFormProps {
 function AddProcessForm(props: AddProcessFormProps) {
 	const { t } = useTranslation();
 
-	const getNextValidName = () : string => {
-		let validNames = [...DEFAULT_NAMES];
-
-		for (let i = 0; i < props.processes.length; i++) {
-			let index = validNames.indexOf(props.processes[i].id);
-			
-			if (index >= 0) {
-				validNames.splice(index, 1);
-			}
-		}
-
-		if (validNames.length == 0) {
-			return "";
-		} else {
-			return validNames[0];
-		}
-	}
-
     // form data
-    const [name, setName] = useState<string>(getNextValidName());
+    const [name, setName] = useState<string>("");
     const [arrival, setArrival] = useState<string>(DEFAULT_ARRIVAL);
     const [duration, setDuration] = useState<string>(DEFAULT_DURATION);
     const [cycles, setCycles] = useState<boolean[]>([]);
@@ -71,7 +54,6 @@ function AddProcessForm(props: AddProcessFormProps) {
         });
 
 		// clear form
-		setName(getNextValidName());
 		setArrival(DEFAULT_ARRIVAL);
 		setDuration(DEFAULT_DURATION);
     };
@@ -82,7 +64,16 @@ function AddProcessForm(props: AddProcessFormProps) {
     };
 
 	useEffect(() => {
-		setName(getNextValidName());
+		let suggest: boolean = name.length == 0 || props.processes.map(process => process.id).indexOf(name) >= 0;
+		if (suggest) {
+			let suggestion: string | null = uniqueElement<string>(DEFAULT_NAMES, props.processes.map(p => p.id));
+
+			if (suggestion == null) {
+				suggestion = "";
+			}
+
+			setName(suggestion);
+		} 
 	}, [props.processes]);
 
 	let isValidName: boolean = true;
