@@ -91,6 +91,7 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 	// simulator results
 	const [processTable, setProcessTable] = useState<ProcessTable>({});
 	const [memory, setMemory] = useState<number[]>([]);
+	const [pages, setPages] = useState<number[]>([]);
 	const [pageFailures, setPageFailures] = useState<number>(0);
 	const [currentCycle, setCurrentCycle] = useState<number>(0);
 
@@ -99,8 +100,9 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 			setProcessTable({...table})
 		};
 
-		simulator.current.onMemoryChange = (memory) => {
+		simulator.current.onMemoryChange = (memory, pages) => {
 			setMemory([...memory]);
+			setPages([...pages]);
 		};
 
 		simulator.current.onPageFailuresChange = (value) => {
@@ -132,7 +134,7 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 		processes, addProcess, removeProcess,
 		requests, addRequest, removeRequest,
 		loadRequestsFromList, loadProcessesFromList,
-		processTable, memory, pageFailures, currentCycle,
+		processTable, memory, pageFailures, currentCycle, pages,
 		hasNextStep, nextStep,
 	};
 }

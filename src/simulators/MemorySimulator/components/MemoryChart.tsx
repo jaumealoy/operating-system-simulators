@@ -14,6 +14,7 @@ interface MemoryChartProps {
 	pointer?: number;
 	blocks?: number[];
 	groupBlocks?: boolean;
+	customBlockText?: (position: number) => string;
 };
 
 interface GroupRef {
@@ -179,7 +180,14 @@ function MemoryChart(props: MemoryChartProps) {
 					let processId = props.data[start] - 1;
 					rect.fill(PROCESS_COLORS[processId % PROCESS_COLORS.length]);
 
-					canvas.text(props.processes[processId].toString())
+					let text: string;
+					if (props.customBlockText == undefined) {
+						text = props.processes[processId].toString();
+					} else {
+						text = props.customBlockText(start);
+					}
+
+					canvas.text(text)
 						  .font({ size: FONT_SIZE, fill: "white" })
 						  .move(
 							  BORDER_WIDTH + maxWidth + FONT_SIZE, 

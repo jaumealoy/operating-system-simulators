@@ -1,3 +1,4 @@
+import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 import { Simulator, Algorithm } from "../../Simulator";
 
 interface Process {
@@ -32,6 +33,7 @@ class PaginationSimulator extends Simulator {
 	private _pendingRequests: Request[];
 	private running: boolean;
 	private _memory: number[];
+	private _pages: number[];
 	private _counter: number;
 	private _pageFailures: number;
 
@@ -40,7 +42,7 @@ class PaginationSimulator extends Simulator {
 
 	// simulator callbacks
 	public onProcessTableChange: (table: ProcessTable) => void;
-	public onMemoryChange: (memory: number[]) => void;
+	public onMemoryChange: (memory: number[], pages: number[]) => void;
 	public onPageFailuresChange: (value: number) => void;
 	public onCurrentCycleChange: (value: number) => void;
 
@@ -53,12 +55,13 @@ class PaginationSimulator extends Simulator {
 		this._counter = 0;
 
 		this._memory = [];
+		this._pages = [];
 		this._pendingRequests = [];
 		this.running = false;
 
 		this._pageFailures = 0;
 		
-		this.algorithm = "fifo";
+		this.algorithm = "optimal";
 
 		this._processTable = {};
 
@@ -89,6 +92,7 @@ class PaginationSimulator extends Simulator {
 
 		// initialize its process table
 		this.initializeProcessTable(process);
+		this.initializeMemory();
 	}
 
 	public addRequest(request: Request) : void {
@@ -115,7 +119,7 @@ class PaginationSimulator extends Simulator {
 
 		// notify changes
 		this.onProcessTableChange(this._processTable);
-		this.onMemoryChange(this._memory);
+		this.onMemoryChange(this._memory, this._pages);
 		this.onCurrentCycleChange(this._counter);
 	}
 
@@ -125,6 +129,7 @@ class PaginationSimulator extends Simulator {
 			this._pageFailures = 0;
 			this.running = true;
 
+			this.initializeMemory();
 			this.initializeProcessTables();
 		}
 
@@ -157,8 +162,10 @@ class PaginationSimulator extends Simulator {
 						// mark the replaced page as unloaded
 						this._processTable[request.process][replacedPage].data.frame = -1;
 						this._processTable[request.process][replacedPage].arrival = -1;
+
 						this._processTable[request.process][request.page].data.frame = frame;
 						this._processTable[request.process][request.page].arrival = this._counter;
+						this._pages[frame] = request.page;
 					} else {
 						console.log("Allocating new frame " + frame + " to process " + request.process, request.page)
 
@@ -166,6 +173,7 @@ class PaginationSimulator extends Simulator {
 						let page: ProcessPageWrap = this._processTable[request.process][request.page];
 						page.arrival = this._counter;
 						page.data.frame = frame;
+						this._pages[frame] = request.page;
 
 						console.log(page)
 					}
@@ -197,23 +205,30 @@ class PaginationSimulator extends Simulator {
 		let loadedPages: {[key: number]: number} = {};
 		for (let i = 0; i < this._processTable[request.process].length; i++) {
 			if (this._processTable[request.process][i].data.frame >= 0) {
-				loadedPages[i] = 0;
+				loadedPages[i] = this.requests.length + 1;
 			}
 		}
 
-		this.requests.map((r, index) => {
+		console.log("loadedPages=",loadedPages)
+
+		this._pendingRequests.map((r, index) => {
 			if (r.process == request.process) {
+				console.log("Found a request from this same process page " + r.page, r.page in loadedPages)
 				if (r.page in loadedPages) {
 					loadedPages[r.page] = index;
 				}
 			}
 		});
 
+		console.log(loadedPages)
+
 		let max: number = -1;
 		let maxUsage: number = -1;
 		Object.entries(loadedPages).map(([page, nextUsage]) => {
 			if (nextUsage > maxUsage) {
+				console.log("New max page found at " + nextUsage + " page = " + page);
 				max = parseInt(page);
+				maxUsage = nextUsage;
 			}
 		});
 
@@ -342,8 +357,25 @@ class PaginationSimulator extends Simulator {
 		}
 	}
 
+	/**
+	 * Sets the simulation algorithm
+	 * @param id algorithm identifier
+	 */
 	public selectAlgorithm(id: string) : void {
 		this.algorithm = id;
+	}
+
+	private initializeMemory() : void {
+		// calculate the number of total frames
+		let total: number = this.processes.map(p => p.frames).reduceRight((a, b) => a + b, 0);
+
+		this._memory = [];
+		this._pages = [];
+
+		for (let i = 0; i < total; i++) {
+			this._memory[i] = 0;
+			this._pages[i] = -1;
+		}
 	}
 }
 

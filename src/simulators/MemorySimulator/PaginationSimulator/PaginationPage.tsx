@@ -64,7 +64,7 @@ function PaginationPage(props: PaginationPageProps) {
 		processes, addProcess, removeProcess,
 		requests, addRequest, removeRequest,
 		loadProcessesFromList, loadRequestsFromList,
-		processTable, memory, pageFailures, currentCycle,
+		processTable, memory, pageFailures, currentCycle, pages,
 		hasNextStep, nextStep
 	} = usePaginationSimulator(props.simpleView);
 
@@ -154,7 +154,14 @@ function PaginationPage(props: PaginationPageProps) {
 						processes={processes.map(p => p.id)}
 						capacity={processes.map(p => p.frames).reduceRight((a, b) => a + b, 0)}
 						data={memory}
-						groupBlocks={false} />
+						groupBlocks={false}
+						customBlockText={(slot) => {
+							if (memory[slot] != undefined) {
+								return processes[memory[slot] - 1].id + " - " + pages[slot];
+							}
+
+							return "";
+						}} />
 				</Col>
 
 				<Col md={8}>
