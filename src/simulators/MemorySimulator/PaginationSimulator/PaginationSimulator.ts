@@ -1,6 +1,7 @@
-import { NumberAlias } from "@svgdotjs/svg.js";
-import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 import { Simulator, Algorithm } from "../../Simulator";
+import { PaginationState } from "./PaginationState";
+
+const SINGLE_STEP: boolean = false;
 
 interface Process {
 	id: string;
@@ -47,6 +48,8 @@ class PaginationSimulator extends Simulator {
 	private _counter: number;
 	private _pageFailures: number;
 
+	private state: PaginationState[];
+
 	// memory and process tables
 	private _processTable: ProcessTable;
 
@@ -55,6 +58,11 @@ class PaginationSimulator extends Simulator {
 	public onMemoryChange: (memory: number[], pages: number[]) => void;
 	public onPageFailuresChange: (value: number) => void;
 	public onCurrentCycleChange: (value: number) => void;
+
+	// variables only used when SINGLE_STEP is true
+	private _algorithmStep: number;
+	private _algorithmIndex: number;
+	private _algorithmIndex2: number;
 
 	constructor() {
 		super();
@@ -75,6 +83,12 @@ class PaginationSimulator extends Simulator {
 
 		this._processTable = {};
 
+		this._algorithmStep = 0;
+		this._algorithmIndex = 0;
+		this._algorithmIndex2 = 0;
+
+		this.state = [];
+
 		this.onProcessTableChange = () => {};
 		this.onMemoryChange = () => {};
 		this.onPageFailuresChange = () => {};
@@ -86,15 +100,37 @@ class PaginationSimulator extends Simulator {
 	}
 
 	public hasPreviousStep(): boolean {
-		throw new Error("Method not implemented.");
+		return this.state.length > 0;
 	}
 
 	public reset(): void {
-		throw new Error("Method not implemented.");
+		this._pendingRequests = [...this.requests];
+		this._pageFailures = 0;
+		this.state = [];
+		this.running = false;
+
+		this._counter = 0;
+		this.onCurrentCycleChange(this._counter);
+
+		this.initializeMemory();
+		this.onMemoryChange(this._memory, this._pages);
+
+		this.initializeProcessTables();
+		this.onProcessTableChange(this._processTable);
 	}
 
 	public clear(): void {
-		throw new Error("Method not implemented.");
+		this.processes = [];
+		this.requests = [];
+		this._pendingRequests = [];
+		this.state = [];
+		this.running = false;
+
+		this.initializeMemory();
+		this.onMemoryChange(this._memory, this._pages);
+
+		this.initializeProcessTables();
+		this.onProcessTableChange(this._processTable);
 	}
 
 	public addProcess(process: Process) : void {
@@ -103,6 +139,35 @@ class PaginationSimulator extends Simulator {
 		// initialize its process table
 		this.initializeProcessTable(process);
 		this.initializeMemory();
+	}
+
+	/**
+	 * Removes a process from the simulator. It also deletes
+	 * all requests from this process
+	 * @param index 
+	 */
+	public removeProcess(index: number) : void {
+		let process: Process = this.processes[index];
+		this.processes.splice(index, 1);
+
+		// remove all requests, including those that are in the pending queue
+		for (let i = 0; i < this.requests.length;) {
+			if (this.requests[i].process == process.id) {
+				this.requests.splice(i, 1);
+
+				// if this function is called it means that the simulator
+				// has not been started, therefore request array and pending queue
+				// have the same elements
+				this._pendingRequests.splice(i, 1);
+			} else {
+				i++;
+			}
+		}
+
+		// remove the process table of the deleted process
+		delete this._processTable[process.id];
+
+		this.onProcessTableChange(this._processTable);
 	}
 
 	public addRequest(request: Request) : void {
@@ -121,8 +186,79 @@ class PaginationSimulator extends Simulator {
 		this.onProcessTableChange(this._processTable);
 	}
 
+	/**
+	 * Removes a request from the list. 
+	 * This function should only be called if the simulation has not been started
+	 * @param index number of the request to be removed
+	 */
+	public removeRequest(index: number) : void {
+		let request: Request = this.requests[index];
+		this.requests.splice(index, 1);
+		this._pendingRequests.splice(index, 1);
+
+		// initialize memory and process table
+		let p: Process | null = this.getProcess(request.process);
+		if (p != null) {
+			this.initializeProcessTable(p);
+			this.onProcessTableChange(this._processTable);
+		}
+	}
+
+	/**
+	 * Removes all requests from the request list
+	 */
+	public clearRequests() : void {
+		this.requests = [];
+		this._pendingRequests = [];
+
+		this.initializeProcessTables();
+		this.onProcessTableChange(this._processTable);
+	}
+
+	public previousStep() : void {
+		let state: PaginationState | undefined = this.state.pop();
+
+		if (state != undefined) {
+			// recover simulation status
+			let simulatorStatus = state.simulatorStatus;
+			this._pendingRequests = simulatorStatus.requests;
+			this._memory = simulatorStatus.memory;
+			this._pages = simulatorStatus.pages;
+			this._counter = simulatorStatus.cycle;
+			this._pageFailures = simulatorStatus.pageFailures;
+			this._processTable = simulatorStatus.processTable;
+
+			// recover algorithm status
+			let algorithmStatus = state.stepData;
+			this._algorithmStep = algorithmStatus.step;
+			this._algorithmIndex = algorithmStatus.index;
+			this._algorithmIndex2 = algorithmStatus.index2;
+
+			// invoke callbacks with new data
+			this.onMemoryChange(this._memory, this._pages);
+			this.onPageFailuresChange(this._pageFailures);
+			this.onCurrentCycleChange(this._counter);
+			this.onProcessTableChange(this._processTable);
+		}
+	}
+
 	public nextStep() : void {
-		// TODO: save current state
+		let state: PaginationState = new PaginationState(
+			{
+				requests: this._pendingRequests,
+				memory: this._memory,
+				pages: this._pages,
+				cycle: this._counter,
+				pageFailures: this._pageFailures,
+				processTable: this._processTable
+			},
+			{
+				step: this._algorithmStep,
+				index: this._algorithmIndex,
+				index2: this._algorithmIndex2
+			}
+		);
+		this.state.push(state);
 		
 		// process the next request
 		this.update();
@@ -164,9 +300,11 @@ class PaginationSimulator extends Simulator {
 						// we must replace a loaded page
 						let replacedPage: number = this.algorithmFunctions[this.algorithm](request);
 
-						if (replacedPage < 0) {
-							this._pendingRequests.unshift(request);
-							return;
+						if (SINGLE_STEP) {
+							if (replacedPage < 0) {
+								this._pendingRequests.unshift(request);
+								return;
+							}
 						}
 
 						frame = pageTable.pages[replacedPage].data.frame;
@@ -210,16 +348,24 @@ class PaginationSimulator extends Simulator {
 					console.log(this._processTable);
 
 					// page has been loaded for the first time
-					if (this.algorithm == "clock") {
+					if (this.algorithm == "clock" || this.algorithm == "nru") {
 						// increase pointer
 						let nextPointer: number = (pageTable.pointer + 1) % process.frames;
 						pageTable.pointer = nextPointer;
 					}
+
+					// and mark it as not modified (it has just been loaded)
+					pageTable.pages[request.page].data.modifiedBit = false;
 				}
 
 				// mark this page as used
 				pageTable.pages[request.page].lastUse = this._counter;
 				pageTable.pages[request.page].data.accessBit = true;
+
+				// if this request makes changes to the page, mark it as modified
+				if (request.modified) {
+					pageTable.pages[request.page].data.modifiedBit = true;
+				}
 			}
 		}
 
@@ -302,10 +448,73 @@ class PaginationSimulator extends Simulator {
 				pageTable.pages[pageTable.loadedPages[pageTable.pointer]].data.accessBit = false;
 				pageTable.pointer = (pageTable.pointer + 1) % process.frames;
 
-				return -1;
+				if (SINGLE_STEP) {
+					return -1;
+				}
 			}
 
 			page = pageTable.loadedPages[pageTable.pointer];
+		}
+
+		return page;
+	}
+
+	private NRU(request: Request) : number {
+		let process: Process | null = this.getProcess(request.process);
+		let page: number = -1;
+
+
+		if (process != null) {
+			let pageTable = this._processTable[request.process];
+
+			if (this._algorithmStep == 0) {
+				// algoritm has not been started yet
+				this._algorithmStep = 1;
+				this._algorithmIndex = 0;
+				this._algorithmIndex2 = 0;
+			}
+
+			while (page == -1) {
+				// search for a page with a = 0 and m = 0
+				while (this._algorithmIndex < process.frames
+					&& (pageTable.pages[pageTable.loadedPages[pageTable.pointer]].data.accessBit
+						|| pageTable.pages[pageTable.loadedPages[pageTable.pointer]].data.modifiedBit))
+				{
+					this._algorithmIndex++;
+					pageTable.pointer = (pageTable.pointer + 1) % process.frames;
+
+					if (SINGLE_STEP) {
+						return -1;
+					}
+				}
+
+				if (this._algorithmIndex == process.frames) {
+					// a page has not been found
+					while (this._algorithmIndex2 < process.frames
+						&& pageTable.pages[pageTable.loadedPages[pageTable.pointer]].data.accessBit)
+					{
+						pageTable.pages[pageTable.loadedPages[pageTable.pointer]].data.accessBit = false;
+						this._algorithmIndex2++;
+						pageTable.pointer = (pageTable.pointer + 1) % process.frames;
+
+						if (SINGLE_STEP) {
+							return -1;
+						}
+					}
+
+					if (this._algorithmIndex2 != process.frames) {
+						page = pageTable.loadedPages[pageTable.pointer];
+						this._algorithmStep = 0;
+					}
+				} else {
+					page = pageTable.loadedPages[pageTable.pointer];
+					this._algorithmStep = 0;
+				}
+
+				// reset indexes for next search, if needed
+				this._algorithmIndex = 0;
+				this._algorithmIndex2 = 0;
+			}
 		}
 
 		return page;
@@ -325,7 +534,8 @@ class PaginationSimulator extends Simulator {
 		fifo: this.FIFO.bind(this),
 		optimal: this.Optimal.bind(this),
 		lru: this.LRU.bind(this),
-		clock: this.Clock.bind(this)
+		clock: this.Clock.bind(this),
+		nru: this.NRU.bind(this)
 	};
 
 	/**

@@ -8,7 +8,7 @@ interface RequestsFormProps {
 	requests: Request[];
 	onAddRequest: (request: Request) => void;
 	onRemoveRequest: (index: number) => void;
-	deletable?: boolean;
+	enabled?: boolean;
 }
 
 function RequestsForm(props: RequestsFormProps) {
@@ -17,7 +17,7 @@ function RequestsForm(props: RequestsFormProps) {
 	const pageInput = useRef<HTMLInputElement>(null);
 	const modifiedCheckbox = useRef<HTMLInputElement>(null);
 
-	let deletable: boolean = props.deletable || false;
+	let enabled: boolean = props.enabled || false;
 
 	let addRequestHandler = (e: FormEvent) => {
 		e.preventDefault();
@@ -47,7 +47,7 @@ function RequestsForm(props: RequestsFormProps) {
 								<select
 									ref={processSelect}
 									className="form-select"
-									disabled={props.processes.length == 0}
+									disabled={props.processes.length == 0 || !enabled}
 									required>
 									{props.processes.map((process) => 
 										<option key={process.id} value={process.id}>
@@ -64,7 +64,7 @@ function RequestsForm(props: RequestsFormProps) {
 								<FormControl 
 									ref={pageInput}
 									min={0}
-									disabled={props.processes.length == 0}
+									disabled={props.processes.length == 0 || !enabled}
 									required={true}
 									type="number" />
 							</FormGroup>
@@ -74,6 +74,7 @@ function RequestsForm(props: RequestsFormProps) {
 					<Row className="mt-1">
 						<Col md={12}>
 							<FormCheck 
+								disabled={!enabled}
 								ref={modifiedCheckbox}
 								value={1}
 								label="Escritura" />
@@ -81,7 +82,7 @@ function RequestsForm(props: RequestsFormProps) {
 					</Row>
 					
 					<button 
-						disabled={props.processes.length == 0}
+						disabled={props.processes.length == 0 || !enabled}
 						className="btn btn-primary btn-sm float-right mt-1">
 						Añadir
 					</button>
@@ -96,7 +97,7 @@ function RequestsForm(props: RequestsFormProps) {
 						{request.process} - {request.page}
 						{request.modified && <sup>*</sup>}
 
-						{deletable &&
+						{enabled &&
 							<FiDelete 
 								onClick={() => props.onRemoveRequest(index)}
 								className="ml-1 pointer" />

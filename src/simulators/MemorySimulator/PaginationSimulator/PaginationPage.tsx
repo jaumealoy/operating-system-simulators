@@ -49,6 +49,27 @@ const EXAMPLES: PaginationExample[] = [
 			{ process: "A", page: 4, modified: false },
 			{ process: "A", page: 1, modified: false },
 		]
+	},
+
+	{
+		frames: 0,
+		processes: [
+			{ id: "A", frames: 3 }
+		],
+		requests: [
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 1, modified: true },
+			{ process: "A", page: 0, modified: false },
+			{ process: "A", page: 4, modified: true },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 3, modified: true },
+			{ process: "A", page: 4, modified: true },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 1, modified: true },
+			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 1, modified: true },
+		]
 	}
 ];
 
@@ -65,7 +86,8 @@ function PaginationPage(props: PaginationPageProps) {
 		requests, addRequest, removeRequest,
 		loadProcessesFromList, loadRequestsFromList,
 		processTable, memory, pageFailures, currentCycle, pages,
-		hasNextStep, nextStep
+		hasNextStep, nextStep, hasPreviousStep, previousStep, clear, reset,
+		isRunning, isStarted
 	} = usePaginationSimulator(props.simpleView);
 
 	return (
@@ -84,6 +106,7 @@ function PaginationPage(props: PaginationPageProps) {
 										<FormCheck 
 											type={props.simpleView ? "radio" : "checkbox"}
 											label={algorithm.name}
+											disabled={isStarted}
 											checked={props.simpleView ? algorithm.id == selectedAlgorithm : selectedAlgorithms.indexOf(algorithm.id) >= 0}
 											onChange={() => selectAlgorithm(algorithm.id)}/>
 									)}
@@ -113,14 +136,14 @@ function PaginationPage(props: PaginationPageProps) {
 								processes={processes}
 								onAddProcess={addProcess}
 								onRemoveProcess={removeProcess}
-								deletable />
+								enabled={!isStarted} />
 
 							<RequestsForm 
 								processes={processes}
 								requests={requests}
 								onAddRequest={addRequest}
 								onRemoveRequest={removeRequest}
-								deletable />
+								enabled={!isStarted} />
 						</div>
 
 						<div 
@@ -131,7 +154,7 @@ function PaginationPage(props: PaginationPageProps) {
 							{EXAMPLES.map((example: PaginationExample, index: number) =>
 								<button 
 									key={"example_" + index}
-									//disabled={isStarted}
+									disabled={isStarted}
 									onClick={() => {
 										loadProcessesFromList(example.processes);
 										loadRequestsFromList(example.requests);
@@ -180,6 +203,7 @@ function PaginationPage(props: PaginationPageProps) {
 											{requests.map((request, index) =>  
 												<span className={"badge mr-1 " + (index < currentCycle ? "bg-success" : "bg-secondary")}>
 													{request.process} - {request.page}
+													{request.modified && <sup>*</sup>}
 												</span>
 											)}
 										</td>
@@ -203,7 +227,13 @@ function PaginationPage(props: PaginationPageProps) {
 												<div className={"frame" + (i == value.pointer ? " selected" : "")}>
 													<div className="frame-content">
 														{i < value.loadedPages.length ?
-															value.loadedPages[i]
+															<>
+																{value.loadedPages[i]}
+																{value.pages[value.loadedPages[i]].data.accessBit &&
+																	<sup>A</sup>}
+																{value.pages[value.loadedPages[i]].data.modifiedBit &&
+																	<sub>M</sub>}
+															</>
 															:
 															"-"
 														}
@@ -231,7 +261,8 @@ function PaginationPage(props: PaginationPageProps) {
 											<th>Marco</th>
 											{selectedAlgorithm == "fifo" && <th>Llegada</th>}
 											{selectedAlgorithm == "lru" && <th>Último acceso</th>}
-											{selectedAlgorithm == "clock" && <th>A</th>}
+											{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 && <th>A</th>}
+											{selectedAlgorithm == "nru" && <th>M</th>}
 										</tr>
 									</thead>
 
@@ -270,9 +301,14 @@ function PaginationPage(props: PaginationPageProps) {
 														}
 													</td>
 												}
-												{selectedAlgorithm == "clock" &&
+												{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 &&
 													<td>
 														{entry.data.accessBit ? "1" : "0"}
+													</td>
+												}
+												{selectedAlgorithm == "nru" &&
+													<td>
+														{entry.data.modifiedBit ? "1" : "0"}
 													</td>
 												}
 											</tr>
@@ -289,6 +325,10 @@ function PaginationPage(props: PaginationPageProps) {
 			<SimulatorControl 
 				hasNext={hasNextStep()}
 				next={nextStep}
+				hasPrevious={hasPreviousStep()}
+				previous={previousStep}
+				reset={clear}
+				stop={reset}
 			/>
 		</>
 	);

@@ -10,7 +10,7 @@ interface ProcessFormProps {
 	processes: Process[];
 	onAddProcess: (process: Process) => void;
 	onRemoveProcess: (index: number) => void;
-	deletable?: boolean;
+	enabled?: boolean;
 }
 
 function ProcessForm(props: ProcessFormProps) {
@@ -18,7 +18,7 @@ function ProcessForm(props: ProcessFormProps) {
 	const [name, setName] = useState<string>("");
 	const [frames, setFrames] = useState<string>("");
 
-	let deletable = props.deletable || false;
+	let enabled = props.enabled || false;
 
 	let onAddHandler = (e: FormEvent) => {
 		if (name.length == 0 || frames.length == 0) {
@@ -60,6 +60,7 @@ function ProcessForm(props: ProcessFormProps) {
 						<label>Nombre y marcos</label>
 						<div className="input-group">
 							<FormControl 
+								disabled={!enabled}
 								onChange={(e) => setName(e.target.value)}
 								value={name}
 								required
@@ -67,12 +68,15 @@ function ProcessForm(props: ProcessFormProps) {
 
 							<FormControl 
 								type="number"
+								disabled={!enabled}
 								onChange={(e) => setFrames(e.target.value)}
 								value={frames} 
 								min={1}
 								required />
 							
-							<button className="input-group-text">
+							<button 
+								disabled={!enabled}
+								className="input-group-text">
 								<FiPlusCircle />
 							</button>
 						</div>
@@ -88,7 +92,7 @@ function ProcessForm(props: ProcessFormProps) {
 						<span className="badge bg-secondary mr-1">
 							{process.id} - {process.frames}
 
-							{deletable &&
+							{enabled &&
 								<FiDelete 
 									onClick={() => props.onRemoveProcess(index)}
 									className="ml-1 pointer" />

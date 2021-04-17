@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BsListOl } from "react-icons/bs";
 import { 
 	PaginationSimulator, 
@@ -38,20 +38,24 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 	};
 
 	const removeProcess = (index: number) => {
-		// remove all requests from this process
-		let id: string = processes[index].id;
-		processes.splice(index, 1);
+		if (simulator.current != null) {
+			// remove all requests from this process
+			let id: string = processes[index].id;
+			processes.splice(index, 1);
 
-		for (let i = 0; i < requests.length;) {
-			if (requests[i].process == id) {
-				requests.splice(i, 1);
-			} else {
-				i++;
+			for (let i = 0; i < requests.length;) {
+				if (requests[i].process == id) {
+					requests.splice(i, 1);
+				} else {
+					i++;
+				}
 			}
-		}
 
-		setProcesses([...processes]);
-		setRequests([...requests]);
+			simulator.current.removeProcess(index);
+
+			setProcesses([...processes]);
+			setRequests([...requests]);
+		}
 	};
 
 	const [requests, setRequests] = useState<Request[]>([]);
@@ -63,14 +67,20 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 	};
 
 	const removeRequest = (index: number) => {
-		requests.splice(index, 1);
-		setRequests([...requests]);
+		if (simulator.current != null) {
+			requests.splice(index, 1);
+			simulator.current.removeRequest(index);
+			setRequests([...requests]);
+		}
 	};
 
 	const loadProcessesFromList = (list: Process[]) => {
 		if (simulator.current != null) {
 			setRequests([]);
 			setProcesses([...list]);
+
+			// removes all processes and requests from the simulator
+			simulator.current.clear();
 
 			for (let i = 0; i < list.length; i++) {
 				simulator.current.addProcess(list[i]);
@@ -115,6 +125,9 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 	}
 
 	// simulator control
+	const [isStarted, setStarted] = useState<boolean>(false);
+	const [isRunning, setRunning] = useState<boolean>(false);
+
 	const hasNextStep = () : boolean => {
 		if (simulator.current != null) {
 			return simulator.current.hasNextStep();
@@ -125,9 +138,50 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 
 	const nextStep = () : void => {
 		if (simulator.current != null) {
+			setStarted(true);
 			simulator.current.nextStep();
+
+			if (!simulator.current.hasNextStep()) {
+				setStarted(false);
+			}
 		}
 	};
+
+	const hasPreviousStep = () : boolean => {
+		if (simulator.current != null) {
+			return simulator.current.hasPreviousStep();
+		}
+
+		return false;
+	};
+
+	const previousStep = () : void => {
+		if (simulator.current != null) {
+			simulator.current.previousStep();
+		}
+	};
+
+	const reset = () : void => {
+		if (simulator.current != null) {
+			simulator.current.reset();
+			setStarted(false);
+			setRunning(false);
+		}
+	};
+
+	const clear = () : void => {
+		if (simulator.current != null) {
+			setProcesses([]);
+			setRequests([]);
+			simulator.current.clear();
+			setStarted(false);
+			setRunning(false);
+		}
+	};
+
+	useEffect(() => {
+		reset();
+	}, [selectedAlgorithm, selectedAlgorithms]);
 
 	return {
 		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
@@ -135,7 +189,8 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 		requests, addRequest, removeRequest,
 		loadRequestsFromList, loadProcessesFromList,
 		processTable, memory, pageFailures, currentCycle, pages,
-		hasNextStep, nextStep,
+		hasNextStep, nextStep, hasPreviousStep, previousStep, reset, clear,
+		isRunning, isStarted
 	};
 }
 
