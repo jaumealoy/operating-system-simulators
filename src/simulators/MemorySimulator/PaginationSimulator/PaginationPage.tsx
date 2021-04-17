@@ -23,10 +23,10 @@ const EXAMPLES: PaginationExample[] = [
 			{ id: "C", frames: 1 },
 		],
 		requests: [
-			{ process: "A", page: 1 }, { process: "A", page: 1 },
-			{ process: "B", page: 0 },
-			{ process: "C", page: 3 },
-			{ process: "A", page: 0 },
+			{ process: "A", page: 1, modified: false }, { process: "A", page: 1, modified: false },
+			{ process: "B", page: 0, modified: false },
+			{ process: "C", page: 3, modified: false },
+			{ process: "A", page: 0, modified: false },
 		]
 	},
 
@@ -36,18 +36,18 @@ const EXAMPLES: PaginationExample[] = [
 			{ id: "A", frames: 3 }
 		],
 		requests: [
-			{ process: "A", page: 1 },
-			{ process: "A", page: 2 },
-			{ process: "A", page: 1 },
-			{ process: "A", page: 0 },
-			{ process: "A", page: 4 },
-			{ process: "A", page: 1 },
-			{ process: "A", page: 3 },
-			{ process: "A", page: 4 },
-			{ process: "A", page: 2 },
-			{ process: "A", page: 1 },
-			{ process: "A", page: 4 },
-			{ process: "A", page: 1 },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 0, modified: false },
+			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 1, modified: false },
 		]
 	}
 ];
@@ -193,19 +193,58 @@ function PaginationPage(props: PaginationPageProps) {
 						{Object.entries(processTable).map(([key, value]) => 
 							<Col key={`table_${key}`} md={4}>
 								<h3>Proceso {key}</h3>
+
+								{processes.map(process => {
+									if (process.id == key) {
+										let childs: React.ReactNode[] = [];
+
+										for (let i = 0; i < process.frames; i++) {
+											childs.push(
+												<div className={"frame" + (i == value.pointer ? " selected" : "")}>
+													<div className="frame-content">
+														{i < value.loadedPages.length ?
+															value.loadedPages[i]
+															:
+															"-"
+														}
+													</div>
+
+													<div className="frame-index">
+														{i}
+													</div>
+												</div>
+											);
+										}
+
+										return (
+											<div className="process-frames">
+												{childs}
+											</div>
+										);
+									}
+								})}
+
 								<table className="table">
 									<thead>
 										<tr>
 											<th>Página</th>
 											<th>Marco</th>
 											{selectedAlgorithm == "fifo" && <th>Llegada</th>}
+											{selectedAlgorithm == "lru" && <th>Último acceso</th>}
+											{selectedAlgorithm == "clock" && <th>A</th>}
 										</tr>
 									</thead>
 
 									<tbody>
-										{value.map((entry, index) => 
+										{value.pages.map((entry, index) => 
 											<tr key={`entry_${key}_${index	}`}>
-												<td>{index}</td>
+												<td>
+													{selectedAlgorithm == "clock" && 
+														index == value.loadedPages[value.pointer] &&
+														"-> "
+													}
+													{index}
+												</td>
 												<td>
 													{entry.data.frame < 0 ?
 														"-"
@@ -222,7 +261,20 @@ function PaginationPage(props: PaginationPageProps) {
 														}
 													</td>
 												}
-
+												{selectedAlgorithm == "lru" &&
+													<td>
+														{entry.data.frame < 0 ?
+															"-"
+															:
+															entry.lastUse
+														}
+													</td>
+												}
+												{selectedAlgorithm == "clock" &&
+													<td>
+														{entry.data.accessBit ? "1" : "0"}
+													</td>
+												}
 											</tr>
 										)}
 									</tbody>

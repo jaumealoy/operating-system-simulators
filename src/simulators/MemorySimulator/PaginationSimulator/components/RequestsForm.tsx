@@ -1,5 +1,5 @@
 import React, { FormEvent, useRef } from "react";
-import { Row, Col, FormGroup, FormControl } from "react-bootstrap";
+import { Row, Col, FormGroup, FormControl, FormCheck } from "react-bootstrap";
 import { Request, Process } from "./../PaginationSimulator";
 import { FiDelete } from "react-icons/fi";
 
@@ -15,16 +15,18 @@ function RequestsForm(props: RequestsFormProps) {
 	// references to input elements
 	const processSelect = useRef<HTMLSelectElement>(null);
 	const pageInput = useRef<HTMLInputElement>(null);
+	const modifiedCheckbox = useRef<HTMLInputElement>(null);
 
 	let deletable: boolean = props.deletable || false;
 
 	let addRequestHandler = (e: FormEvent) => {
 		e.preventDefault();
 		
-		if (processSelect.current != null && pageInput.current != null) {
+		if (processSelect.current != null && pageInput.current != null && modifiedCheckbox.current != null) {
 			let request: Request = {
 				process: processSelect.current.value,
-				page: parseInt(pageInput.current.value)
+				page: parseInt(pageInput.current.value),
+				modified: modifiedCheckbox.current.checked
 			}
 
 			props.onAddRequest(request);
@@ -68,6 +70,15 @@ function RequestsForm(props: RequestsFormProps) {
 							</FormGroup>
 						</Col>
 					</Row>
+
+					<Row className="mt-1">
+						<Col md={12}>
+							<FormCheck 
+								ref={modifiedCheckbox}
+								value={1}
+								label="Escritura" />
+						</Col>
+					</Row>
 					
 					<button 
 						disabled={props.processes.length == 0}
@@ -83,6 +94,7 @@ function RequestsForm(props: RequestsFormProps) {
 				{props.requests.map((request, index) => 
 					<span className="badge bg-secondary ml-1">
 						{request.process} - {request.page}
+						{request.modified && <sup>*</sup>}
 
 						{deletable &&
 							<FiDelete 

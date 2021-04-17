@@ -347,3 +347,37 @@ h3 {
 .horizontal-table td {
     white-space: nowrap;
 }
+
+.process-frames {
+    display: inline-flex;
+    flex-shrink: 1;
+    flex-direction: row;
+    border: 1px solid gray;
+}
+
+.process-frames .frame {
+    border-right: 1px solid gray;
+}
+
+.process-frames .frame:last-child {
+    border-right: none;
+}
+
+.process-frames .frame .frame-content {
+    padding: 5px 10px;
+    padding-bottom: 10px;
+    padding-top: 0px;
+}
+
+.process-frames .frame.selected {
+    background: $primary;
+    color: white;
+}
+
+.process-frames .frame .frame-index {
+    font-size: 10px;
+    padding: 0;
+    border-top: 1px solid gray;
+    margin-top: -10px;
+    text-align: center;
+}

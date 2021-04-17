@@ -1,3 +1,4 @@
+import { NumberAlias } from "@svgdotjs/svg.js";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 import { Simulator, Algorithm } from "../../Simulator";
 
@@ -9,19 +10,28 @@ interface Process {
 interface Request { 
 	process: string;
 	page: number;
+	modified: boolean;
 }
 
 interface ProcessPage {
 	frame: number;
-	bits: boolean[];
+	accessBit: boolean;
+	modifiedBit:boolean;
 }
 
 interface ProcessPageWrap {
 	arrival: number;
+	lastUse: number;
 	data: ProcessPage
 }
 
-type ProcessTable = {[key: string]: ProcessPageWrap[]};
+interface ProcessEntry {
+	pages: ProcessPageWrap[];
+	pointer: number;
+	loadedPages: number[];
+}
+
+type ProcessTable = {[key: string]: ProcessEntry};
 
 class PaginationSimulator extends Simulator {
 	// processes and requests
@@ -140,48 +150,76 @@ class PaginationSimulator extends Simulator {
 			let process: Process | null = this.getProcess(request.process);
 
 			if (process != null) {
+				let pageTable = this._processTable[request.process];
+
 				// is this page loaded?
-				let loaded: boolean = this._processTable[request.process][request.page].data.frame >= 0;
+				let loaded: boolean = pageTable.pages[request.page].data.frame >= 0;
 				
 				if (loaded) {
 					// this page is loaded, do nothing
 				} else {
-					// this is a page fault
-					this._pageFailures++;
-					this.onPageFailuresChange(this._pageFailures);
-
 					// check if we can load this page into a new frame
 					let frame: number = this.allocateProcessFrame(process);
 					if (frame < 0) {
 						// we must replace a loaded page
 						let replacedPage: number = this.algorithmFunctions[this.algorithm](request);
-						frame = this._processTable[request.process][replacedPage].data.frame;
+
+						if (replacedPage < 0) {
+							this._pendingRequests.unshift(request);
+							return;
+						}
+
+						frame = pageTable.pages[replacedPage].data.frame;
 
 						console.log(`Replacing page ${replacedPage} with ${request.page}`);
 
-						// mark the replaced page as unloaded
-						this._processTable[request.process][replacedPage].data.frame = -1;
-						this._processTable[request.process][replacedPage].arrival = -1;
+						// replace the current loaded page with the new
+						let idx: number = 0;
+						while(pageTable.loadedPages[idx] != replacedPage) {
+							idx++;
+						}
 
-						this._processTable[request.process][request.page].data.frame = frame;
-						this._processTable[request.process][request.page].arrival = this._counter;
+						pageTable.loadedPages[idx] = request.page;
+
+						// mark the replaced page as unloaded
+						pageTable.pages[replacedPage].data.frame = -1;
+						pageTable.pages[replacedPage].arrival = -1;
+
+						pageTable.pages[request.page].data.frame = frame;
+						pageTable.pages[request.page].arrival = this._counter;
 						this._pages[frame] = request.page;
 					} else {
 						console.log("Allocating new frame " + frame + " to process " + request.process, request.page)
 
 						// we could allocate a new frame as this process hasn't reached its limit
-						let page: ProcessPageWrap = this._processTable[request.process][request.page];
+						let page: ProcessPageWrap = pageTable.pages[request.page];
 						page.arrival = this._counter;
 						page.data.frame = frame;
 						this._pages[frame] = request.page;
 
-						console.log(page)
+						// add a new page to the loaded pages
+						pageTable.loadedPages.push(request.page);
 					}
+
+					// this is a page fault
+					this._pageFailures++;
+					this.onPageFailuresChange(this._pageFailures);
 
 					this._memory[frame] = this.getProcessIndex(request.process) + 1;
 
 					console.log(this._processTable);
+
+					// page has been loaded for the first time
+					if (this.algorithm == "clock") {
+						// increase pointer
+						let nextPointer: number = (pageTable.pointer + 1) % process.frames;
+						pageTable.pointer = nextPointer;
+					}
 				}
+
+				// mark this page as used
+				pageTable.pages[request.page].lastUse = this._counter;
+				pageTable.pages[request.page].data.accessBit = true;
 			}
 		}
 
@@ -190,9 +228,9 @@ class PaginationSimulator extends Simulator {
 	
 	private FIFO(request: Request) : number {
 		let page: number = -1;
-		for (let i = 0; i < this._processTable[request.process].length; i++) {
-			if (this._processTable[request.process][i].arrival != -1) {
-				if (page == -1 || this._processTable[request.process][i].arrival < this._processTable[request.process][page].arrival){
+		for (let i = 0; i < this._processTable[request.process].pages.length; i++) {
+			if (this._processTable[request.process].pages[i].arrival != -1) {
+				if (page == -1 || this._processTable[request.process].pages[i].arrival < this._processTable[request.process].pages[page].arrival){
 					page = i;
 				}
 			}
@@ -201,10 +239,10 @@ class PaginationSimulator extends Simulator {
 		return page;
 	}
 
-	private Optimal(request: Request) {
+	private Optimal(request: Request) : number {
 		let loadedPages: {[key: number]: number} = {};
-		for (let i = 0; i < this._processTable[request.process].length; i++) {
-			if (this._processTable[request.process][i].data.frame >= 0) {
+		for (let i = 0; i < this._processTable[request.process].pages.length; i++) {
+			if (this._processTable[request.process].pages[i].data.frame >= 0) {
 				loadedPages[i] = this.requests.length + 1;
 			}
 		}
@@ -235,6 +273,44 @@ class PaginationSimulator extends Simulator {
 		return max;
 	}
 
+
+	private LRU(request: Request) : number {
+		// select the page that hasn't been used recently
+		// that is the page with the lowest "lastUse" variable
+		let min: number = -1;
+		let minPage: number = -1;
+
+		this._processTable[request.process].pages.map((page, index) => {
+			if (page.data.frame >= 0 && (min < 0 || page.lastUse < min)) {
+				min = page.lastUse;
+				minPage = index;
+			}
+		});
+
+		return minPage;
+	}
+
+	private Clock(request: Request) : number {
+		let process: Process | null = this.getProcess(request.process);
+		let page: number = -1;
+
+		if (process != null) {
+			let pageTable = this._processTable[request.process];
+		
+			// check if the candidate page has been accessed or not recently
+			while (pageTable.pages[pageTable.loadedPages[pageTable.pointer]].data.accessBit) {
+				pageTable.pages[pageTable.loadedPages[pageTable.pointer]].data.accessBit = false;
+				pageTable.pointer = (pageTable.pointer + 1) % process.frames;
+
+				return -1;
+			}
+
+			page = pageTable.loadedPages[pageTable.pointer];
+		}
+
+		return page;
+	}
+
 	public static getAvailableAlgorithms() : Algorithm[] {
 		return [
 			{ name: "Optimal", id: "optimal" },
@@ -247,7 +323,9 @@ class PaginationSimulator extends Simulator {
 
 	private algorithmFunctions: {[key: string]: (request: Request) => number} = {
 		fifo: this.FIFO.bind(this),
-		optimal: this.Optimal.bind(this)
+		optimal: this.Optimal.bind(this),
+		lru: this.LRU.bind(this),
+		clock: this.Clock.bind(this)
 	};
 
 	/**
@@ -259,16 +337,22 @@ class PaginationSimulator extends Simulator {
 	}
 
 	private initializeProcessTable(process: Process) {
-		this._processTable[process.id] = [];
+		this._processTable[process.id] = {
+			pages: [],
+			pointer: 0,
+			loadedPages: []
+		};
 
 		this.requests.map(request => {
 			if (request.process == process.id) {
-				while (this._processTable[process.id].length <= request.page) {
-					this._processTable[request.process].push({
+				while (this._processTable[process.id].pages.length <= request.page) {
+					this._processTable[request.process].pages.push({
 						arrival: -1,
+						lastUse: -1,
 						data: {
-							bits: [],
-							frame:  -1
+							frame:  -1,
+							accessBit: false,
+							modifiedBit: false
 						}
 					});
 				}
@@ -284,11 +368,13 @@ class PaginationSimulator extends Simulator {
 		let allocated: number = 0;
 
 		if (process in this._processTable) {
-			this._processTable[process].map((page) => {
+
+			/*this._processTable[process].pages.map((page) => {
 				if (page.data.frame >= 0) {
 					allocated++;
 				}
-			});
+			});*/
+			allocated = this._processTable[process].loadedPages.length;
 		}
 
 		return allocated;
