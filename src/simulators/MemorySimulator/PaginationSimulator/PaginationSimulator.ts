@@ -1,7 +1,7 @@
 import { Simulator, Algorithm } from "../../Simulator";
 import { PaginationState } from "./PaginationState";
 
-const SINGLE_STEP: boolean = false;
+const SINGLE_STEP: boolean = true;
 
 interface Process {
 	id: string;
@@ -40,7 +40,7 @@ class PaginationSimulator extends Simulator {
 	private requests: Request[];
 
 	// simulator status
-	private algorithm: string;
+	private _algorithm: string;
 	private _pendingRequests: Request[];
 	private running: boolean;
 	private _memory: number[];
@@ -79,7 +79,7 @@ class PaginationSimulator extends Simulator {
 
 		this._pageFailures = 0;
 		
-		this.algorithm = "optimal";
+		this._algorithm = "optimal";
 
 		this._processTable = {};
 
@@ -273,6 +273,7 @@ class PaginationSimulator extends Simulator {
 		if (!this.running) {
 			this._pendingRequests = [...this.requests];
 			this._pageFailures = 0;
+			this._counter = 0;
 			this.running = true;
 
 			this.initializeMemory();
@@ -298,7 +299,7 @@ class PaginationSimulator extends Simulator {
 					let frame: number = this.allocateProcessFrame(process);
 					if (frame < 0) {
 						// we must replace a loaded page
-						let replacedPage: number = this.algorithmFunctions[this.algorithm](request);
+						let replacedPage: number = this.algorithmFunctions[this._algorithm](request);
 
 						if (SINGLE_STEP) {
 							if (replacedPage < 0) {
@@ -348,7 +349,7 @@ class PaginationSimulator extends Simulator {
 					console.log(this._processTable);
 
 					// page has been loaded for the first time
-					if (this.algorithm == "clock" || this.algorithm == "nru") {
+					if (this._algorithm == "clock" || this._algorithm == "nru") {
 						// increase pointer
 						let nextPointer: number = (pageTable.pointer + 1) % process.frames;
 						pageTable.pointer = nextPointer;
@@ -658,7 +659,7 @@ class PaginationSimulator extends Simulator {
 	 * @param id algorithm identifier
 	 */
 	public selectAlgorithm(id: string) : void {
-		this.algorithm = id;
+		this._algorithm = id;
 	}
 
 	private initializeMemory() : void {
@@ -673,7 +674,11 @@ class PaginationSimulator extends Simulator {
 			this._pages[i] = -1;
 		}
 	}
+
+	get algorithm() : string {
+		return this._algorithm;
+	}
 }
 
 export { PaginationSimulator };
-export type { Process, Request, ProcessTable };
+export type { Process, Request, ProcessTable, ProcessEntry };

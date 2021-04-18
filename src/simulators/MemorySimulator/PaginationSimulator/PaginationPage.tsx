@@ -7,6 +7,7 @@ import ProcessForm from "./components/ProcessForm";
 import usePaginationSimulator from "./usePaginationSimulator";
 import RequestsForm from "./components/RequestsForm";
 import MemoryChart from "../components/MemoryChart";
+import ProcessFrameTable from "./components/ProcessFrameTable";
 
 interface PaginationExample {
 	frames: number;
@@ -85,7 +86,7 @@ function PaginationPage(props: PaginationPageProps) {
 		processes, addProcess, removeProcess,
 		requests, addRequest, removeRequest,
 		loadProcessesFromList, loadRequestsFromList,
-		processTable, memory, pageFailures, currentCycle, pages,
+		results,
 		hasNextStep, nextStep, hasPreviousStep, previousStep, clear, reset,
 		isRunning, isStarted
 	} = usePaginationSimulator(props.simpleView);
@@ -169,18 +170,18 @@ function PaginationPage(props: PaginationPageProps) {
 			</Row>
 
 			{/* Simulator results */}
-			{props.simpleView &&
+			{props.simpleView && (selectedAlgorithm in results) &&
 			<Row>
 				<h2>Resultados</h2>
 				<Col md={4}>
 					<MemoryChart
 						processes={processes.map(p => p.id)}
 						capacity={processes.map(p => p.frames).reduceRight((a, b) => a + b, 0)}
-						data={memory}
+						data={results[selectedAlgorithm].memory}
 						groupBlocks={false}
 						customBlockText={(slot) => {
-							if (memory[slot] != undefined) {
-								return processes[memory[slot] - 1].id + " - " + pages[slot];
+							if (results[selectedAlgorithm].memory[slot] != undefined) {
+								return processes[results[selectedAlgorithm].memory[slot] - 1].id + " - " + results[selectedAlgorithm].pages[slot];
 							}
 
 							return "";
@@ -194,14 +195,14 @@ function PaginationPage(props: PaginationPageProps) {
 								<tbody>
 									<tr>
 										<th>Fallos de página</th>
-										<td>{pageFailures}</td>
+										<td>{results[selectedAlgorithm].pageFailures}</td>
 									</tr>
 
 									<tr>
 										<th>Peticiones</th>
 										<td>
 											{requests.map((request, index) =>  
-												<span className={"badge mr-1 " + (index < currentCycle ? "bg-success" : "bg-secondary")}>
+												<span className={"badge mr-1 " + (index < results[selectedAlgorithm].currentCycle ? "bg-success" : "bg-secondary")}>
 													{request.process} - {request.page}
 													{request.modified && <sup>*</sup>}
 												</span>
@@ -214,43 +215,18 @@ function PaginationPage(props: PaginationPageProps) {
 						</Col>
 					</Row>
 					<Row className="scrollable-x">
-						{Object.entries(processTable).map(([key, value]) => 
+						{Object.entries(results[selectedAlgorithm].processTable).map(([key, value]) => 
 							<Col key={`table_${key}`} md={4}>
 								<h3>Proceso {key}</h3>
 
 								{processes.map(process => {
 									if (process.id == key) {
-										let childs: React.ReactNode[] = [];
-
-										for (let i = 0; i < process.frames; i++) {
-											childs.push(
-												<div className={"frame" + (i == value.pointer ? " selected" : "")}>
-													<div className="frame-content">
-														{i < value.loadedPages.length ?
-															<>
-																{value.loadedPages[i]}
-																{value.pages[value.loadedPages[i]].data.accessBit &&
-																	<sup>A</sup>}
-																{value.pages[value.loadedPages[i]].data.modifiedBit &&
-																	<sub>M</sub>}
-															</>
-															:
-															"-"
-														}
-													</div>
-
-													<div className="frame-index">
-														{i}
-													</div>
-												</div>
-											);
-										}
-
 										return (
-											<div className="process-frames">
-												{childs}
-											</div>
-										);
+											<ProcessFrameTable 
+												process={process}
+												entry={value}
+												showPointer={["nru", "clock"].indexOf(selectedAlgorithm) >= 0} />
+											);
 									}
 								})}
 
@@ -319,6 +295,72 @@ function PaginationPage(props: PaginationPageProps) {
 						)}
 					</Row>
 				</Col>
+			</Row>
+			}
+
+			{!props.simpleView &&
+			<Row>
+				<h2>Resultados</h2>
+				{selectedAlgorithms.length == 0 && "Selecciona un algoritmo o más para utilizar la vista comparativa"}
+				<Row className="scrollable-x">
+				{selectedAlgorithms.map((algorithm) => 
+					(algorithm in results) &&
+					<Col md={4}>
+						<h3>{algorithm}</h3>
+
+						<table className="table">
+							<tbody>
+								<tr>
+									<th>Fallos de página</th>
+									<td>{results[algorithm].pageFailures}</td>
+								</tr>
+
+								<tr>
+									<th>Peticiones</th>
+									<td>
+										{requests.map((request, index) =>  
+											<span className={"badge mr-1 " + (index < results[algorithm].currentCycle ? "bg-success" : "bg-secondary")}>
+												{request.process} - {request.page}
+												{request.modified && <sup>*</sup>}
+											</span>
+										)}
+									</td>
+								</tr>
+							</tbody>
+						</table>
+
+						{processes.map(process => 
+							Object.entries(results[algorithm].processTable).map(([key, value]) => {
+								if (key == process.id) {
+									return (
+										<div className="mb-1">
+											<div>{key}</div>
+											<ProcessFrameTable 
+												process={process}
+												entry={value}
+												showPointer={["nru", "clock"].indexOf(algorithm) >= 0}	/>
+										</div>
+									)
+								}
+							})
+						)}
+
+						<MemoryChart
+							processes={processes.map(p => p.id)}
+							capacity={processes.map(p => p.frames).reduceRight((a, b) => a + b, 0)}
+							data={results[algorithm].memory}
+							groupBlocks={false}
+							customBlockText={(slot) => {
+								if (results[algorithm].memory[slot] != undefined) {
+									return processes[results[algorithm].memory[slot] - 1].id + " - " + results[algorithm].pages[slot];
+								}
+
+								return "";
+							}} />
+						
+					</Col>
+				)}
+				</Row>
 			</Row>
 			}
 

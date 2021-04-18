@@ -98,6 +98,12 @@ const useIOSimulator = () => {
 		// update the manager view mode
 		manager.current.simpleView = isSimpleView;
 
+		if (isSimpleView) {
+			manager.current.selectedAlgorithms = [selectedAlgorithm]
+		} else {
+			manager.current.selectedAlgorithms = selectedAlgorithms;
+		}
+
 		// pause the simulation
 		pause();
 	}, [isSimpleView]);
@@ -120,9 +126,8 @@ const useIOSimulator = () => {
 	// simulator control
 	const [isStarted, setStarted] = useState(false);
 	const [isRunning, setRunning] = useState(false);
-	const [isFinished, setFinished] = useState(false);
-	const [hasNext, setHasNext] = useState(false);
-	const [hasPrevious, setHasPrevious] = useState(false);
+	/*const [hasNext, setHasNext] = useState(false);
+	const [hasPrevious, setHasPrevious] = useState(false);*/
 	const [speed, setSpeed] = useState(0);
 
 	const step = () => {
@@ -144,7 +149,13 @@ const useIOSimulator = () => {
 		}
 
 		// process next request
-		manager.current.processRequest();
+		//manager.current.processRequest();
+		manager.current.nextStep();
+
+		if (!manager.current.hasNextStep()) {
+			setStarted(false);
+			setRunning(false);
+		}
 	};
 
 	const previous = () => {
@@ -184,21 +195,27 @@ const useIOSimulator = () => {
 		step();
 	};
 
-	useEffect(() => {
+	const hasNext = () : boolean => {
+		return manager.current.hasNextStep();
+	}
+
+	const hasPrevious = () : boolean => {
+		return manager.current.hasPreviousStep();
+	}
+
+	/*useEffect(() => {
 		setHasNext(manager.current.hasNextStep());
 		setHasPrevious(manager.current.hasPreviousStep());
 	}, [requests, processedRequests, isSimpleView]);
 
 	useEffect(() => {
 		setFinished(!hasNext);
-	}, [hasNext]);
+	}, [hasNext]);*/
 
 	useEffect(() => {
-		if (isFinished) {
-			setRunning(false);
-			setStarted(false);
-			manager.current.reset();
-		}
+		setRunning(false);
+		setStarted(false);
+		manager.current.reset();
 	}, [selectedAlgorithms, selectedAlgorithm, initialPosition, maxTracks, requests, direction]);
 
 	// simulation storage
@@ -256,7 +273,7 @@ const useIOSimulator = () => {
 		direction, setDirection,
 		onSubmitForm,
 		processedRequests,
-		isRunning, isStarted, isFinished,
+		isRunning, isStarted,
 		step, reset, stop, previous, pause, play, timerCallback,
 		hasNext, hasPrevious,
 		isSimpleView, setSimpleView,

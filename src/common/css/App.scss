@@ -349,7 +349,7 @@ h3 {
 }
 
 .process-frames {
-    display: inline-flex;
+    display: flex;
     flex-shrink: 1;
     flex-direction: row;
     border: 1px solid gray;
@@ -357,6 +357,7 @@ h3 {
 
 .process-frames .frame {
     border-right: 1px solid gray;
+    flex-grow: 1;
 }
 
 .process-frames .frame:last-child {
@@ -367,6 +368,7 @@ h3 {
     padding: 5px 10px;
     padding-bottom: 10px;
     padding-top: 0px;
+    text-align: center;
 }
 
 .process-frames .frame.selected {

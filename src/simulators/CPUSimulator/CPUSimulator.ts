@@ -174,6 +174,10 @@ class CPUSimulator extends Simulator {
 		}
 	}
 
+	public nextStep() : void {
+		
+	}
+
 	public processNextRequest() : ProcessSnapshot[] {
 		// is the first time processing a request?
 		if (!this._running) {

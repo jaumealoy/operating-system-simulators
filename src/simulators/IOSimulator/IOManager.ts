@@ -3,24 +3,20 @@ import {
 	Request, 
 	ProcessedRequest 
 } from "./IOSimulator";
+import { Manager } from "./../Manager";
 
 import { Algorithm } from "./../Simulator";
-import { throws } from "assert";
 
-class IOManager {
-	// indicates whether simple view is enabled or not
-	private _simpleView: boolean;
-
-	// simulator for simple view
-	private simulator: IOSimulator;
-
-	// simulator for comparaison view
+class IOManager extends Manager<IOSimulator> { 
+	// simulators for comparaison view
 	private _selectedAlgorithms: string[];
-	private simulators: {[key: string]: IOSimulator};
+	private _simulators: {[key: string]: IOSimulator};
 
 	public onProcessedRequestChange: (algorithm: string, requests: ProcessedRequest[]) => void;
 
 	constructor() {
+		super();
+
 		this.onProcessedRequestChange = () => {};
 
 		// initializing simple view simulator
@@ -31,13 +27,13 @@ class IOManager {
 
 		// initializing simulator for comparaison view
 		this._selectedAlgorithms = [];
-		this.simulators = {};
+		this._simulators = {};
 		IOSimulator.getAvailableAlgorithms().map((algorithm: Algorithm) => {
-			this.simulators[algorithm.id] = new IOSimulator();
-			this.simulators[algorithm.id].algorithm = algorithm.id;
+			this._simulators[algorithm.id] = new IOSimulator();
+			this._simulators[algorithm.id].algorithm = algorithm.id;
 
 			// set callbacks for Processed Requests
-			this.simulators[algorithm.id].onProcessedRequestsChange = (requests: ProcessedRequest[]) => {
+			this._simulators[algorithm.id].onProcessedRequestsChange = (requests: ProcessedRequest[]) => {
 				this.onProcessedRequestChange(algorithm.id, requests);
 			};
 		});
@@ -45,36 +41,10 @@ class IOManager {
 		this._simpleView = true;
 	}
 
-	public hasNextStep() : boolean {
-		if (this._simpleView) {
-			return this.simulator.hasNextStep();
-		} else {
-			let nextStepAvailable: boolean = false;
-			this._selectedAlgorithms.map(algorithm => {
-				nextStepAvailable = nextStepAvailable 
-					|| this.simulators[algorithm].hasNextStep();
-			});
-			return nextStepAvailable;
-		}
-	}
-
-	public hasPreviousStep() : boolean {
-		if (this._simpleView) {
-			return this.simulator.hasPreviousStep();
-		} else {
-			let previousStepAvailable: boolean = false;
-			this._selectedAlgorithms.map(algorithm => {
-				previousStepAvailable = previousStepAvailable 
-					|| this.simulators[algorithm].hasPreviousStep();
-			});
-			return previousStepAvailable;
-		}
-	}
-
 	public addRequest(track: number) : void {
 		// add the request to ALL simulators
 		this.simulator.addRequest(track, 0);
-		Object.values(this.simulators).map(simulator => {
+		Object.values(this._simulators).map(simulator => {
 			simulator.addRequest(track, 0);
 		});
 	}
@@ -82,47 +52,9 @@ class IOManager {
 	public removeRequest(index: number) : void {
 		// remove request from ALL simulators
 		this.simulator.removeRequest(index);
-		Object.values(this.simulators).map(simulator => {
+		Object.values(this._simulators).map(simulator => {
 			simulator.removeRequest(index);
 		});
-	}
-
-	public clear() : void {
-		this.simulator.clear();
-		Object.values(this.simulators).map(simulator => {
-			simulator.clear();
-		});
-	}
-
-	public reset() : void {
-		this.simulator.reset();
-		Object.values(this.simulators).map(simulator => {
-			simulator.reset();
-		});
-	}
-
-	public previousStep() : void {
-		if (this._simpleView) {
-			this.simulator.previousStep();
-		} else {
-			Object.values(this.simulators).map(simulator => {
-				if (simulator.hasPreviousStep()) {
-					simulator.previousStep();
-				}
-			});
-		}
-	}
-
-	public processRequest() : void {
-		if (this._simpleView) {
-			this.simulator.processRequest();
-		} else {
-			Object.values(this.simulators).map(simulator => {
-				if (simulator.hasNextStep()) {
-					simulator.processRequest();
-				}
-			});
-		}
 	}
 
 	set simpleView(enabled: boolean) {
@@ -132,7 +64,7 @@ class IOManager {
 		if (this._simpleView) {
 			this.simulator.triggerCallbacks();
 		} else {
-			Object.values(this.simulators).map(simulator => simulator.triggerCallbacks());
+			Object.values(this._simulators).map(simulator => simulator.triggerCallbacks());
 		}
 	}
 
@@ -147,23 +79,31 @@ class IOManager {
 	// simulator setters
 	set direction(value: boolean) {
 		this.simulator.direction = value;
-		Object.values(this.simulators).map(simulator => {
+		Object.values(this._simulators).map(simulator => {
 			simulator.direction = value;
 		});
 	}
 
 	set tracks(value: number) {
 		this.simulator.tracks = value;
-		Object.values(this.simulators).map(simulator => {
+		Object.values(this._simulators).map(simulator => {
 			simulator.tracks = value;
 		});
 	}
 
 	set initialPosition(value: number) {
 		this.simulator.initialPosition = value;
-		Object.values(this.simulators).map(simulator => {
+		Object.values(this._simulators).map(simulator => {
 			simulator.initialPosition = value;
 		});
+	}
+
+	get simulators() : IOSimulator[] {
+		return <IOSimulator[]>Object.entries(this._simulators).map(([key, value]) => {
+			if (this._selectedAlgorithms.indexOf(key) >= 0) {
+				return value;
+			}
+		}).filter((value) => value != undefined);
 	}
 }
 

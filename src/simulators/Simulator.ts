@@ -10,7 +10,10 @@ abstract class Simulator {
 		
 	}
 
+	public abstract nextStep() : void;
 	public abstract hasNextStep() : boolean;
+
+	public abstract previousStep() : void;
 	public abstract hasPreviousStep() : boolean;
 
 	/**

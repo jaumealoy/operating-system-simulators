@@ -29,7 +29,7 @@ class MemoryManager {
 	private _capacity: number;
 
 	// callback
-	public onResultsChange: (reuslts: {[key: string]: MemorySimulatorResults}) => void;
+	public onResultsChange: (results: {[key: string]: MemorySimulatorResults}) => void;
 
 	constructor() {
 		// simple view by default

@@ -145,7 +145,31 @@ class IOSimulator extends Simulator {
 		};
 	}
 
-	public processRequest() : ProcessedRequest {
+	public nextStep() : void {
+		// save current state
+		let currentState: IOState = new IOState(this.currentTrack, [...this.pendingRequests], [...this.proceesedRequests]);
+		this.states.push(currentState);
+
+		let nextRequest: NextRequest = this.getNextRequest();
+
+		let processedRequest: ProcessedRequest = {
+			initialTrack: this.currentTrack,
+			finalTrack: nextRequest.request.track,
+			fast: nextRequest.request.fast || false,
+			index: nextRequest.request.requestIndex || 0
+		};
+
+		this.currentTrack = processedRequest.finalTrack;
+
+		// removing this request from the pending list
+		this.pendingRequests.splice(nextRequest.index, 1);
+
+		// add this request to the processed list
+		this.proceesedRequests.push(processedRequest);
+		this.onProcessedRequestsChange(this.proceesedRequests);
+	}
+
+	/*public processRequest() : ProcessedRequest {
 		// save current state
 		let currentState: IOState = new IOState(this.currentTrack, [...this.pendingRequests], [...this.proceesedRequests]);
 		this.states.push(currentState);
@@ -169,7 +193,7 @@ class IOSimulator extends Simulator {
 		this.onProcessedRequestsChange(this.proceesedRequests);
 
 		return processedRequest;
-	}
+	}*/
 
 	private FCFS() : number {
 		return 0;

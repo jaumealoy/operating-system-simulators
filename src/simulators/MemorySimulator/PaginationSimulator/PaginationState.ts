@@ -36,7 +36,7 @@ class PaginationState extends State {
 		this._memory = [...simulatorData.memory];
 		this._pages = [...simulatorData.pages];
 		this._counter = simulatorData.cycle;
-		this._pageFailures = simulatorData.cycle;
+		this._pageFailures = simulatorData.pageFailures;
 
 		// process table is a bit trickier, we cannot make a direct shallow copy
 		// data such as bits are inside the ProcessPage object, we must deep copy it!

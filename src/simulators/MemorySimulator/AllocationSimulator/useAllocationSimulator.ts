@@ -107,26 +107,6 @@ const useMemorySimulator = (simpleView: boolean) => {
 	// simulation results
 	const [results, setResults] = useState<{[key: string]: MemorySimulatorResults}>({});
 
-	/*const [memoryData, setMemoryData] = useState<number[]>([]);
-	simulator.current.onMemoryChange = (memory) => {
-		setMemoryData([...memory]);
-	};
-
-	const [nextPointer, setNextPointer] = useState<number>(0);
-	simulator.current.onNextPointerChange = (value: number) => setNextPointer(value);
-
-	const [currentCycle, setCurrentCycle] = useState<number>(0);
-	simulator.current.onCurrentCycleChange = (cycle: number) => setCurrentCycle(cycle);
-	
-	const [memoryGroups, setMemoryGroups] = useState<number[]>([16]);
-	simulator.current.onMemoryGroupsChange = (groups: number[]) => setMemoryGroups(groups);
-
-	const [processQueues, setProcessQueues] = useState<{[key: string]: ProcessWrap[]}>({});
-	simulator.current.onQueuesChange = (queues) => setProcessQueues(queues);
-
-	const [allocationHistory, setAllocationHistory] = useState<ProcessWrap[]>([]);
-	simulator.current.onAllocationHistoryChange = (processes) => setAllocationHistory(processes);*/
-
 	// simulation control
 	const [isRunning, setRunning] = useState<boolean>(false);
 	const [isStarted, setStarted] = useState<boolean>(false);
@@ -191,7 +171,6 @@ const useMemorySimulator = (simpleView: boolean) => {
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
 		results,
-		//memoryData, nextPointer, memoryGroups, processQueues, allocationHistory, currentCycle,
 		isRunning, isStarted,
 		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause
 	};

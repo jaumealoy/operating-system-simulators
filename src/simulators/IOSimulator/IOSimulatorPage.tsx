@@ -84,7 +84,7 @@ function IOSimulatorPage() {
 		onSubmitForm,
 		selectedAlgorithm, setSelectedAlgorithm, selectAlgorithm, selectedAlgorithms,
 		processedRequests,
-		isRunning, isStarted, isFinished,
+		isRunning, isStarted,
 		step, reset, stop, previous, play, pause, timerCallback,
 		hasNext, hasPrevious,
 		isSimpleView, setSimpleView,
@@ -297,7 +297,7 @@ function IOSimulatorPage() {
 											<FormCheck 
 												name="selectedAlgorithm"
 												type={isSimpleView ? "radio" : "checkbox"}
-												disabled={!(!isStarted || isFinished)}
+												disabled={isStarted}
 												onChange={() => selectAlgorithm(algorithm.id)}
 												checked={(isSimpleView && (selectedAlgorithm == algorithm.id)) 
 													|| (!isSimpleView && (selectedAlgorithms.indexOf(algorithm.id) >= 0))}
@@ -324,7 +324,7 @@ function IOSimulatorPage() {
 											value={initialPosition}
 											min={IOSimulator.MIN}
 											max={maxTracks + IOSimulator.MIN - 1}
-											disabled={!(!isStarted || isFinished)}
+											disabled={isStarted}
 											onChange={(e) => setInitialPosition(parseInt(e.target.value))}
 											isInvalid={isFieldInvalid("initialPosition")}
 											type="number" />
@@ -334,7 +334,7 @@ function IOSimulatorPage() {
 										<label>{t("io.track_number")}</label>
 										<FormControl 
 											value={maxTracks}
-											disabled={!(!isStarted || isFinished)}
+											disabled={isStarted}
 											min={1} 
 											onChange={(e) => setMaxTracks(parseInt(e.target.value))}
 											isInvalid={isFieldInvalid("maxTracks")}
@@ -351,7 +351,7 @@ function IOSimulatorPage() {
 												label="Ascendente"
 												onChange={() => setDirection(true)}
 												checked={direction}
-												disabled={!(!isStarted || isFinished)}
+												disabled={isStarted}
 												name="direction" />
 
 											<FormCheck 
@@ -359,7 +359,7 @@ function IOSimulatorPage() {
 												label="Descendente"
 												onChange={() => setDirection(false)}
 												checked={!direction}
-												disabled={!(!isStarted || isFinished)}
+												disabled={isStarted}
 												name="direction" />
 										</FormGroup>
 									}
@@ -388,14 +388,14 @@ function IOSimulatorPage() {
 												required
 												min={IOSimulator.MIN}
 												max={IOSimulator.MIN + maxTracks - 1}
-												disabled={!(!isStarted || isFinished)}
+												disabled={isStarted}
 												value={requestTrack}
 												onChange={(e) => setRequestTrack(parseInt(e.target.value))}
 												type="number" />
 										</FormGroup>
 
 										<button 
-											disabled={!(!isStarted || isFinished)}
+											disabled={isStarted}
 											id="add_request_btn"
 											className="btn btn-primary mt-2 float-right">
 											{t("io.add_request")}
@@ -446,7 +446,7 @@ function IOSimulatorPage() {
 												<span className={`badge rounded-pill pill-md ${background} px-2 mr-1`}>
 													{value.track}
 
-													{!(!(!isStarted || isFinished)) &&	
+													{!isStarted &&	
 														<FiDelete
 															onClick={() => removeRequest(index)}
 															className="pointer ml-sm-1" />
@@ -467,7 +467,7 @@ function IOSimulatorPage() {
 							{EXAMPLES.map((example: IOExample, index: number) =>
 								<button 
 									key={"example_" + index}
-									disabled={!(!isStarted || isFinished)}
+									disabled={isStarted}
 									onClick={() => {
 										setInitialPosition(example.initialTrack);
 										setDirection(example.direction);
@@ -563,7 +563,7 @@ function IOSimulatorPage() {
 				<div className="row scrollable-x">
 					{selectedAlgorithms.map((algorithm: string, index: number) => 
 						<Col md={4}>
-							<h4>{t("io.algorithms." + algorithm)}</h4>
+							<h4 className="mt-0">{t("io.algorithms." + algorithm)}</h4>
 
 							<Row>
 								<Col md={12}>
@@ -631,8 +631,8 @@ function IOSimulatorPage() {
 
 			<SimulatorControl 
 				running={isRunning}
-				hasNext={hasNext}
-				hasPrevious={hasPrevious}
+				hasNext={hasNext()}
+				hasPrevious={hasPrevious()}
 				reset={reset}
 				stop={stop}
 				previous={previous}
