@@ -87,8 +87,9 @@ function PaginationPage(props: PaginationPageProps) {
 		requests, addRequest, removeRequest,
 		loadProcessesFromList, loadRequestsFromList,
 		results,
-		hasNextStep, nextStep, hasPreviousStep, previousStep, clear, reset,
-		isRunning, isStarted
+		hasNextStep, nextStep, hasPreviousStep, previousStep, clear, reset, play, pause,
+		isRunning, isStarted,
+		loadFile, saveFile
 	} = usePaginationSimulator(props.simpleView);
 
 	return (
@@ -371,7 +372,12 @@ function PaginationPage(props: PaginationPageProps) {
 				previous={previousStep}
 				reset={clear}
 				stop={reset}
-			/>
+				start={play}
+				pause={pause}
+				running={isRunning}
+				timerCallback={nextStep}
+				onSaveFile={saveFile}
+				onOpenFile={loadFile} />
 		</>
 	);
 }

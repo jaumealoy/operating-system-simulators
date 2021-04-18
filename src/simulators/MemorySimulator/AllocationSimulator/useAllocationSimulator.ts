@@ -1,12 +1,11 @@
 import { FormEvent, useState, useRef, useEffect } from "react";
 import { Process, ProcessWrap, MemorySimulator } from "./MemorySimulator";
 import { MemoryManager, MemorySimulatorResults } from "./MemoryManager";
+import { SaveFile } from "../../Simulator";
 
 type Manager = null | MemoryManager;
 
 const useMemorySimulator = (simpleView: boolean) => {
-	//const simulator = useRef<MemorySimulator>(new MemorySimulator());
-
 	const initialized = useRef<boolean>(false);
 	const manager = useRef<Manager>(null);
 	if (!initialized.current) {
@@ -166,13 +165,73 @@ const useMemorySimulator = (simpleView: boolean) => {
 	const play = () => setRunning(true);
 	const pause = () => setRunning(false);
 
+	// load and save simulations
+	const saveFile = (download: (content: string) => void) => {
+		let fileData: SaveFile = {
+			type: "allocation",
+			data: {
+				memoryCapacity: memoryCapacity,
+				requests: processes,
+				selectedAlgorithm,
+				selectedAlgorithms
+			}
+		};
+
+		download(JSON.stringify(fileData));
+	};
+
+	const loadFile = (data: string) => {
+		try {
+			let parsedData = JSON.parse(data);
+
+			if ("type" in parsedData && "data" in parsedData) {
+				if (parsedData["type"] == "allocation") {
+					let simulatorData = parsedData["data"];
+
+					// simulate algorithm selection
+					if (manager.current != null) {
+						let original = simpleView;
+
+						clear();
+
+						manager.current.simpleView = true;
+						manager.current.selectAlgorithm(simulatorData.selectedAlgorithm);
+
+						manager.current.simpleView = false;
+						for (let i = 0; i < simulatorData.selectedAlgorithms.length; i++) {
+							manager.current.selectAlgorithm(simulatorData.selectedAlgorithms[i]);
+						}
+ 
+						manager.current.simpleView = original;
+
+						for (let i = 0; i < simulatorData.requests.length; i++) {
+							manager.current.addProcess(simulatorData.requests[i]);
+						}
+
+						setMemoryCapacity(simulatorData.memoryCapacity);
+						setProcesses(simulatorData.requests);
+						setSelectedAlgorithm(simulatorData.selectedAlgorithm);
+						setSelectedAlgorithms(simulatorData.selectedAlgorithms);
+					}
+				} else {
+					throw new Error("Invalid File Format");
+				}
+			} else {
+				throw new Error("JSON error");
+			}
+		} catch(error) {
+			alert("Error while loading save file.");
+		}
+ 	};
+
 	return {
 		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		memoryCapacity, setMemoryCapacity,
 		processes, addProcess, removeProcess, loadProcessesFromList,
 		results,
 		isRunning, isStarted,
-		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause
+		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause,
+		saveFile, loadFile
 	};
 };
 

@@ -280,8 +280,6 @@ class PaginationSimulator extends Simulator {
 			this.initializeProcessTables();
 		}
 
-		console.log(this._pendingRequests);
-
 		let request: Request | undefined = this._pendingRequests.shift();
 		if (request != undefined) {
 			let process: Process | null = this.getProcess(request.process);
@@ -310,8 +308,6 @@ class PaginationSimulator extends Simulator {
 
 						frame = pageTable.pages[replacedPage].data.frame;
 
-						console.log(`Replacing page ${replacedPage} with ${request.page}`);
-
 						// replace the current loaded page with the new
 						let idx: number = 0;
 						while(pageTable.loadedPages[idx] != replacedPage) {
@@ -328,8 +324,6 @@ class PaginationSimulator extends Simulator {
 						pageTable.pages[request.page].arrival = this._counter;
 						this._pages[frame] = request.page;
 					} else {
-						console.log("Allocating new frame " + frame + " to process " + request.process, request.page)
-
 						// we could allocate a new frame as this process hasn't reached its limit
 						let page: ProcessPageWrap = pageTable.pages[request.page];
 						page.arrival = this._counter;
@@ -345,8 +339,6 @@ class PaginationSimulator extends Simulator {
 					this.onPageFailuresChange(this._pageFailures);
 
 					this._memory[frame] = this.getProcessIndex(request.process) + 1;
-
-					console.log(this._processTable);
 
 					// page has been loaded for the first time
 					if (this._algorithm == "clock" || this._algorithm == "nru") {
@@ -394,24 +386,18 @@ class PaginationSimulator extends Simulator {
 			}
 		}
 
-		console.log("loadedPages=",loadedPages)
-
 		this._pendingRequests.map((r, index) => {
 			if (r.process == request.process) {
-				console.log("Found a request from this same process page " + r.page, r.page in loadedPages)
 				if (r.page in loadedPages) {
 					loadedPages[r.page] = index;
 				}
 			}
 		});
 
-		console.log(loadedPages)
-
 		let max: number = -1;
 		let maxUsage: number = -1;
 		Object.entries(loadedPages).map(([page, nextUsage]) => {
 			if (nextUsage > maxUsage) {
-				console.log("New max page found at " + nextUsage + " page = " + page);
 				max = parseInt(page);
 				maxUsage = nextUsage;
 			}

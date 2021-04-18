@@ -38,6 +38,7 @@ function AllocationPage(props: AllocationPageProps) {
 		results,
 		isRunning, isStarted,
 		hasNextStep, nextStep, hasPreviousStep, previousStep, stop, clear, play, pause,
+		loadFile, saveFile
 	} = useMemorySimulator(props.simpleView);
 
     return (
@@ -278,6 +279,8 @@ function AllocationPage(props: AllocationPageProps) {
 				pause={pause}
 				running={isRunning}
 				timerCallback={nextStep}
+				onSaveFile={saveFile}
+				onOpenFile={loadFile}
 			/>
         </>
     );

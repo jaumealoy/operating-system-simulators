@@ -28,7 +28,7 @@ abstract class Simulator {
 };
 
 interface SaveFile {
-	type: "io" | "cpu" | "memory";
+	type: "io" | "cpu" | "allocation" | "pagination";
 	data: any;
 };
 

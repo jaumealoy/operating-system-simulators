@@ -6,6 +6,7 @@ import {
 	ProcessTable
 } from "./PaginationSimulator";
 import { PaginationManager, PaginationResult } from "./PaginationManager";
+import { SaveFile } from "./../../Simulator";
 
 const usePaginationSimulator = (isSimpleView: boolean) => {
 	const initialized = useRef<boolean>(false);
@@ -172,6 +173,18 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 		}
 	};
 
+	const play = () : void => {
+		if (manager.current != null) {
+			setRunning(true);
+		}
+	};
+
+	const pause = () : void => {
+		if (manager.current != null) {
+			setRunning(false);
+		}
+	}
+
 	useEffect(() => {
 		reset();
 	}, [selectedAlgorithm, selectedAlgorithms]);
@@ -182,15 +195,80 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 		}
 	}, [isSimpleView]);
 
+	// load and save simulation
+	const saveFile = (download: (content: string) => void) => {
+		let fileData: SaveFile = {
+			type: "pagination",
+			data: {
+				processes,
+				requests,
+				selectedAlgorithm,
+				selectedAlgorithms
+			}
+		};
+
+		download(JSON.stringify(fileData));
+	};
+
+	const loadFile = (data: string) => {
+		try {
+			let parsedData = JSON.parse(data);
+
+			if ("type" in parsedData && "data" in parsedData) {
+				if (parsedData.type == "pagination") {
+					let simulatorData = parsedData.data;
+
+					if (manager.current != null) {
+						manager.current.clear();
+
+						// add processes and requests
+						for (let i = 0; i < simulatorData.processes.length; i++) {
+							manager.current.addProcess(simulatorData.processes[i]);
+						}
+
+						for (let i = 0; i < simulatorData.requests.length; i++) {
+							manager.current.addRequest(simulatorData.requests[i]);
+						}
+
+						// simulate algorithm selection
+						let original: boolean = isSimpleView;
+
+						manager.current.simpleView = true;
+						manager.current.selectAlgorithm(simulatorData.selectedAlgorithm);
+
+						manager.current.simpleView = false;
+						for (let i = 0; i < simulatorData.selectedAlgorithms.length; i++) {
+							manager.current.selectAlgorithm(simulatorData.selectedAlgorithms[i]);
+						}
+
+						manager.current.simpleView = original;
+
+						// update internal state
+						setProcesses(simulatorData.processes);
+						setRequests(simulatorData.requests);
+						setSelectedAlgorithm(simulatorData.selectedAlgorithm);
+						setSelectedAlgorithms(simulatorData.selectedAlgorithms);
+					}
+				} else {
+					throw new Error();
+				}
+			} else {
+				throw new Error();
+			}
+		} catch (error) {
+			alert("Invalid save file");
+		}
+	};
+
 	return {
 		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,
 		processes, addProcess, removeProcess,
 		requests, addRequest, removeRequest,
 		loadRequestsFromList, loadProcessesFromList,
 		results,
-		//processTable, memory, pageFailures, currentCycle, pages,
-		hasNextStep, nextStep, hasPreviousStep, previousStep, reset, clear,
-		isRunning, isStarted
+		hasNextStep, nextStep, hasPreviousStep, previousStep, reset, clear, play, pause,
+		isRunning, isStarted,
+		saveFile, loadFile
 	};
 }
 
