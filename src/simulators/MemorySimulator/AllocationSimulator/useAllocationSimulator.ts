@@ -78,9 +78,9 @@ const useMemorySimulator = (simpleView: boolean) => {
 	};
 	const removeProcess = (index: number) => {
 		if (manager.current != null) {
+			manager.current.removeProcess(index);
 			processes.splice(index, 1);
 			setProcesses([...processes]);
-			manager.current.removeProcess(index);
 		}
 	};
 

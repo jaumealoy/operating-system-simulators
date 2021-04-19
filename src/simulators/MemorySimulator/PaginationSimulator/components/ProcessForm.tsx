@@ -3,6 +3,7 @@ import { Row, Col, FormGroup, FormControl } from "react-bootstrap";
 import { FiDelete, FiPlusCircle } from "react-icons/fi";
 import uniqueElement from "./../../../../helpers/uniqueElement";
 import { Process } from "./../PaginationSimulator";
+import { useTranslation } from "react-i18next";
 
 const DEFAULT_NAMES: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -14,6 +15,8 @@ interface ProcessFormProps {
 }
 
 function ProcessForm(props: ProcessFormProps) {
+	const { t } = useTranslation();
+
 	// process name
 	const [name, setName] = useState<string>("");
 	const [frames, setFrames] = useState<string>("");
@@ -57,7 +60,7 @@ function ProcessForm(props: ProcessFormProps) {
 			<Col md={4}>
 				<form onSubmit={onAddHandler}>
 					<FormGroup>
-						<label>Nombre y marcos</label>
+						<label>{t("memory.pagination.name_frames")}</label>
 						<div className="input-group">
 							<FormControl 
 								disabled={!enabled}
@@ -86,7 +89,7 @@ function ProcessForm(props: ProcessFormProps) {
 
 			<Col md={8}>
 				{props.processes.length == 0 ?
-					"No has introducido ningún proceso"
+					t("memory.pagination.no_processes")
 					:
 					props.processes.map((process, index) => 
 						<span className="badge bg-secondary mr-1">

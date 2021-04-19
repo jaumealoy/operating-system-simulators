@@ -13,6 +13,7 @@ import { Algorithm } from "../../Simulator";
 import { MemorySimulator, Process } from "./MemorySimulator";
 import AddProcessForm from "./components/AddProcessForm";
 import ProcessList from "./components/ProcessList";
+import useAlgorithmHelp from "./../../../components/AlgorithmModalHelp/useAlgorithmHelp";
 
 const EXAMPLES: Process[][] = [
 	[
@@ -41,6 +42,14 @@ function AllocationPage(props: AllocationPageProps) {
 		loadFile, saveFile
 	} = useMemorySimulator(props.simpleView);
 
+	const { AlgorithmModal, showAlgorithmModal } = useAlgorithmHelp("allocation");
+
+	let showAlgorithmHelp = (algorithm: string) => {
+		pause();
+		showAlgorithmModal(algorithm);
+	};
+
+
     return (
         <>
             {/* Simulator settings and process form */}
@@ -51,9 +60,9 @@ function AllocationPage(props: AllocationPageProps) {
 							<div className="title">{t("common.simulator_settings")}</div>
 
 							<Row>
-								<Col md={8}>
+								<Col md={9}>
 									<FormGroup>
-										<label>Algoritmo</label>
+										<label>{t("common.simulation_algorithm")}</label>
 										{MemorySimulator.getAvailableAlgorithms().map((algorithm: Algorithm) => 
 											<FormCheck
 												key={algorithm.id}
@@ -64,9 +73,9 @@ function AllocationPage(props: AllocationPageProps) {
 												disabled={isStarted}
 												label={
 													<>
-														{algorithm.name}
+														{t(`memory.allocation.algorithms.${algorithm.id}`)}
 														<button
-															onClick={() => {}}
+															onClick={() => showAlgorithmHelp(algorithm.id)}
 															className="btn btn-icon btn-sm">
 															<FiInfo />
 														</button>
@@ -77,9 +86,9 @@ function AllocationPage(props: AllocationPageProps) {
 									</FormGroup>
 								</Col>
 
-								<Col md={4}>
+								<Col md={3}>
 									<FormGroup>
-										<label>Capacidad</label>
+										<label>{t("memory.allocation.capacity")}</label>
 										<FormControl 
 											type="number"
 											min={1}
@@ -139,7 +148,7 @@ function AllocationPage(props: AllocationPageProps) {
 
 			{/* Simulation results */}
 			<Row>
-				<h2>Resultados</h2>
+				<h2>{t("common.simulator_results")}</h2>
 				
 				{props.simpleView && (selectedAlgorithm in results) &&
 					<>
@@ -156,18 +165,18 @@ function AllocationPage(props: AllocationPageProps) {
 						</Col>
 
 						<Col md={8}>
-							Ciclo actual: <span className="badge bg-success">{results[selectedAlgorithm].currentCycle}</span>
+							{t("memory.allocation.current_cycle")} <span className="badge bg-success">{results[selectedAlgorithm].currentCycle}</span>
 							<br />
 							<br />
-							Próximas peticiones:
+							{t("memory.allocation.next_requests")}
 							<table className="table">
 								<thead>
 									<tr>
-										<th>Proceso</th>
-										<th>Duración</th>
-										<th>Llegada</th>
-										<th>Memoria solicitada</th>
-										<th>Ciclos restantes</th>
+										<th>{t("memory.allocation.process")}</th>
+										<th>{t("memory.allocation.duration")}</th>
+										<th>{t("cpu.arrival")}</th>
+										<th>{t("memory.allocation.requested_memory")}</th>
+										<th>{t("cpu.remaining_cycles")}</th>
 									</tr>
 								</thead>
 
@@ -178,7 +187,7 @@ function AllocationPage(props: AllocationPageProps) {
 												<td>{process.process.id}</td>
 												<td>
 													{process.process.duration == 0 ?
-														"permanente"
+														t("memory.allocation.permanent")
 														:
 														process.process.duration
 													}
@@ -195,7 +204,7 @@ function AllocationPage(props: AllocationPageProps) {
 																placement="right"
 																overlay={
 																	<Tooltip id={`memory_error_${process.process.id}`}>
-																		No hay memoria suficiente
+																		{t("memory.allocation.not_enough_memory")}
 																	</Tooltip>
 																}
 																>
@@ -209,27 +218,27 @@ function AllocationPage(props: AllocationPageProps) {
 										)
 										:
 										<tr>
-											<td colSpan={5}>No hay más peticiones de memoria</td>
+											<td colSpan={5}>{t("memory.allocation.no_more_requests")}</td>
 										</tr>
 									}
 								</tbody>
 							</table>
 
-							Peticiones de memoria atendidas:
+							{t("memory.allocation.completed_requests")}
 							<table className="table">
 								<thead>
 									<tr>
-										<th>Ciclo</th>
-										<th>Proceso</th>
-										<th>Memoria solicitada</th>
-										<th>Bloque asignado</th>
+										<th>{t("memory.allocation.cycle")}</th>
+										<th>{t("memory.allocation.process")}</th>
+										<th>{t("memory.allocation.requested_memory")}</th>
+										<th>{t("memory.allocation.assigned_block")}o</th>
 									</tr>
 								</thead>
 
 								<tbody>
 									{results[selectedAlgorithm].allocationHistory.length == 0 ?
 										<tr>
-											<td colSpan={4}>No se ha atendido ninguna petición de memoria.</td>
+											<td colSpan={4}>{t("memory.allocation.no_requests_completed")}</td>
 										</tr>
 										:
 										results[selectedAlgorithm].allocationHistory.map((allocation) => 
@@ -254,7 +263,7 @@ function AllocationPage(props: AllocationPageProps) {
 							(algorithm in results) && 
 							<Col key={algorithm} md={3}>
 								<h2>{algorithm}</h2>
-								Ciclo actual: <span className="badge bg-success">{results[algorithm].currentCycle}</span>
+								{t("memory.allocation.current_cycle")} <span className="badge bg-success">{results[algorithm].currentCycle}</span>
 								<MemoryChart
 									capacity={memoryCapacity}
 									processes={processes.map(process => process.id)}
@@ -267,6 +276,8 @@ function AllocationPage(props: AllocationPageProps) {
 					</Row>
 				}
 			</Row>
+
+			<AlgorithmModal />
 
 			<SimulatorControl 
 				hasNext={hasNextStep()}

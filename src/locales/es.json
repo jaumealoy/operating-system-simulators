@@ -19,6 +19,7 @@
         "examples": "Ejemplos",
         "simulation_algorithm": "Algoritmo simulación",
         "simulator_settings": "Configuración del simulador",
+        "simulator_results": "Resultados",
         "tutorial": {
             "control_bar_overview": "Esto es la barra de control del simulador que te permite controlar la simulación.",
             "control_bar_reset": "Este botón reinicia el simulador: elimina todas las peticiones.",
@@ -131,9 +132,64 @@
         }
     },
 
+    "memory": {
+        "allocation_menu": "Asignación de memoria",
+        "pagination_menu": "Paginación",
+
+        "allocation": {
+            "capacity": "Capacidad",
+            "current_cycle": "Ciclo actual:",
+            "next_requests": "Próximas peticiones:",
+            "process": "Proceso",
+            "duration": "Duración",
+            "requested_memory": "Memoria solicitada",
+            "permanent": "permanente",
+            "not_enough_memory": "No hay memoria suficiente",
+            "no_more_requests": "No hay más peticiones de memoria",
+            "no_requests_completed": "No se ha atendido ninguna petición de memoria",
+            "no_requests_added": "No se han añadido peticiones.",
+            "completed_requests": "Peticiones de memoria atendidas:",
+            "assigned_block": "Bloque asignado",
+            "cycle": "Ciclo",
+            "memory": "Memoria",
+
+            "algorithms": {
+                "first_fit": "Primer ajuste (First fit)",
+                "next_fit": "Siguiente ajuste (Next fit)",
+                "worst_fit": "Peor ajuste (Worst fit)",
+                "best_fit": "Mejor ajuste (Nest fit)",
+                "buddy": "Sistema de colegas (Buddy system)"
+            }
+        },
+
+        "pagination": {
+            "frames": "Marcos",
+            "frame": "Marco",
+            "processes_pages": "Páginas y procesos",
+            "page_failures": "Fallos de página",
+            "process_name": "Process {{name}}",
+            "page": "Página",
+            "last_access": "Último acceso",
+            "select_algorithm": "Selecciona un algoritmo o más para utilizar la vista comparativa",
+            "write": "Escritura",
+            "added_requests": "Peticiones introducidas",
+            "name_frames": "Nombre y marcos",
+            "no_processes": "No has introducido ningún proceso",
+
+            "algorithms": {
+                "optimal": "Óptimo",
+                "fifo": "First In First Out",
+                "lru": "Least Recently Used",
+                "clock": "Reloj",
+                "nru": "Not Recently Used"
+            }
+        }
+    },
+
     "menu": {
         "IOSimulator": "Simulador E/S",
         "CPUSimulator": "Simulador CPU",
+        "MemorySimulator": "Simulador memoria",
         "FAQ": "Ayuda"
     },
 
@@ -210,6 +266,36 @@
                     "text_4": "Este sistema da preferencia a los procesos cortos y penaliza los procesos largos que han estado mucho tiempo en ejecución, ya que se encuentran en colas de baja prioridad."
                 }
 
+            },
+
+            "memory": {
+                "allocation": {
+                    "first_fit": {
+                        "text_1": "El algoritmo First Fit o Primer ajuste asigna la primera partición disponible con la capacidad suficiente para almacenar el proceso, sin buscar si existen otros bloques de memoria más adecuados para la cantidad de memoria solicitada.",
+                        "text_2": "Este sistema es el más rápido y sencillo que permite tener muchos procesos cargados al inicio de memoria entre los que se ha de encontrar un bloque libre."
+                    },
+
+                    "best_fit": {
+                        "text_1": "El algoritmo Best Fit o Mejor ajuste asigna la partición más pequeña con capacidad suficiente para almacenar el proceso.",
+                        "text_2": "El rendimiento global de este sistema no es tan bueno como el de otros sistemas y provoca mucha fragmentación externa, haciendo necesario compactar la memoria frecuentemente."
+                    },
+
+                    "next_fit": {
+                        "text_1": "El algoritmo Next fit o Siguiente ajuste asigna el siguiente bloque de memoria con capacidad para almacenar el proceso a partir del último bloque de memoria asignado.",
+                        "text_2": "Este sistema provoca fragmentación externa porqué el mayor bloque de memoria se encuentra al final de la memoria y éste se divide rápidamente en bloques más pequeños.",
+                        "text_3": "Para su implementación, es necesario almacenar la posición del último bloque asignado."
+                    },
+
+                    "worst_fit": {
+                        "text_1": "El algoritmo Worst fit o Peor ajuste asigna el mayor bloque de memoria con capacidad para el proceso con la intención de reducir la fragmentación."
+                    },
+
+                    "buddy": {
+                        "text_1": "El sistema de colegas intenta lograr un equilibrio entre los sistemas de particiones fijas y los sistemas de particiones variables. Este sistema solo permite crear bloques de memoria de capacidad igual a una potencia en base 2.",
+                        "text_2": "En un instante inicial, la memoria forma un único bloque de memoria, pero se puede ir dividiendo entre 2 para atender una petición de memoria. Los procesos ocupan un bloque de memoria óptimo, que es aquel con la capacidad mínima necesaria.",
+                        "text_3": "Cuando se libera un bloque, el bloque liberado se puede fusionar con los bloques adyacentes siempre que sean descendentes del mismo bloque de potencia superior."
+                    }
+                }
             }
         }
     }

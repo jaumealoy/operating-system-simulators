@@ -8,6 +8,8 @@ import usePaginationSimulator from "./usePaginationSimulator";
 import RequestsForm from "./components/RequestsForm";
 import MemoryChart from "../components/MemoryChart";
 import ProcessFrameTable from "./components/ProcessFrameTable";
+import { FiInfo } from "react-icons/fi";
+import useAlgorithmHelp from "./../../../components/AlgorithmModalHelp/useAlgorithmHelp";
 
 interface PaginationExample {
 	frames: number;
@@ -92,6 +94,13 @@ function PaginationPage(props: PaginationPageProps) {
 		loadFile, saveFile
 	} = usePaginationSimulator(props.simpleView);
 
+	const { AlgorithmModal, showAlgorithmModal } = useAlgorithmHelp("pagination");
+
+	let showAlgorithmHelp = (algorithm: string) => {
+		pause();
+		showAlgorithmModal(algorithm);
+	};
+
 	return (
 		<>
 			{/* Simulator settings */}
@@ -103,20 +112,29 @@ function PaginationPage(props: PaginationPageProps) {
 							
 							<Row>
 								<Col md={7}>
-									<label>Algoritmo</label>
+									<label>{t("common.simulation_algorithm")}</label>
 									{PaginationSimulator.getAvailableAlgorithms().map(algorithm =>
 										<FormCheck 
 											type={props.simpleView ? "radio" : "checkbox"}
-											label={algorithm.name}
 											disabled={isStarted}
 											checked={props.simpleView ? algorithm.id == selectedAlgorithm : selectedAlgorithms.indexOf(algorithm.id) >= 0}
-											onChange={() => selectAlgorithm(algorithm.id)}/>
+											onChange={() => selectAlgorithm(algorithm.id)}
+											label={
+												<>
+													{t(`memory.pagination.algorithms.${algorithm.id}`)}
+													<button
+														onClick={() => showAlgorithmHelp(algorithm.id)}
+														className="btn btn-icon btn-sm">
+														<FiInfo />
+													</button>
+												</>
+											}/>
 									)}
 								</Col>
 
 								<Col md={5}>
 									<FormGroup>
-										<label>Páginas por procesos</label>
+										<label>{t("memory.pagination.frames")}</label>
 										<input 
 											className="form-control" 
 											type="number" 
@@ -133,7 +151,7 @@ function PaginationPage(props: PaginationPageProps) {
 				<Col md={6} className="mt-3 mt-md-0">
 					<div className="simulator-group">
 						<div className="simulator-group-content">
-							<div className="title">Procesos y peticiones</div>
+							<div className="title">{t("processes_pages")}</div>
 							<ProcessForm 
 								processes={processes}
 								onAddProcess={addProcess}
@@ -173,7 +191,7 @@ function PaginationPage(props: PaginationPageProps) {
 			{/* Simulator results */}
 			{props.simpleView && (selectedAlgorithm in results) &&
 			<Row>
-				<h2>Resultados</h2>
+				<h2>{t("common.simulator_results")}</h2>
 				<Col md={4}>
 					<MemoryChart
 						processes={processes.map(p => p.id)}
@@ -195,12 +213,12 @@ function PaginationPage(props: PaginationPageProps) {
 							<table className="table">
 								<tbody>
 									<tr>
-										<th>Fallos de página</th>
+										<th>{t("memory.pagination.page_failures")}</th>
 										<td>{results[selectedAlgorithm].pageFailures}</td>
 									</tr>
 
 									<tr>
-										<th>Peticiones</th>
+										<th>{t("io.requests")}</th>
 										<td>
 											{requests.map((request, index) =>  
 												<span className={"badge mr-1 " + (index < results[selectedAlgorithm].currentCycle ? "bg-success" : "bg-secondary")}>
@@ -218,7 +236,7 @@ function PaginationPage(props: PaginationPageProps) {
 					<Row className="scrollable-x">
 						{Object.entries(results[selectedAlgorithm].processTable).map(([key, value]) => 
 							<Col key={`table_${key}`} md={4}>
-								<h3>Proceso {key}</h3>
+								<h3>{t("memory.pagination.process_name", { name: key })}</h3>
 
 								{processes.map(process => {
 									if (process.id == key) {
@@ -234,10 +252,10 @@ function PaginationPage(props: PaginationPageProps) {
 								<table className="table">
 									<thead>
 										<tr>
-											<th>Página</th>
-											<th>Marco</th>
-											{selectedAlgorithm == "fifo" && <th>Llegada</th>}
-											{selectedAlgorithm == "lru" && <th>Último acceso</th>}
+											<th>{t("memory.allocation.page")}</th>
+											<th>{t("memory.allocation.frame")}</th>
+											{selectedAlgorithm == "fifo" && <th>{t("cpu.arrival")}</th>}
+											{selectedAlgorithm == "lru" && <th>{t("memory.allocation.last_access")}</th>}
 											{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 && <th>A</th>}
 											{selectedAlgorithm == "nru" && <th>M</th>}
 										</tr>
@@ -301,23 +319,23 @@ function PaginationPage(props: PaginationPageProps) {
 
 			{!props.simpleView &&
 			<Row>
-				<h2>Resultados</h2>
-				{selectedAlgorithms.length == 0 && "Selecciona un algoritmo o más para utilizar la vista comparativa"}
+				<h2>{t("common.simulator_results")}</h2>
+				{selectedAlgorithms.length == 0 && t("memory.pagination.select_algorithm")}
 				<Row className="scrollable-x">
 				{selectedAlgorithms.map((algorithm) => 
 					(algorithm in results) &&
 					<Col md={4}>
-						<h3>{algorithm}</h3>
+						<h3>{t(`memory.pagination.algorithms.${algorithm}`)}</h3>
 
 						<table className="table">
 							<tbody>
 								<tr>
-									<th>Fallos de página</th>
+									<th>{t("memory.pagination.page_failures")}</th>
 									<td>{results[algorithm].pageFailures}</td>
 								</tr>
 
 								<tr>
-									<th>Peticiones</th>
+									<th>{t("io.requests")}</th>
 									<td>
 										{requests.map((request, index) =>  
 											<span className={"badge mr-1 " + (index < results[algorithm].currentCycle ? "bg-success" : "bg-secondary")}>
@@ -364,6 +382,8 @@ function PaginationPage(props: PaginationPageProps) {
 				</Row>
 			</Row>
 			}
+
+			<AlgorithmModal />
 
 			<SimulatorControl 
 				hasNext={hasNextStep()}

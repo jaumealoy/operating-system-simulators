@@ -1,5 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import LocaleImage from "../components/LocaleImage";
+
+
+import HardDrive_es from "./../assets/images/help/hard_drive_es.svg";
+import HardDrive_ca from "./../assets/images/help/hard_drive_ca.svg";
+import AddRequest_es from "./../assets/images/help/io_add_request_es.png";
+import AddRequest_ca from "./../assets/images/help/io_add_request_ca.png";
+import RemoveRequest from "./../assets/images/help/io_remove_request.png";
 
 function IOHelp() {
 	const { t } = useTranslation();
@@ -15,7 +23,10 @@ function IOHelp() {
 			<h3>Elementos de un disco duro</h3>
 			
 			<div className="text-center">
-				<img src="images/help/hard_drive_es.svg" width="70%" />
+				<LocaleImage 
+					width="70%"
+					languages={{ ca: HardDrive_ca, es: HardDrive_es }}
+					default={HardDrive_es} />
 			</div>
 			<p>
 				El disco duro es un dispositivo de almacenamiento que hace uso de las 
@@ -80,7 +91,9 @@ function IOHelp() {
 			<p>Para añadir una petición al simulador, se debe introducir un valor numérico en el rango [0, número de pistas) y pulsar el botón “Añadir petición”. </p>
 
 			<div className="text-center">
-				<img src="images/help/io_add_request_es.png" />
+				<LocaleImage 
+					languages={{ ca: AddRequest_ca, es: AddRequest_es }}
+					default={AddRequest_es} />
 			</div>
 
 			<p>
@@ -88,7 +101,7 @@ function IOHelp() {
 			</p>
 
 			<div className="text-center">
-				<img width="250px" src="images/help/io_remove_request.png" />
+				<img width="250px" src={RemoveRequest} />
 			</div>
 
 			<p>

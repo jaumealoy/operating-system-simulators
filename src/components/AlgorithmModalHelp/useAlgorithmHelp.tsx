@@ -166,6 +166,96 @@ const useAlgorithmHelp = (simulator: string) => {
 						<p>{t("help.modals.cpu.feedback.text_4")}</p>
 					</>
 			}
+		},
+
+		"allocation": {
+			first_fit: {
+				title: "First Fit",
+				body: 
+					<>
+						<p>{t("help.modals.memory.allocation.first_fit.text_1")}</p>
+						<p>{t("help.modals.memory.allocation.first_fit.text_2")}</p>
+					</>
+			},
+
+			next_fit: {
+				title: "Next Fit",
+				body: 
+					<>
+						<p>{t("help.modals.memory.allocation.next_fit.text_1")}</p>
+						<p>{t("help.modals.memory.allocation.next_fit.text_2")}</p>
+						<p>{t("help.modals.memory.allocation.next_fit.text_3")}</p>
+					</>
+			},
+
+			best_fit: {
+				title: "Next Fit",
+				body: 
+					<>
+						<p>{t("help.modals.memory.allocation.best_fit.text_1")}</p>
+						<p>{t("help.modals.memory.allocation.best_fit.text_2")}</p>
+					</>
+			},
+
+			worst_fit: {
+				title: "Worst Fit",
+				body: 
+					<>
+						<p>{t("help.modals.memory.allocation.worst_fit.text_1")}</p>
+					</>
+			},
+
+			buddy: {
+				title: "Buddy system",
+				body: 
+					<>
+						<p>{t("help.modals.memory.allocation.buddy.text_1")}</p>
+						<p>{t("help.modals.memory.allocation.buddy.text_2")}</p>
+						<p>{t("help.modals.memory.allocation.buddy.text_3")}</p>
+					</>
+			}
+		},
+
+		"pagination": {
+			optimal: {
+				title: "Optimal",
+				body:
+					<>
+
+					</>
+			},
+
+			fifo: {
+				title: "FIFO",
+				body:
+					<>
+
+					</>
+			},
+
+			lru: {
+				title: "Least Recently Used",
+				body:
+					<>
+
+					</>
+			},
+
+			clock: {
+				title: "Clock",
+				body:
+					<>
+
+					</>
+			},
+
+			nru: {
+				title: "Not Recently Used",
+				body:
+					<>
+
+					</>
+			}
 		}
 	};
 

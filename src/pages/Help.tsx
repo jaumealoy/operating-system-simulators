@@ -25,6 +25,14 @@ function HelpPage() {
 					<CPUHelp />
 
 					<h2>Sobre la aplicación</h2>
+					<p>
+						Esta aplicación ha sido desarrollada como Trabajo de Fin de Grado del Grado en Ingeniería Informática de la 
+						&nbsp; <a href="https://uib.cat" target="_blank">Universitat de les Illes Balears</a>
+					</p>
+
+					<p>
+						Aplicación desarrollada por <a href="https://github.com/jaumealoy/" target="_blank">Jaume Aloy Vich</a> con la supervisión de Adelaida Delgado Domínguez.
+					</p>
 				</Col>
 
 				<TableOfContent root="h2" />

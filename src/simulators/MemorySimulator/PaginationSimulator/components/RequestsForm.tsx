@@ -2,6 +2,7 @@ import React, { FormEvent, useRef } from "react";
 import { Row, Col, FormGroup, FormControl, FormCheck } from "react-bootstrap";
 import { Request, Process } from "./../PaginationSimulator";
 import { FiDelete } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface RequestsFormProps {
 	processes: Process[];
@@ -12,6 +13,8 @@ interface RequestsFormProps {
 }
 
 function RequestsForm(props: RequestsFormProps) {
+	const { t } = useTranslation();
+
 	// references to input elements
 	const processSelect = useRef<HTMLSelectElement>(null);
 	const pageInput = useRef<HTMLInputElement>(null);
@@ -43,7 +46,7 @@ function RequestsForm(props: RequestsFormProps) {
 					<Row>
 						<Col md={6}>
 							<FormGroup>
-								<label>Proceso</label>
+								<label>{t("memory.allocation.process")}</label>
 								<select
 									ref={processSelect}
 									className="form-select"
@@ -60,7 +63,7 @@ function RequestsForm(props: RequestsFormProps) {
 
 						<Col md={6}>
 							<FormGroup> 
-								<label>Página</label>
+								<label>{t("memory.pagination.page")}</label>
 								<FormControl 
 									ref={pageInput}
 									min={0}
@@ -77,20 +80,20 @@ function RequestsForm(props: RequestsFormProps) {
 								disabled={!enabled}
 								ref={modifiedCheckbox}
 								value={1}
-								label="Escritura" />
+								label={t("memory.pagination.write")} />
 						</Col>
 					</Row>
 					
 					<button 
 						disabled={props.processes.length == 0 || !enabled}
 						className="btn btn-primary btn-sm float-right mt-1">
-						Añadir
+						{t("common.buttons.add")}
 					</button>
 				</form>
 			</Col>
 
 			<Col md={8}>
-				Peticiones introducidas <br/>
+				{t("memory.pagination.added_requests")} <br/>
 
 				{props.requests.map((request, index) => 
 					<span className="badge bg-secondary ml-1">

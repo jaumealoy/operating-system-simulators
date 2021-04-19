@@ -2,6 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import Latex from "./../components/Latex";
 
+import TimeChartImage from "./../assets/images/help/cpu_diagrama_temps.png";
+
 function CPUHelp() {
 	const { t } = useTranslation();
 
@@ -105,7 +107,7 @@ function CPUHelp() {
 			<h4>Diagrama temporal</h4>
 			<p>
 				El diagrama temporal permite visualizar qué procesos se han ejecutado o han estado bloqueados por E/S en cada ciclo de la simulación.
-				<div className="text-center"><img src="images/help/cpu_diagrama_temps.png"/></div>
+				<div className="text-center"><img src={TimeChartImage}/></div>
 				Los distintos procesos se ordenan a lo largo del eje vertical según el orden de introducción en el simulador. 
 				El eje horizontal es el tiempo, expresado en ciclos de procesador.
 			</p>

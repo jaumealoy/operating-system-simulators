@@ -1,6 +1,7 @@
 import React, { useState, FormEvent } from "react";
 import { FormGroup, FormControl, Row, Col } from "react-bootstrap";
 import { Process } from "../MemorySimulator";
+import { useTranslation } from "react-i18next";
 
 interface AddProcessFormProps {
     onAddProcess: (process: Process) => void; 
@@ -8,6 +9,8 @@ interface AddProcessFormProps {
 };
 
 function AddProcessForm(props: AddProcessFormProps) {
+	const { t } = useTranslation();
+
     const [name, setName] = useState<string>("");
     const [duration, setDuration] = useState<string>("");
     const [memory, setMemory] = useState<string>("");
@@ -39,7 +42,7 @@ function AddProcessForm(props: AddProcessFormProps) {
             <Row>
 		    	<Col md={6}>
 		    		<FormGroup>
-		    			<label>Nombre</label>
+		    			<label>{t("cpu.name")}</label>
 		    			<FormControl
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -51,7 +54,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 		    	
 		    	<Col md={6}>
 		    		<FormGroup>
-		    			<label>Duración</label>
+		    			<label>{t("memory.allocation.duration")}</label>
 		    			<FormControl
                             onChange={(e) => setDuration(e.target.value)}
                             value={duration}
@@ -65,7 +68,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 		    <Row>
 		    	<Col md={6}>
 		    		<FormGroup>
-		    			<label>Memoria</label>
+		    			<label>{t("memory.allocation.memory")}</label>
 		    			<FormControl 
 		    				type="number"
 		    				min={1}
@@ -78,7 +81,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 		    
 		    	<Col md={6}>
 		    		<FormGroup>
-		    			<label>Llegada</label>
+		    			<label>{t("cpu.arrival")}</label>
 		    			<FormControl 
 		    				type="number"
 		    				min={0}
@@ -91,7 +94,7 @@ function AddProcessForm(props: AddProcessFormProps) {
 		    </Row>
 
 		    <button className="btn btn-primary mt-2">
-		    	Añadir petición
+		    	{t("io.add_request")}
 		    </button>
         </form>
     );

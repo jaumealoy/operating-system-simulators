@@ -1,6 +1,7 @@
 import React from "react";
 import { Process } from "../MemorySimulator";
 import { FiDelete } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 interface ProcessListProps {
 	processes: Process[];
@@ -9,21 +10,23 @@ interface ProcessListProps {
 };
 
 function ProcessList(props: ProcessListProps) {
+	const { t } = useTranslation();
+
 	let deletionEnabled: boolean = props.deletable || false;
 
 	return (
 		props.processes.length == 0 ?
 			<>
-				No se han añadido peticiones.
+				{t("memory.allocation.no_requests_added")}	
 			</>
 		:
 			<>
 				<table className="table horizontal-table">
 					<thead>
 						<tr>
-							<th>Nombre</th>
-							<th>Llegada</th>
-							<th>Memoria</th>
+							<th>{t("cpu.name")}</th>
+							<th>{t("cpu.arrival")}</th>
+							<th>{t("memory.allocation.memory")}</th>
 						</tr>
 					</thead>
 

@@ -105,6 +105,11 @@ class MemorySimulator extends Simulator {
 	 */
 	public removeProcess(index: number) : void {
 		this.processes.splice(index, 1);
+
+		// if a process is being removed, the simulation is not started
+		// and processes and incoming queue have the same elements
+		this.queues.incoming.splice(index, 1);
+		this.onQueuesChange(this.queues);
 	}
 
 	public hasNextStep(): boolean {

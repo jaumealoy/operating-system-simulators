@@ -31,7 +31,7 @@ function MemorySimulatorPage() {
 						<label 
 							htmlFor="allocation-view"
 							className="btn btn-sm btn-outline-secondary">
-							Asignación de memoria
+							{t("memory.allocation_menu")}
 						</label>
 
 						<input 
@@ -45,7 +45,7 @@ function MemorySimulatorPage() {
 						<label 
 							htmlFor="pagination-view"
 							className="btn btn-sm btn-outline-secondary">
-							Paginación
+							{t("memory.pagination_menu")}
 						</label>
 					</div>
 				</div>

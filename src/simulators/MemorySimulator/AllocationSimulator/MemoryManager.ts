@@ -181,7 +181,9 @@ class MemoryManager {
 		this.simulator.removeProcess(index);
 		this.simulators.map(simulator => {
 			simulator.removeProcess(index);
-		})
+		});
+
+		this.invokeChangeCallback();
 	}
 
 	public clear() : void {
@@ -204,13 +206,6 @@ class MemoryManager {
 	 */
 	public set simpleView(value: boolean) {
 		this._isSimpleView = value;
-
-		if (value) {
-			// recover the simulation results from the simple view
-		} else {
-			// show the simulation reuslts from the comparaison view
-		}
-
 		this.invokeChangeCallback();
 	} 
 
