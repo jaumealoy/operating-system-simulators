@@ -157,7 +157,7 @@
                 "first_fit": "Primer ajuste (First fit)",
                 "next_fit": "Siguiente ajuste (Next fit)",
                 "worst_fit": "Peor ajuste (Worst fit)",
-                "best_fit": "Mejor ajuste (Nest fit)",
+                "best_fit": "Mejor ajuste (Best fit)",
                 "buddy": "Sistema de colegas (Buddy system)"
             }
         },
@@ -294,6 +294,38 @@
                         "text_1": "El sistema de colegas intenta lograr un equilibrio entre los sistemas de particiones fijas y los sistemas de particiones variables. Este sistema solo permite crear bloques de memoria de capacidad igual a una potencia en base 2.",
                         "text_2": "En un instante inicial, la memoria forma un único bloque de memoria, pero se puede ir dividiendo entre 2 para atender una petición de memoria. Los procesos ocupan un bloque de memoria óptimo, que es aquel con la capacidad mínima necesaria.",
                         "text_3": "Cuando se libera un bloque, el bloque liberado se puede fusionar con los bloques adyacentes siempre que sean descendentes del mismo bloque de potencia superior."
+                    }
+                },
+
+                "pagination": {
+                    "optimal": {
+                        "text_1": "El algoritmo óptimo o mínimo es un algoritmo teórico que minimiza los fallos de página. Este algoritmo remplaza la página de un proceso que estará más tiempo en ser referenciada.",
+                        "text_2": "En la práctica, es imposible de implementar ya que supondría conocer de antemano las páginas que van a ser referenciadas, cosa que no es posible."
+                    },
+
+                    "fifo": {
+                        "text_1": "El algoritmo FIFO o \"primero en llegar primero en irse\" es un algoritmo que selecciona la página que más tiempo ha estado residiendo en la memoria, es decir, la página que ha llegado primero.",
+                        "text_2": "Este algoritmo es fácil de implementar, pero hace un uso pobre de la localidad temporal, ya que es posible que una página se utilice frecuentemente y sea la primera en cargarse.",
+                        "text_3": "Es posible pensar que si se aumentan el número de marcos asignados a cada proceso se reducirán el número de fallos de página. La anomalía de Belady explica que es posible que el número de fallos de página aumente si se incrementan el número de marcos asignados a cada proceso."
+                    },
+
+                    "lru": {
+                        "text_1": "El algoritmo Least Recently Used (LRU) o \"menos usado recientemente\" hace uso del principio de localidad espacial para remplazar una página. La página remplazada es la que no ha sido referenciada desde hace más tiempo, que es la página que tiene menor probabilidad de ser referenciada en el futuro cercano.",
+                        "text_2": "Este algoritmo se aproxima al algoritmo óptimo y es el que menos fallos de página genera. Para implementarlo es necesario etiquetar cada página en el instante en que es referenciada."
+                    },
+
+                    "clock": {
+                        "text_1": "El algoritmo del reloj o de la segunda oportunidad intenta aprovechar el principio de temporalidad para elegir la página remplazada. Esto permite tener páginas muy utilizadas que han estado en la memoria durante mucho tiempo.",
+                        "text_2": "Para implementar este algoritmo es necesario introducir un bit de acceso a la página, que se activa cuando se referencia una página, y un puntero, que indica la página candidata a ser eliminada. Cuando se quiere remplazar una página pueden darse dos casos:",
+                        "text_2_1": "El puntero se encuentra en una página con el bit de acceso a 0. La página eliminada es la indicada por el puntero y se avanza el puntero.",
+                        "text_2_2": "El puntero se encuentra en una página con el bit de acceso a 1. En este caso, se desactiva el bit de acceso y se avanza el puntero. El proceso se repite hasta encontrar una página con el bit de acceso a 0."
+                    },
+
+                    "nru": {
+                        "text_1": "El algoritmo Not Recently Used o \"no usados recientemente\" es una mejora del algoritmo del reloj que hace uso del bit de escritura para evitar remplazar que requieren escritura en la memoria secundaria.",
+                        "text_2": "Para su implementación, además de los bits de acceso y modificación, se hace uso de un puntero. Cuando se quiere remplazar una página se siguen los siguientes pasos:",
+                        "text_2_1": "Se busca una página con los bits de acceso y modificación desactivados, sin avanzar el puntero. Si se encuentra, esta es la página que se tiene que eliminar.",
+                        "text_2_2": "En caso de no encontrar una página, buscar una página con el bit de acceso desactivado y el de modificación activado. Mientras se avanza el puntero, se desactiva el bit de acceso de la página."
                     }
                 }
             }

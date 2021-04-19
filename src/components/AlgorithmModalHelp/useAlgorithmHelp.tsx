@@ -221,7 +221,8 @@ const useAlgorithmHelp = (simulator: string) => {
 				title: "Optimal",
 				body:
 					<>
-
+						<p>{t("help.modals.memory.pagination.optimal.text_1")}</p>
+						<p>{t("help.modals.memory.pagination.optimal.text_2")}</p>
 					</>
 			},
 
@@ -229,7 +230,9 @@ const useAlgorithmHelp = (simulator: string) => {
 				title: "FIFO",
 				body:
 					<>
-
+						<p>{t("help.modals.memory.pagination.fifo.text_1")}</p>
+						<p>{t("help.modals.memory.pagination.fifo.text_2")}</p>
+						<p>{t("help.modals.memory.pagination.fifo.text_3")}</p>
 					</>
 			},
 
@@ -237,7 +240,8 @@ const useAlgorithmHelp = (simulator: string) => {
 				title: "Least Recently Used",
 				body:
 					<>
-
+						<p>{t("help.modals.memory.pagination.lru.text_1")}</p>
+						<p>{t("help.modals.memory.pagination.lru.text_2")}</p>
 					</>
 			},
 
@@ -245,7 +249,14 @@ const useAlgorithmHelp = (simulator: string) => {
 				title: "Clock",
 				body:
 					<>
-
+						<p>{t("help.modals.memory.pagination.clock.text_1")}</p>
+						<p>
+							{t("help.modals.memory.pagination.clock.text_2")}
+							<ul>
+								<li>{t("help.modals.memory.pagination.clock.text_2_1")}</li>
+								<li>{t("help.modals.memory.pagination.clock.text_2_2")}</li>
+							</ul>
+						</p>
 					</>
 			},
 
@@ -253,7 +264,14 @@ const useAlgorithmHelp = (simulator: string) => {
 				title: "Not Recently Used",
 				body:
 					<>
-
+						<p>{t("help.modals.memory.pagination.nru.text_1")}</p>
+						<p>
+							{t("help.modals.memory.pagination.nru.text_2")}
+							<ul>
+								<li>{t("help.modals.memory.pagination.nru.text_2_1")}</li>
+								<li>{t("help.modals.memory.pagination.nru.text_2_2")}</li>
+							</ul>
+						</p>
 					</>
 			}
 		}

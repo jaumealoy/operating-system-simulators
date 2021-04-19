@@ -21,15 +21,49 @@ const EXAMPLES: PaginationExample[] = [
 	{
 		frames: 3,
 		processes: [
-			{ id: "A", frames: 1 },
-			{ id: "B", frames: 1 },
-			{ id: "C", frames: 1 },
+			{ id: "A", frames: 3 },
+			{ id: "B", frames: 4 },
+			{ id: "C", frames: 2 },
 		],
 		requests: [
-			{ process: "A", page: 1, modified: false }, { process: "A", page: 1, modified: false },
-			{ process: "B", page: 0, modified: false },
-			{ process: "C", page: 3, modified: false },
 			{ process: "A", page: 0, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 0, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 0, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 4, modified: false },
+
+			{ process: "B", page: 0, modified: false },
+			{ process: "B", page: 1, modified: false },
+			{ process: "B", page: 2, modified: false },
+			{ process: "B", page: 3, modified: false },
+			{ process: "B", page: 0, modified: false },
+			{ process: "B", page: 1, modified: false },
+			{ process: "B", page: 4, modified: false },
+			{ process: "B", page: 0, modified: false },
+			{ process: "B", page: 1, modified: false },
+			{ process: "B", page: 2, modified: false },
+			{ process: "B", page: 3, modified: false },
+			{ process: "B", page: 4, modified: false },
+
+			{ process: "C", page: 0, modified: false },
+			{ process: "C", page: 1, modified: false },
+			{ process: "C", page: 2, modified: false },
+			{ process: "C", page: 3, modified: false },
+			{ process: "C", page: 0, modified: false },
+			{ process: "C", page: 1, modified: false },
+			{ process: "C", page: 4, modified: false },
+			{ process: "C", page: 0, modified: false },
+			{ process: "C", page: 1, modified: false },
+			{ process: "C", page: 2, modified: false },
+			{ process: "C", page: 3, modified: false },
+			{ process: "C", page: 4, modified: false },
 		]
 	},
 
@@ -41,16 +75,16 @@ const EXAMPLES: PaginationExample[] = [
 		requests: [
 			{ process: "A", page: 1, modified: false },
 			{ process: "A", page: 2, modified: false },
-			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 1, modified: true },
 			{ process: "A", page: 0, modified: false },
-			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 4, modified: true },
 			{ process: "A", page: 1, modified: false },
-			{ process: "A", page: 3, modified: false },
-			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 3, modified: true },
+			{ process: "A", page: 4, modified: true },
 			{ process: "A", page: 2, modified: false },
-			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 1, modified: true },
 			{ process: "A", page: 4, modified: false },
-			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 1, modified: true },
 		]
 	},
 
@@ -252,10 +286,10 @@ function PaginationPage(props: PaginationPageProps) {
 								<table className="table">
 									<thead>
 										<tr>
-											<th>{t("memory.allocation.page")}</th>
-											<th>{t("memory.allocation.frame")}</th>
+											<th>{t("memory.pagination.page")}</th>
+											<th>{t("memory.pagination.frame")}</th>
 											{selectedAlgorithm == "fifo" && <th>{t("cpu.arrival")}</th>}
-											{selectedAlgorithm == "lru" && <th>{t("memory.allocation.last_access")}</th>}
+											{selectedAlgorithm == "lru" && <th>{t("memory.pagination.last_access")}</th>}
 											{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 && <th>A</th>}
 											{selectedAlgorithm == "nru" && <th>M</th>}
 										</tr>

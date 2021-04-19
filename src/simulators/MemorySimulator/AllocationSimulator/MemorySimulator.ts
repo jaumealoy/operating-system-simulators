@@ -174,6 +174,7 @@ class MemorySimulator extends Simulator {
 		this.capacity = this._capacity;
 		this._allocationHistory = [];
 		this.processes = [];
+		this.queues = { incoming: [], allocated: [] };
 		this.currentCycle = 0;
 		this.running = false;
 	}

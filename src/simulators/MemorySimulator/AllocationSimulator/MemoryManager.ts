@@ -79,9 +79,12 @@ class MemoryManager {
 				simulator.capacity = this._capacity;
 
 				this.simulators.push(simulator);
+				this._selectedAlgorithms.push(algorithm);
 			} else {
 				// remove this simulator from the list
-				this.processes.splice(idx, 1);
+				this._selectedAlgorithms.splice(idx, 1);
+				this.simulators.splice(idx, 1);
+				delete this.multipleResults[algorithm];
 			}
 		}
 
@@ -161,6 +164,7 @@ class MemoryManager {
 	 * @param process
 	 */
 	public addProcess(process: Process) : void {
+		console.log("adding process", this.processes)
 		// add process to the list
 		this.processes.push(process);
 
@@ -187,6 +191,9 @@ class MemoryManager {
 	}
 
 	public clear() : void {
+		console.log("clearing")
+		this.processes = [];
+
 		this.simulator.clear();
 		this.simulators.map(simulator => {
 			simulator.clear();

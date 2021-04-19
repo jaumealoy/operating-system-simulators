@@ -15,14 +15,47 @@ import AddProcessForm from "./components/AddProcessForm";
 import ProcessList from "./components/ProcessList";
 import useAlgorithmHelp from "./../../../components/AlgorithmModalHelp/useAlgorithmHelp";
 
-const EXAMPLES: Process[][] = [
-	[
-		{ id: "A", size: 3, arrival: 0, duration: 0 },
-		{ id: "B", size: 4, arrival: 0, duration: 4 },
-		{ id: "C", size: 6, arrival: 2, duration: 3 },
-		{ id: "D", size: 3, arrival: 4, duration: 0 },
-		{ id: "E", size: 1, arrival: 5, duration: 1 }
-	]
+interface AllocationExample {
+	capacity: number;
+	processes: Process[];
+}
+
+const EXAMPLES: AllocationExample[] = [
+	{
+		capacity: 16,
+		processes: [
+			{ id: "A", size: 3, arrival: 0, duration: 0 },
+			{ id: "B", size: 4, arrival: 0, duration: 4 },
+			{ id: "C", size: 6, arrival: 2, duration: 3 },
+			{ id: "D", size: 3, arrival: 4, duration: 0 },
+			{ id: "E", size: 1, arrival: 5, duration: 1 }
+		]
+	},
+
+	{
+		capacity: 16,
+		processes: [
+			{ id: "A", size: 2, arrival: 0, duration: 6 },
+			{ id: "B", size: 3, arrival: 1, duration: 3 },
+			{ id: "C", size: 1, arrival: 2, duration: 6 },
+			{ id: "D", size: 4, arrival: 3, duration: 8 },
+			{ id: "E", size: 2, arrival: 7, duration: 2 },
+			
+		]
+	},
+
+	{
+		capacity: 16,
+		processes: [
+			{ id: "A", size: 2, arrival: 0, duration: 4 },
+			{ id: "B", size: 3, arrival: 1, duration: 3 },
+			{ id: "C", size: 1, arrival: 2, duration: 6 },
+			{ id: "D", size: 7, arrival: 3, duration: 3 },
+			{ id: "E", size: 2, arrival: 7, duration: 2 },
+			{ id: "F", size: 1, arrival: 5, duration: 4 },
+		]
+	}
+	
 ];
 
 interface AllocationPageProps {
@@ -103,7 +136,7 @@ function AllocationPage(props: AllocationPageProps) {
 				</Col>
 
 				<Col md={7}>
-					<div className="simulator-group mt-3 mt-sm-0">
+					<div className="simulator-group mt-3 mt-md-0">
 						<div className="simulator-group-content">
 							<div className="title">{t("io.requests")}</div>
 
@@ -130,12 +163,13 @@ function AllocationPage(props: AllocationPageProps) {
 							className="simulator-group-footer">
 							<div className="title">{t("common.examples")}</div>
 
-							{EXAMPLES.map((example: Process[], index: number) =>
+							{EXAMPLES.map((example: AllocationExample, index: number) =>
 								<button 
 									key={"example_" + index}
 									disabled={isStarted}
 									onClick={() => {
-										loadProcessesFromList(example)
+										setMemoryCapacity(example.capacity);
+										loadProcessesFromList(example.processes)
 									}}
 									className="btn btn-link">
 									{t("common.example_number", { number: (index + 1) })}
@@ -262,7 +296,7 @@ function AllocationPage(props: AllocationPageProps) {
 						{selectedAlgorithms.map((algorithm) =>
 							(algorithm in results) && 
 							<Col key={algorithm} md={3}>
-								<h2>{algorithm}</h2>
+								<h4 className="mt-0">{t(`memory.allocation.algorithms.${algorithm}`)}</h4>
 								{t("memory.allocation.current_cycle")} <span className="badge bg-success">{results[algorithm].currentCycle}</span>
 								<MemoryChart
 									capacity={memoryCapacity}

@@ -44,6 +44,29 @@ function MemoryChart(props: MemoryChartProps) {
 	let showBlockSize: boolean = props.showBlockSize || false;
 	let groupBlocks: boolean = props.groupBlocks == undefined ? true : props.groupBlocks;
 
+	let fitAvailableSize = () => {
+		if (container.current != null && chart.current != null && imageGroup.current != null) {
+			let availableWidth: number = container.current.getBoundingClientRect().width;
+
+			chart.current.width(availableWidth);
+
+			// remove any scale to get the correct size
+			let canvas = imageGroup.current;
+			canvas.transform({ scale: [1, 1] });
+			canvas.move(0, 0);
+
+			if (canvas.width() < availableWidth) {
+				// center it
+				canvas.move((availableWidth - canvas.width()) / 2, BORDER_WIDTH);
+			} else {
+				// scale it down to fit horizontally
+				let scale = availableWidth / canvas.width();
+				canvas.scale(scale, scale, 0, 0);
+			}
+		}
+	};
+
+
 	useLayoutEffect(() => {
 		if (chart.current != undefined && container.current != null) {
 			// creating the SVG element
@@ -52,7 +75,7 @@ function MemoryChart(props: MemoryChartProps) {
 
 		// resize the chart on window resize
 		let onResize = () => {
-			throw new Error("Not implemented yet");
+			fitAvailableSize();
 		};
 
 		window.addEventListener("resize", onResize);
@@ -227,6 +250,9 @@ function MemoryChart(props: MemoryChartProps) {
 
 				i = end;
 			}
+
+			fitAvailableSize();
+
 		}
 	});
 
