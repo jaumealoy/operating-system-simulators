@@ -203,20 +203,16 @@ const useIOSimulator = () => {
 		return manager.current.hasPreviousStep();
 	}
 
-	/*useEffect(() => {
-		setHasNext(manager.current.hasNextStep());
-		setHasPrevious(manager.current.hasPreviousStep());
-	}, [requests, processedRequests, isSimpleView]);
-
-	useEffect(() => {
-		setFinished(!hasNext);
-	}, [hasNext]);*/
-
 	useEffect(() => {
 		setRunning(false);
 		setStarted(false);
 		manager.current.reset();
 	}, [selectedAlgorithms, selectedAlgorithm, initialPosition, maxTracks, requests, direction]);
+
+	const [maxDisplacement, setMaxDisplacement] = useState<{[key: string]: number}>({});
+	useEffect(() => {
+		setMaxDisplacement(manager.current.calculateTotalDisplacement());
+	}, [selectedAlgorithms, selectedAlgorithm, initialPosition, maxTracks, requests, direction, isSimpleView]);
 
 	// simulation storage
 	const saveSimulation = (download: ((content: string) => void)) : void => {
@@ -272,7 +268,7 @@ const useIOSimulator = () => {
 		maxTracks, setMaxTracks,
 		direction, setDirection,
 		onSubmitForm,
-		processedRequests,
+		processedRequests, maxDisplacement,
 		isRunning, isStarted,
 		step, reset, stop, previous, pause, play, timerCallback,
 		hasNext, hasPrevious,

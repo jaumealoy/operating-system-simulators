@@ -7,6 +7,7 @@ interface RequestChartProps {
 	tracks?: number;
 	maxTrack?: number;
 	numberOfRequests?: number;
+	totalDisplacement: number;
 	requests: number[];
 	id: string;
 }
@@ -16,7 +17,7 @@ const WIDTH: number = 300;
 const HEIGHT: number = 150;
 const AXIS_WIDTH: number = 5;
 const LINE_COLOR: string = "black";
-const RADIUS: number = 10;
+const RADIUS: number = 6;
 const TEXT_SIZE: number = 8;
 
 function RequestChart(props: RequestChartProps) {
@@ -53,7 +54,7 @@ function RequestChart(props: RequestChartProps) {
 		let digits: number = Math.ceil(Math.log10(highestTrack));
 		let textWidth: number = (digits + 1) * TEXT_SIZE;
 
-		const x = (time: number) : number => (((WIDTH - textWidth - AXIS_WIDTH) * time) / numberOfRequests) + textWidth;
+		const x = (time: number) : number => (((WIDTH - textWidth - AXIS_WIDTH - 10) * time) / props.totalDisplacement) + textWidth;
 
 		aux.rect(AXIS_WIDTH, HEIGHT - AXIS_WIDTH - TEXT_SIZE)
 		   .move(textWidth, 0)
@@ -92,42 +93,52 @@ function RequestChart(props: RequestChartProps) {
 		   .move(textWidth, HEIGHT - AXIS_WIDTH * 2 - TEXT_SIZE)
 		   .fill({ color: LINE_COLOR });
 
-		for(let i = 0; i < numberOfRequests; i++) {
+		let sumDisplacements = (n: number) => {
+			let sum: number = 0;
+			for (let i = 1; i < props.requests.length && i <= n; i++) {
+				sum += Math.abs(props.requests[i] - props.requests[i - 1]);
+			}
+			return sum;
+		};
 
-			let text = aux.text(i.toString())
-			   .move(x(i), HEIGHT - TEXT_SIZE)
-			   .font({ fill: LINE_COLOR, size: TEXT_SIZE });
+		if (numberOfRequests > 1) {
+			for(let i = 0; i < numberOfRequests; i++) {
 
-			   aux.rect(AXIS_WIDTH / 2, AXIS_WIDTH)
-				  .move(x(i) + (text.length() - AXIS_WIDTH / 2) / 2, HEIGHT - AXIS_WIDTH * 1.5 - TEXT_SIZE)
-				  .fill({ color: LINE_COLOR });
-		}
+				let text = aux.text(i.toString())
+				.move(x(sumDisplacements(i)), HEIGHT - TEXT_SIZE)
+				.font({ fill: LINE_COLOR, size: TEXT_SIZE });
 
-		for (let i = 0; i < props.requests.length; i++) {			
-			// line between requests
-			if (i > 0) {
-				let arrow = new PointArray([[0, 0], [2, 0], [1, 2]]);
-
-				let line = aux.line(
-					x(i - 1) + RADIUS / 4, y(props.requests[i - 1]) + RADIUS / 2,
-					x(i) + RADIUS / 4, y(props.requests[i]) + RADIUS / 2
-				).stroke({ width: 1, color: LINE_COLOR })
-				
-				// arrow
-				line.marker("end", 30, 30, (add) => { 
-					add.polygon(arrow)
-					   .fill({ color: LINE_COLOR })
-					   .rotate(-90, 1, 1)
-					   .scale(2)
-					   .translate(13 - RADIUS / 2, 15 - 1)
-				});
+				aux.rect(AXIS_WIDTH / 2, AXIS_WIDTH)
+					.move(x(sumDisplacements(i)) + (text.length() - AXIS_WIDTH / 2) / 2, HEIGHT - AXIS_WIDTH * 1.5 - TEXT_SIZE)
+					.fill({ color: LINE_COLOR });
 			}
 
-			// requests
-			aux.circle(RADIUS)
-			   .move(x(i), y(props.requests[i]))
-			   .translate(AXIS_WIDTH / 2 - RADIUS / 2, 0)
-			   .fill({ color: LINE_COLOR });			
+			for (let i = 0; i < props.requests.length; i++) {			
+				// line between requests
+				if (i > 0) {
+					let arrow = new PointArray([[0, 0], [2, 0], [1, 2]]);
+
+					let line = aux.line(
+						x(sumDisplacements(i - 1)) + RADIUS / 4, y(props.requests[i - 1]) + RADIUS / 2,
+						x(sumDisplacements(i)) + RADIUS / 4, y(props.requests[i]) + RADIUS / 2
+					).stroke({ width: 1, color: LINE_COLOR })
+					
+					// arrow
+					line.marker("end", 30, 30, (add) => { 
+						add.polygon(arrow)
+						.fill({ color: LINE_COLOR })
+						.rotate(-90, 1, 1)
+						.scale(2)
+						.translate(13 - RADIUS / 2, 15 - 1)
+					});
+				}
+
+				// requests
+				aux.circle(RADIUS)
+				.move(x(sumDisplacements(i)), y(props.requests[i]))
+				.translate(AXIS_WIDTH / 2 - RADIUS / 2, 0)
+				.fill({ color: LINE_COLOR });			
+			}
 		}
 
 		return () => {

@@ -12,8 +12,8 @@ interface Language {
 
 const languages: {[id: string]: Language} = {
 	es: { id: "es", name: "Castellano", flag: "" },
-	ca: { id: "ca", name: "Català", flag: "" },
-	en: { id: "en", name: "English", flag: "" }
+	//ca: { id: "ca", name: "Català", flag: "" },
+	//en: { id: "en", name: "English", flag: "" }
 };
 
 interface MenuItem {

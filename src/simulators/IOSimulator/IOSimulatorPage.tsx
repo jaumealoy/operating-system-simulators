@@ -83,7 +83,7 @@ function IOSimulatorPage() {
 		removeRequest,
 		onSubmitForm,
 		selectedAlgorithm, setSelectedAlgorithm, selectAlgorithm, selectedAlgorithms,
-		processedRequests,
+		processedRequests, maxDisplacement,
 		isRunning, isStarted,
 		step, reset, stop, previous, play, pause, timerCallback,
 		hasNext, hasPrevious,
@@ -495,6 +495,7 @@ function IOSimulatorPage() {
 								tracks={3}
 								id="simple_chart"
 								maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
+								totalDisplacement={selectedAlgorithm in maxDisplacement ? maxDisplacement[selectedAlgorithm] : 1}
 								requests={chartRequests(selectedAlgorithm)} />
 						</Col>
 					
@@ -539,14 +540,30 @@ function IOSimulatorPage() {
 										<td colSpan={4}>{t("io.no_requests_completed")}</td>
 									</tr>
 									:
-									<tr>
-										<td></td>
-										<td></td>
-										<td>{t("io.total")}</td>
-										<td>
-											{calculateSumDisplacement(selectedAlgorithm)}
-										</td>
-									</tr>
+									<>
+										<tr>
+											<td></td>
+											<td></td>
+											<td>{t("io.total")}</td>
+											<td>
+												{calculateSumDisplacement(selectedAlgorithm)}
+											</td>
+										</tr>
+
+										{["cscan", "scan"].indexOf(selectedAlgorithm) == -1 &&
+										<tr>
+											<td></td>
+											<td></td>
+											<td>{t("io.average")}</td>
+											<td>
+												{(maxDisplacement[selectedAlgorithm] == calculateSumDisplacement(selectedAlgorithm) ? 
+													(maxDisplacement[selectedAlgorithm] / processedRequests[selectedAlgorithm].length).toFixed(2) 
+													:
+													"-"
+												)}
+											</td>
+										</tr>}
+									</>
 								}
 								
 							</tbody>
@@ -572,11 +589,9 @@ function IOSimulatorPage() {
 										tracks={3}
 										id={"chart_" + algorithm}
 										maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
+										totalDisplacement={Math.max(...selectedAlgorithms.map((algorithm) => maxDisplacement[algorithm]))}
+										//totalDisplacement={algorithm in maxDisplacement ? maxDisplacement[algorithm] : 1}
 										requests={chartRequests(algorithm)} />
-								</Col>
-
-								<Col md={0}>
-									{/* HDD chart */}
 								</Col>
 							</Row>
 
@@ -610,14 +625,30 @@ function IOSimulatorPage() {
 													<td colSpan={4}>{t("io.no_requests_completed")}</td>
 												</tr>
 												:
-												<tr>
-													<td></td>
-													<td></td>
-													<td>{t("io.total")}</td>
-													<td>
-														{calculateSumDisplacement(algorithm)}
-													</td>
-												</tr>
+												<>
+													<tr>
+														<td></td>
+														<td></td>
+														<td>{t("io.total")}</td>
+														<td>
+															{calculateSumDisplacement(algorithm)}
+														</td>
+													</tr>
+
+													{["cscan", "scan"].indexOf(algorithm) == -1 &&
+													<tr>
+														<td></td>
+														<td></td>
+														<td>{t("io.average")}</td>
+														<td>
+															{(maxDisplacement[algorithm] == calculateSumDisplacement(algorithm) ? 
+																(maxDisplacement[algorithm] / processedRequests[algorithm].length).toFixed(2) 
+																:
+																"-"
+															)}
+														</td>
+													</tr>}
+												</>
 											}
 										</tbody>
 									</table>

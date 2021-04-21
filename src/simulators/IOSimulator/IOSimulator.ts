@@ -437,6 +437,33 @@ class IOSimulator extends Simulator {
 	public getAlgorithm() : string {
 		return this._algorithm;
 	}
+
+	/**
+	 * Calculates the total displacement of the 
+	 */
+	public calculateTotalDisplacement() : number {
+		let sum: number = 0;
+
+		// create a fake simulator and process all the requests
+		let fakeSimulator: IOSimulator = new IOSimulator();
+		fakeSimulator.algorithm = this._algorithm;
+		fakeSimulator.tracks = this._tracks;
+		fakeSimulator.initialPosition = this._initialPosition;
+
+		// adding all requests
+		this.requests.map(request => fakeSimulator.addRequest(request.track, 0));
+
+		let lastTrack: number = this._initialPosition;
+		while (fakeSimulator.hasNextStep()) {
+			fakeSimulator.nextStep();
+			
+			sum += Math.abs(fakeSimulator.currentTrack - lastTrack);
+			console.log("current ", fakeSimulator.currentTrack, " - ", lastTrack)
+			lastTrack = fakeSimulator.currentTrack;
+		}
+
+		return sum;
+	}
 }
 
 export {

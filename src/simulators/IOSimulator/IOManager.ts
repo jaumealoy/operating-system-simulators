@@ -76,6 +76,16 @@ class IOManager extends Manager<IOSimulator> {
 		}
 	}
 
+	public reset() : void {
+		super.reset();
+		Object.values(this._simulators).map(simulator => simulator.reset());
+	}
+
+	public clear() : void {
+		super.clear();
+		Object.values(this._simulators).map(simulator => simulator.clear());
+	}
+
 	// simulator setters
 	set direction(value: boolean) {
 		this.simulator.direction = value;
@@ -104,6 +114,20 @@ class IOManager extends Manager<IOSimulator> {
 				return value;
 			}
 		}).filter((value) => value != undefined);
+	}
+
+	public calculateTotalDisplacement() : {[key: string]: number} {
+		let values: {[key: string]: number} = {};
+
+		if (this._simpleView) {
+			values[this.simulator.getAlgorithm()] = this.simulator.calculateTotalDisplacement();
+		} else {
+			this._selectedAlgorithms.map(algorithm => {
+				values[algorithm] = this._simulators[algorithm].calculateTotalDisplacement();
+			});
+		}
+
+		return values;
 	}
 }
 
