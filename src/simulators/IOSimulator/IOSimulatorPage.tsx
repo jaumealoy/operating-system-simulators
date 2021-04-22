@@ -590,7 +590,6 @@ function IOSimulatorPage() {
 										id={"chart_" + algorithm}
 										maxTrack={Math.max(...(requests.map(aux)), initialPosition, maxTracks)}
 										totalDisplacement={Math.max(...selectedAlgorithms.map((algorithm) => maxDisplacement[algorithm]))}
-										//totalDisplacement={algorithm in maxDisplacement ? maxDisplacement[algorithm] : 1}
 										requests={chartRequests(algorithm)} />
 								</Col>
 							</Row>

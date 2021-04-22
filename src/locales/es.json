@@ -50,6 +50,7 @@
         "results": "Resultados",
         "total": "Total",
         "average": "Media",
+        "time": "tiempo",
         "no_requests_completed": "No se ha completado ninguna petición",
         "algorithms": {
             "fcfs": "First Come First Served (FCFS)",

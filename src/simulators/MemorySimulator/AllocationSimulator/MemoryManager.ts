@@ -1,17 +1,16 @@
-import { MemorySimulator, ProcessWrap, Process, Queues } from "./MemorySimulator";
+import { MemorySimulator, ProcessWrap, Process, Queues, MemoryBlock } from "./MemorySimulator";
+import { Manager } from "./../../Manager";
 
 interface MemorySimulatorResults {
 	nextPointer: number;
 	currentCycle: number;
-	memory: number[];
+	memory: MemoryBlock[];
 	memoryGroups: number[];
 	allocationHistory: ProcessWrap[];
 	queues: Queues;
 }
 
-class MemoryManager {
-	private _isSimpleView: boolean;
-	
+class MemoryManager extends Manager<MemorySimulator> {	
 	// selected algorithms
 	private _selectedAlgorithms: string[] = [];
 	
@@ -19,10 +18,10 @@ class MemoryManager {
 	private processes: Process[];
 
 	// simulators
-	private simulator: MemorySimulator;
+	//private simulator: MemorySimulator;
 	private simpleResults: MemorySimulatorResults;
 
-	private simulators: MemorySimulator[];
+	private _simulators: MemorySimulator[];
 	private multipleResults: {[key: string]: MemorySimulatorResults};
 
 	// simulator settings
@@ -32,8 +31,10 @@ class MemoryManager {
 	public onResultsChange: (results: {[key: string]: MemorySimulatorResults}) => void;
 
 	constructor() {
+		super();
+
 		// simple view by default
-		this._isSimpleView = true;
+		this._simpleView = true;
 
 		// by default there isn't any selected algorithm in the comparaison view
 		this._selectedAlgorithms = [];
@@ -43,12 +44,12 @@ class MemoryManager {
 		this.simpleResults = this.createEmptyResults();
 		this.initializeSimulator(this.simulator, true);
 
-		this.simulators = [];
+		this._simulators = [];
 		this.multipleResults = {};
 
 		this.processes = [];
 
-		this._capacity = 16;
+		this._capacity = 1024;
 
 		// default empty callback
 		this.onResultsChange = () => {};
@@ -59,7 +60,7 @@ class MemoryManager {
 	 * @param algorithm
 	 */
 	public selectAlgorithm(algorithm: string) {
-		if (this._isSimpleView) {
+		if (this._simpleView) {
 			this.simulator.selectAlgorithm(algorithm);
 		} else { 
 			let idx: number = this._selectedAlgorithms.indexOf(algorithm);
@@ -78,12 +79,12 @@ class MemoryManager {
 				// and set the simulator settings
 				simulator.capacity = this._capacity;
 
-				this.simulators.push(simulator);
+				this._simulators.push(simulator);
 				this._selectedAlgorithms.push(algorithm);
 			} else {
 				// remove this simulator from the list
 				this._selectedAlgorithms.splice(idx, 1);
-				this.simulators.splice(idx, 1);
+				this._simulators.splice(idx, 1);
 				delete this.multipleResults[algorithm];
 			}
 		}
@@ -92,70 +93,18 @@ class MemoryManager {
 	}
 
 	/**
-	 * @returns whether there is or not a next step
-	 */
-	public hasNextStep() : boolean {
-		if (this._isSimpleView) {
-			return this.simulator.hasNextStep();
-		} else {
-			let nextStep = false;
-
-			for (let i = 0; i < this.simulators.length && !nextStep; i++) {
-				nextStep = this.simulators[i].hasNextStep();
-			}
-
-			return nextStep;
-		}
-	}
-
-	/**
 	 * Executes the next simulation step
 	 */
 	public nextStep() : void {
-		if (this._isSimpleView) {
-			this.simulator.nextStep();
-		} else {
-			this.simulators.map(simulator => {
-				if (simulator.hasNextStep()) {
-					simulator.nextStep();
-				}
-			})
-		}
-
+		super.nextStep();
 		this.invokeChangeCallback();
-	}
-
-	/**
-	 * @returns whether there is or not a previous step
-	 */
-	public hasPreviousStep() : boolean {
-		if (this._isSimpleView) {
-			return this.simulator.hasPreviousStep();
-		} else {
-			let previousStep = false;
-
-			for (let i = 0; i < this.simulators.length && !previousStep; i++) {
-				previousStep = this.simulators[i].hasPreviousStep();
-			}
-
-			return previousStep;
-		}
 	}
 
 	/**
 	 * Returns to the previous step of the simulation
 	 */
 	public previousStep() : void {
-		if (this._isSimpleView) {
-			this.simulator.previousStep();
-		} else {
-			this.simulators.map(simulator => {
-				if (simulator.hasPreviousStep()) {
-					simulator.previousStep();
-				}
-			});
-		}
-
+		super.previousStep();
 		this.invokeChangeCallback();
 	}
 
@@ -170,7 +119,7 @@ class MemoryManager {
 
 		// and all existing simulators
 		this.simulator.addProcess(process);
-		this.simulators.map(simulator => {
+		this._simulators.map(simulator => {
 			simulator.addProcess(process);
 		});
 
@@ -183,7 +132,7 @@ class MemoryManager {
 	 */
 	public removeProcess(index: number) : void {
 		this.simulator.removeProcess(index);
-		this.simulators.map(simulator => {
+		this._simulators.map(simulator => {
 			simulator.removeProcess(index);
 		});
 
@@ -191,20 +140,13 @@ class MemoryManager {
 	}
 
 	public clear() : void {
-		console.log("clearing")
+		super.clear();
 		this.processes = [];
-
-		this.simulator.clear();
-		this.simulators.map(simulator => {
-			simulator.clear();
-		});
 	}
 
 	public reset() : void {
-		this.simulator.reset();
-		this.simulators.map(simulator => {
-			simulator.reset();
-		});
+		super.reset();
+		this.invokeChangeCallback();
 	}
 
 	/**
@@ -212,9 +154,9 @@ class MemoryManager {
 	 * @param value whether simple view is enabled or not
 	 */
 	public set simpleView(value: boolean) {
-		this._isSimpleView = value;
+		this._simpleView = value;
 		this.invokeChangeCallback();
-	} 
+	}
 
 	/**
 	 * Sets the memoy size
@@ -224,7 +166,7 @@ class MemoryManager {
 
 		// and set this setting to all simulators
 		this.simulator.capacity = value;
-		this.simulators.map(simulator => {
+		this._simulators.map(simulator => {
 			simulator.capacity = value;
 		});
 
@@ -232,7 +174,7 @@ class MemoryManager {
 	}
 
 	private invokeChangeCallback() : void {
-		if (this._isSimpleView) {
+		if (this._simpleView) {
 			this.onResultsChange({ 
 				[this.simulator.algorithm]: this.simpleResults
 			});
@@ -263,7 +205,7 @@ class MemoryManager {
 			ref = this.multipleResults[simulator.algorithm];
 		}
 
-		simulator.onMemoryChange = (memory: number[]) => {
+		simulator.onMemoryChange = (memory: MemoryBlock[]) => {
 			ref.memory = memory;
 		};
 
@@ -286,6 +228,10 @@ class MemoryManager {
 		simulator.onCurrentCycleChange = (cycle: number) => {
 			ref.currentCycle = cycle;
 		};
+	}
+
+	public get simulators() : MemorySimulator[] {
+		return this._simulators;
 	}
 }
 

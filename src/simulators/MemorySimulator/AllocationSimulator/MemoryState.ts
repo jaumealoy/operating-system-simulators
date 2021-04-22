@@ -1,22 +1,22 @@
-import { ProcessWrap, Queues } from "./MemorySimulator";
+import { ProcessWrap, Queues, MemoryBlock } from "./MemorySimulator";
 import State from "../../State";
 
 class MemoryState extends State {
 	private _currentCycle: number;
-	private _memory: number[];
+	private _memory: MemoryBlock[];
 	private _memoryGroups: number[];
 	private _allocationHistory: ProcessWrap[];
 	private _queues: Queues;
 	private _lastSearch: number;
 
 	constructor(
-		currentCycle: number, memory: number[], memoryGroups: number[], 
+		currentCycle: number, memory: MemoryBlock[], memoryGroups: number[], 
 		history: ProcessWrap[], queues: Queues, lastSearch: number) 
 	{
 		super();
 
 		this._currentCycle = currentCycle;
-		this._memory = memory.map(x => x);
+		this._memory = memory.map(x => ({...x}));
 		this._memoryGroups = memoryGroups.map(x => x);
 		this._allocationHistory = history.map(x => ({...x}));
 		this._lastSearch = lastSearch;
@@ -35,7 +35,7 @@ class MemoryState extends State {
 		return this._currentCycle;
 	}
 
-	get memory() : number[] {
+	get memory() : MemoryBlock[] {
 		return this._memory;
 	}
 

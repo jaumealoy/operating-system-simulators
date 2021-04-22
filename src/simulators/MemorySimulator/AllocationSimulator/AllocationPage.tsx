@@ -1,5 +1,5 @@
 import React from "react";
-import MemoryChart from "./../components/MemoryChart";
+import MemoryChart from "./components/MemoryChart";
 import {
 	Row, Col, FormControl, FormGroup, FormCheck,
 	OverlayTrigger, Tooltip
@@ -21,41 +21,39 @@ interface AllocationExample {
 }
 
 const EXAMPLES: AllocationExample[] = [
-	{
-		capacity: 16,
+	{ //
+		capacity: 830,
 		processes: [
-			{ id: "A", size: 3, arrival: 0, duration: 0 },
-			{ id: "B", size: 4, arrival: 0, duration: 4 },
-			{ id: "C", size: 6, arrival: 2, duration: 3 },
-			{ id: "D", size: 3, arrival: 4, duration: 0 },
-			{ id: "E", size: 1, arrival: 5, duration: 1 }
+			{ id: "P1", size: 180, arrival: 0, duration: 0 },
+			{ id: "A", size: 400, arrival: 0, duration: 1 },
+			{ id: "P2", size: 100, arrival: 0, duration: 0 },
+			{ id: "B", size: 150, arrival: 0, duration: 1 },
+			{ id: "P4", size: 120, arrival: 2, duration: 0 },
+			{ id: "P5", size: 200, arrival: 2, duration: 0 },
+			{ id: "P6", size: 80, arrival: 2, duration: 0 }
 		]
 	},
 
-	{
-		capacity: 16,
+	{ //
+		capacity: 1024,
 		processes: [
-			{ id: "A", size: 2, arrival: 0, duration: 6 },
-			{ id: "B", size: 3, arrival: 1, duration: 3 },
-			{ id: "C", size: 1, arrival: 2, duration: 6 },
-			{ id: "D", size: 4, arrival: 3, duration: 8 },
-			{ id: "E", size: 2, arrival: 7, duration: 2 },
-			
+			{ id: "A", size: 100, arrival: 0, duration: 6 },
+			{ id: "B", size: 240, arrival: 1, duration: 3 },
+			{ id: "C", size: 64, arrival: 2, duration: 6 },
+			{ id: "D", size: 256, arrival: 3, duration: 8 },
+			{ id: "E", size: 75, arrival: 7, duration: 2 },
 		]
 	},
 
-	{
-		capacity: 16,
+	{ //
+		capacity: 1024,
 		processes: [
-			{ id: "A", size: 2, arrival: 0, duration: 4 },
-			{ id: "B", size: 3, arrival: 1, duration: 3 },
-			{ id: "C", size: 1, arrival: 2, duration: 6 },
-			{ id: "D", size: 7, arrival: 3, duration: 3 },
-			{ id: "E", size: 2, arrival: 7, duration: 2 },
-			{ id: "F", size: 1, arrival: 5, duration: 4 },
+			{ id: "A", size: 70, arrival: 0, duration: 1 },
+			{ id: "B", size: 35, arrival: 0, duration: 3 },
+			{ id: "C", size: 80, arrival: 0, duration: 5 },
+			{ id: "D", size: 60, arrival: 1, duration: 4 },
 		]
 	}
-	
 ];
 
 interface AllocationPageProps {
@@ -188,13 +186,22 @@ function AllocationPage(props: AllocationPageProps) {
 					<>
 						<Col md={4}>
 							<div className="x-centered">
-								<MemoryChart
+								<h3>Memoria</h3>
+								<MemoryChart 
 									capacity={memoryCapacity}
-									processes={processes.map(process => process.id)}
-									data={results[selectedAlgorithm].memory}
-									pointer={selectedAlgorithm == "next_fit" ? results[selectedAlgorithm].nextPointer : undefined}
-									blocks={selectedAlgorithm == "buddy" ? results[selectedAlgorithm].memoryGroups : undefined}
-									showBlockSize />
+									blocks={
+										results[selectedAlgorithm].memory.map((block) => 
+											({
+												start: block.start,
+												end: block.start + block.size,
+												type: block.type,
+												text: (block.type > 0 ? processes[block.type - 1].id + ` (${processes[block.type - 1].size}KB)` : undefined)
+											})
+										)
+									}
+									groups={selectedAlgorithm == "buddy" ? results[selectedAlgorithm].memoryGroups : undefined}
+									pointer={(selectedAlgorithm == "next_fit" ? results[selectedAlgorithm].nextPointer : undefined)}
+									/>
 							</div>
 						</Col>
 
@@ -203,6 +210,7 @@ function AllocationPage(props: AllocationPageProps) {
 							<br />
 							<br />
 							{t("memory.allocation.next_requests")}
+							<div className="table-responsive">
 							<table className="table">
 								<thead>
 									<tr>
@@ -257,6 +265,7 @@ function AllocationPage(props: AllocationPageProps) {
 									}
 								</tbody>
 							</table>
+							</div>
 
 							{t("memory.allocation.completed_requests")}
 							<table className="table">
@@ -265,7 +274,7 @@ function AllocationPage(props: AllocationPageProps) {
 										<th>{t("memory.allocation.cycle")}</th>
 										<th>{t("memory.allocation.process")}</th>
 										<th>{t("memory.allocation.requested_memory")}</th>
-										<th>{t("memory.allocation.assigned_block")}o</th>
+										<th>{t("memory.allocation.assigned_block")}</th>
 									</tr>
 								</thead>
 
@@ -298,13 +307,22 @@ function AllocationPage(props: AllocationPageProps) {
 							<Col key={algorithm} md={3}>
 								<h4 className="mt-0">{t(`memory.allocation.algorithms.${algorithm}`)}</h4>
 								{t("memory.allocation.current_cycle")} <span className="badge bg-success">{results[algorithm].currentCycle}</span>
-								<MemoryChart
+
+								<MemoryChart 
 									capacity={memoryCapacity}
-									processes={processes.map(process => process.id)}
-									data={results[algorithm].memory}
-									pointer={algorithm == "next_fit" ? results[algorithm].nextPointer : undefined}
-									blocks={algorithm == "buddy" && (algorithm in results) ? results[algorithm].memoryGroups : undefined}
-									showBlockSize />
+									blocks={
+										results[algorithm].memory.map((block) => 
+											({
+												start: block.start,
+												end: block.start + block.size,
+												type: block.type,
+												text: (block.type > 0 ? processes[block.type - 1].id + ` (${processes[block.type - 1].size}KB)` : undefined)
+											})
+										)
+									}
+									groups={algorithm == "buddy" ? results[algorithm].memoryGroups : undefined}
+									pointer={(algorithm == "next_fit" ? results[algorithm].nextPointer : undefined)}
+									/>
 							</Col>
 						)}
 					</Row>

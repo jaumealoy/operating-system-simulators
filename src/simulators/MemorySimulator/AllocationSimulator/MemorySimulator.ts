@@ -15,7 +15,7 @@ interface ProcessWrap {
 	process: Process;
 }
 
-type MemoryBlock = { type: number; start: number; size: number; } | null;
+type MemoryBlock = { type: number; start: number; size: number; };
 type Queues = {[key in "incoming" | "allocated"]: ProcessWrap[]};
 
 class MemorySimulator extends Simulator {
@@ -31,7 +31,8 @@ class MemorySimulator extends Simulator {
 	private _allocationHistory: ProcessWrap[];
 
 	private _currentCycle: number;
-	private _memory: number[];
+	//private _memory: number[];
+	private _memory: MemoryBlock[];
 
 	private states: MemoryState[];
 
@@ -42,7 +43,7 @@ class MemorySimulator extends Simulator {
 	private _memoryGroups: number[];
 
 	// callbacks
-	public onMemoryChange: (data: number[]) => void;
+	public onMemoryChange: (data: MemoryBlock[]) => void;
 	public onNextPointerChange: (value: number) => void;
 	public onMemoryGroupsChange: (groups: number[]) => void;
 	public onQueuesChange: (queues: Queues) => void;
@@ -253,15 +254,40 @@ class MemorySimulator extends Simulator {
 			
 			if (process.process.duration > 0 && this._currentCycle >= (process.start + process.process.duration)) {
 				// this process must be freed
-				for (let i = process.blockBegin; i <= process.blockEnd; i++) {
-					this._memory[i] = 0;
+				// free this memory block
+				let found: boolean  = false;
+				let blockId: number = -1;
+				for (let j = 0; j < this._memory.length && !found; j++) {
+					if (this._memory[j].type > 0 && this.processes[this._memory[j].type - 1].id == process.process.id) {
+						found = true;
+						this._memory[j].type = 0;
+						blockId = j;
+					}
 				}
 
 				this.queues.allocated.splice(i, 1);
 
 				if (this._algorithm == "buddy") {
-					// merge empty blocks in bigger partitions
-					this._memoryGroups = this.mergeMemoryBlocks(this._memoryGroups, 0);
+					// before trying to merge with other blocs, check if the removed process
+					// uses a partition of the power 2^i, if not merge the fragmentation with
+					// the process block
+					let blockSize: number = this._memory[blockId].size;
+					if ((blockSize & (blockSize - 1)) != 0) {
+						// block size is not a power of 2
+						let mergedBlock: MemoryBlock = {
+							start: this._memory[blockId].start,
+							size: this._memory[blockId].size + this._memory[blockId + 1].size,
+							type: 0
+						};
+						
+						this._memory.splice(blockId, 2, mergedBlock);
+					}
+					
+					let result = this.mergeMemoryBlocksBuddy(this._memory, this._memoryGroups);
+					this._memory = result[0];
+					this._memoryGroups = result[1];
+				} else {
+					this.mergeMemoryBlocks();
 				}
 
 				if (this.oneActionPerStep) {
@@ -276,7 +302,7 @@ class MemorySimulator extends Simulator {
 		// there might be processes from previous cycles that couldn't be allocated
 		for (let i = 0; i < this.queues.incoming.length;) {
 			if (this._currentCycle >= this.queues.incoming[i].process.arrival) {
-				let block: MemoryBlock = this.algorithmFunctions[this._algorithm](this.queues.incoming[i].process);
+				let block: MemoryBlock | null = this.algorithmFunctions[this._algorithm](this.queues.incoming[i].process);
 				
 				if (block != null) {
 					// process was allocated
@@ -287,8 +313,34 @@ class MemorySimulator extends Simulator {
 						}
 					}
 
-					for (let j = block.start; j < (block.start + this.processes[processId].size); j++) {
-						this._memory[j] = processId + 1;
+					// this process can be allocated in this block
+					// this block might be bigger than the process allocated, in that
+					// case the block must be splitted into two parts
+					let processBlock: MemoryBlock = block;
+					let secondBlock: MemoryBlock | null = null;
+					if (this.queues.incoming[i].process.size <= block.size) {
+						let blockIndex: number = this._memory.indexOf(block);
+						processBlock = {
+							start: block.start,
+							size: this.queues.incoming[i].process.size,
+							type: processId + 1
+						};
+
+						secondBlock = {
+							start: block.start + this.queues.incoming[i].process.size,
+							size: block.size - this.queues.incoming[i].process.size,
+							type: 0
+						};
+
+						if (secondBlock.size > 0) {
+							this._memory.splice(blockIndex, 1, processBlock, secondBlock);
+
+							if (this._algorithm == "buddy") {
+								secondBlock.type = -1;
+							}
+						} else {
+							this._memory.splice(blockIndex, 1, processBlock);
+						}
 					}
 
 					let process: ProcessWrap = this.queues.incoming[i];
@@ -296,13 +348,13 @@ class MemorySimulator extends Simulator {
 					process.blockBegin = block.start;
 					process.blockEnd = block.start + block.size - 1;
 
-					for (let j = block.start + process.process.size; j <= process.blockEnd; j++) {
-						this._memory[j] = -1;
-					}
-
 					this.queues.allocated.push(process);
 					this.queues.incoming.splice(i, 1);
 					this._allocationHistory.push(process);
+
+					if (this._algorithm == "next_fit") {
+						this.lastSearch = (processBlock.start + processBlock.size) % this._capacity;;
+					}
 
 					if (this.oneActionPerStep) {
 						return;
@@ -320,187 +372,231 @@ class MemorySimulator extends Simulator {
 		this._currentCycle++;
 	}
 
-	/**
-	 * Finds a memory block of the given type below or at the start position
-	 * @param start start position for the search
-	 * @param size minimum size of the found block
-	 * @param type block type
-	 * @returns a block, if any
-	 */
-	private findNextBlockFrom(start: number, size?: number, type?: number) : MemoryBlock {
-		// block type, by default a free block
-		let blockType: number = type || 0;
-
-		// suppose that there isn't any block
-		let memoryBlock: MemoryBlock = null;
-
-		let i: number = start;
-		while (memoryBlock == null && i < this._memory.length) {
-			let blockSize: number = 0;
-
-			// process the current block
-			let j: number = i;
-			while(this._memory[i] == this._memory[j]) {
-				blockSize++;
-				j++;
-			}
-
-			if (this._memory[i] == blockType) {
-				memoryBlock = {
-					start: i,
-					type: blockType,
-					size: blockSize
-				};
-			} else {
-				i = j;
-			}
-		} 
-
-		return memoryBlock;
-	}
-
-	private FirstFit(process: Process) : MemoryBlock {
+	private FirstFit(process: Process) : MemoryBlock | null {
 		// find the first block of size process' size
-		let block: MemoryBlock = this.findNextBlockFrom(0, process.size, 0);
-		
-		if (block != null) {
-			block.size = process.size;
+		let block: MemoryBlock | null = null;
+		for (let i = 0; i < this._memory.length && block == null; i++) {
+			if (this._memory[i].type == 0 && this._memory[i].size >= process.size) {
+				block = this._memory[i];
+			}
 		}
 
 		return block;
 	}
 
-	private NextFit(process: Process) : MemoryBlock {
-		// find the first available block but start searching from the last block 
-		// visited
-		let block: MemoryBlock = this.findNextBlockFrom(this._lastSearch, process.size, 0);
+	/**
+	 * Returns a block that maximizes a score function
+	 * @param process 
+	 * @param fn maximization function
+	 * @returns 
+	 */
+	private MaximizeFit(process: Process, fn: (block: MemoryBlock) => number) : MemoryBlock | null {
+		let block: MemoryBlock | null = null;
+		let maximum: number = Number.MIN_SAFE_INTEGER;
 
-		// there might not be a block below "lastSearch" block
-		if (block == null) {
-			// search again from the beggining
-			block = this.findNextBlockFrom(0, process.size, 0);
-		}
-
-		if (block != null) {
-			this._lastSearch = (block.start + process.size) % this._memory.length;
-			this.onNextPointerChange(this._lastSearch);
-		}
-
-		if (block != null) {
-			block.size = process.size;
+		for (let i = 0; i < this._memory.length; i++) {
+			if (this._memory[i].type == 0 && this._memory[i].size >= process.size) {
+				let score: number = fn(this._memory[i]);
+				if (score > maximum) {
+					block = this._memory[i];
+					maximum = score;
+				}
+			}
 		}
 
 		return block;
 	}
 
-	private WorstFit(process: Process) : MemoryBlock {
-		// search the biggest block for this process
-		let bestBlock: MemoryBlock = null;
+	private NextFit(process: Process) : MemoryBlock | null {
+		let block: MemoryBlock | null = null;
 
-		let currentBlock: MemoryBlock = this.findNextBlockFrom(0, process.size, 0);
-		while (currentBlock != null) {
-			if (bestBlock == null || currentBlock.size > bestBlock.size) {
-				bestBlock = currentBlock;
+		console.log("Memory blocks: ", this._memory);
+
+		let displacement: number = 0;
+		while (displacement < this._capacity && block == null) {
+			// find the block where the pointer is pointing
+			let sum: number = 0;
+			let index: number = 0;
+			while (index < this._memory.length && (sum + this._memory[index].size - 1) < this._lastSearch) {
+				sum += this._memory[index].size;
+				index++;
 			}
 
-			// search for possible next block
-			currentBlock = this.findNextBlockFrom(currentBlock.start + currentBlock.size, process.size, 0);
-		}
+			console.log("Pointer is pointing to block ", index)
 
-		if (bestBlock != null) {
-			bestBlock.size = process.size;
-		}
+			let actualSize: number = this._memory[index].size + this._memory[index].start - this._lastSearch + 1;
+			console.log(`actual size is ${actualSize} and process needs are ${process.size}`)
 
-		return bestBlock;
-	}
+			// check if this block has enough space for this process
+			if (this._memory[index].type == 0 && process.size < actualSize) {
+				// we might have to split this block if the pointer is not pointing at its start
+				if (this._memory[index].start == this._lastSearch) {
+					// we have found a valid block
+					block = this._memory[index];
+					console.log("Next fit has found a full block");
+				} else {
+					let firstBlock: MemoryBlock = {
+						start: this._memory[index].start,
+						size: this._lastSearch - this._memory[index].start,
+						type: 0
+					};
 
-	private BestFit(process: Process) : MemoryBlock {
-		let bestBlock: MemoryBlock = null;
+					let secondBlock: MemoryBlock = {
+						start: this._lastSearch,
+						size: (this._memory[index].start + this._memory[index].size - this._lastSearch),
+						type: 0
+					};
 
-		let currentBlock: MemoryBlock = this.findNextBlockFrom(0, process.size, 0);
-		while (currentBlock != null) {
-			if (bestBlock == null || currentBlock.size < bestBlock.size) {
-				bestBlock = currentBlock;
+					this._memory.splice(index, 1, firstBlock, secondBlock);
+					block = secondBlock;
+				}
+			} else {
+				// this block does not have enough space, move the pointer to next block
+				this._lastSearch = (this._memory[index].start + this._memory[index].size) % this._capacity;
+				displacement += actualSize;
 			}
-
-			currentBlock = this.findNextBlockFrom(currentBlock.start + currentBlock.size, process.size, 0);
 		}
 
-		if (bestBlock != null) {
-			bestBlock.size = process.size;
-		}
-
-		return bestBlock;
+		return block;
 	}
 
-	private BuddySystem(process: Process) : MemoryBlock {
-		let block: MemoryBlock = null;
+	private BuddySystem(process: Process) : MemoryBlock | null {
+		let block: MemoryBlock | null = null;
 
-		// find the first of available memory that can fit this process
+		// find the first available block that can fit this process
 		let i: number = 0;
-		let offset: number = 0;
-		while (i < this._memoryGroups.length && (this._memory[offset] != 0 || this._memoryGroups[i] < process.size)) {
-			offset += this._memoryGroups[i];
+		while (i < this._memory.length && (this._memory[i].type != 0 || this._memory[i].size < process.size)) {
 			i++;
 		}
 
-		if (i < this._memoryGroups.length) {
-			// there is an available block
-			// this block might be bigger, reduce until the process cannot fit
-			while ((this._memoryGroups[i] >> 1) >= process.size) {
-				let half: number = this._memoryGroups[i] >> 1;
-				this._memoryGroups[i] = half;
-				this._memoryGroups.splice(i, 0, half);
+		console.log("Found suitable block", i, this._memory[i])
+
+		console.log(this._memory, this._memoryGroups)
+
+		if (i < this._memory.length) {
+			// find the equivalent memory group
+			let sum: number = 0;
+			let j: number = 0;
+			while (sum < this._memory[i].start) {
+				sum += this._memoryGroups[j];
+				j++;
 			}
 
-			block = {
-				start: offset,
-				size: this._memoryGroups[i],
-				type: 0
-			};
+			console.log("This block is linked to memory group " + j)
+
+			// once we have found a suitable block, we must shrink it to the minimum size possible
+			while ((this._memory[i].size >> 1) >= process.size) {
+				let half: number = this._memory[i].size >> 1;
+
+				// split the block into two halves
+				let firstBlock: MemoryBlock = {
+					start: this._memory[i].start,
+					size: half,
+					type: 0
+				};
+
+				let secondBlock: MemoryBlock = {
+					start: this._memory[i].start + half,
+					size: half,
+					type: 0
+				};
+
+				this._memory.splice(i, 1, firstBlock, secondBlock);
+				this._memoryGroups.splice(j, 1, half, half);
+			}
+
+			block = this._memory[i];
 		}
 
 		return block;
 	}
 
-	private mergeMemoryBlocks(blocks: number[], offset: number) : number[] {
+	private mergeMemoryBlocksBuddy(blocks: MemoryBlock[], groups: number[]) : [MemoryBlock[], number[]] {
 		if (blocks.length == 1) {
-			return blocks;
-		} else if (blocks.length == 2) {
-			// check if both blocks can be merged
-			if (this._memory[offset] == 0 && this._memory[offset + blocks[0]] == 0) {
-				// blocs can be merged, the result will be a node equal to the sum
-				// of both nodes, which should be a power of 2
-				return [blocks[0] + blocks[1]];
+			return [blocks, groups];
+		} else if (blocks.length == 2) {
+			// check if both blocks can be merged, both must bee free
+			if (blocks[0].type == 0 && blocks[1].type == 0) {
+				// create a bigger block
+				let block: MemoryBlock = {
+					start: blocks[0].start,
+					size: blocks[0].size + blocks[1].size,
+					type: 0
+				};
+
+				return [[block], [groups[0] + groups[1]]];
 			} else {
-				// block cannot be merged
-				return blocks;
+				// blocks cannot be merged
+				return [blocks, groups];
 			}
 		} else {
-			// find the half of the memory blocks
-			let sum: number = 0;
-			for (let i: number = 0; i < blocks.length; i++) {
-				sum += blocks[i];
-			}
+			// calculate what blocks belong to the left node and right node
+			let sum: number = blocks.reduceRight((a, b) => a + b.size, 0);
 
-			// sum is a power of 2
+			// sum must be a power of 2
 			let halfValue: number = sum >> 1;
 			let halfIndex: number = 0;
 			while (halfValue > 0) {
-				halfValue -= blocks[halfIndex];
+				halfValue -= blocks[halfIndex].size;
 				halfIndex++;
 			}
 
-			// now we have 2 possible nodes
-			let leftNode = this.mergeMemoryBlocks(blocks.slice(0, halfIndex), offset);
-			let rightNode = this.mergeMemoryBlocks(blocks.slice(halfIndex), offset + sum >> 1);
+			halfValue = sum >> 1;
+			let halfGroupIndex: number = 0;
+			while (halfValue > 0) {
+				halfValue -= groups[halfGroupIndex];
+				halfGroupIndex++;
+			}
 
-			// these nodes could be merged if they are only one node
-			if (leftNode.length == 1 && rightNode.length == 1) {
-				return this.mergeMemoryBlocks([leftNode[0], rightNode[0]], offset);
+			// try to merge left nodes and right nodes
+			let leftNodes = this.mergeMemoryBlocksBuddy(
+				blocks.slice(0, halfIndex),
+				groups.slice(0, halfGroupIndex)
+			);
+
+			let rightNodes = this.mergeMemoryBlocksBuddy(
+				blocks.slice(halfIndex),
+				groups.slice(halfGroupIndex)
+			);
+
+			// the current node could be merged if child nodes were merged successfully
+			if (leftNodes[0].length == 1 && rightNodes[0].length == 1) {
+				// try to merge the current node
+				return this.mergeMemoryBlocksBuddy(
+					[leftNodes[0][0], rightNodes[0][0]], 
+					[leftNodes[1][0], rightNodes[1][0]]
+				);
 			} else {
-				// this nodes cannot be merged
-				return [...leftNode, ...rightNode];
+				return [
+					[...leftNodes[0], ...rightNodes[0]], 
+					[...leftNodes[1], ...rightNodes[1]]
+				];
+			}
+		}
+	}
+
+	/** */
+	private mergeMemoryBlocks() : void {
+		let changes: boolean = true;
+
+		while (changes) {
+			changes = false;
+
+			for (let i = 0; i < this._memory.length - 1; i++) {
+				if (this._memory[i].type == 0 && this._memory[i + 1].type == 0) {
+					// there are 2 neighbour free blocks, these can be merged
+					let block: MemoryBlock = {
+						start: this._memory[i].start,
+						size: this._memory[i].size + this._memory[i + 1].size,
+						type: 0
+					};
+
+					// remove the old blocks and add the new one
+					this._memory.splice(i, 2, block);
+
+					changes = true;
+					break;
+				}
 			}
 		}
 	}
@@ -512,9 +608,7 @@ class MemorySimulator extends Simulator {
 		this._capacity = value;
 		this._memory = [];
 
-		for(let i = 0; i < value; i++) {
-			this._memory.push(0);
-		}
+		this.initializeMemory();
 
 		this.memoryGroups = [value];
 	}
@@ -522,11 +616,11 @@ class MemorySimulator extends Simulator {
 	/**
 	 * Mapping of algorithm functions by its name
 	 */
-	private algorithmFunctions: {[key: string]: (process: Process) => MemoryBlock} = {
+	private algorithmFunctions: {[key: string]: (process: Process) => MemoryBlock | null} = {
 		first_fit: this.FirstFit.bind(this),
 		next_fit: this.NextFit.bind(this),
-		worst_fit: this.WorstFit.bind(this),
-		best_fit: this.BestFit.bind(this),
+		worst_fit: (process: Process) => this.MaximizeFit(process, (block) => block.size),
+		best_fit: (process: Process) => this.MaximizeFit(process, (block) => -block.size),
 		buddy: this.BuddySystem.bind(this)
 	};
 
@@ -559,7 +653,7 @@ class MemorySimulator extends Simulator {
 		this.onMemoryGroupsChange(this._memoryGroups);
 	}
 
-	private set memory(value: number[]) {
+	private set memory(value: MemoryBlock[]) {
 		this._memory = value;
 		this.onMemoryChange(this._memory);
 	}
@@ -584,7 +678,20 @@ class MemorySimulator extends Simulator {
 	public get algorithm() : string {
 		return this._algorithm;
 	}
+
+	/**
+	 * Initialize an empty memory
+	 */
+	private initializeMemory() : void {
+		this.memory = [
+			{
+				start: 0,
+				size: this._capacity,
+				type: 0
+			}
+		];
+	}
 }
 
 export { MemorySimulator };
-export type { Process, ProcessWrap, Queues };
+export type { Process, ProcessWrap, Queues, MemoryBlock };

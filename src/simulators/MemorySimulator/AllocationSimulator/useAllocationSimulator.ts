@@ -17,18 +17,24 @@ const useMemorySimulator = (simpleView: boolean) => {
 	}
 
 	// memory capacity
-	const [memoryCapacity, setMemoryCapacityInternal] = useState<number>(16);
+	const [memoryCapacity, setMemoryCapacityInternal] = useState<number>(1024);
 	const setMemoryCapacity = (value: number) => {
+		setMemoryCapacityInternal(value);
+		return;
 		// make sure that the number is a power of two
-		if (value > memoryCapacity) {
-			setMemoryCapacityInternal(memoryCapacity * 2);
-		} else if(value < memoryCapacity) {
-			let newValue: number = memoryCapacity / 2;
-			if (newValue < 1) {
-				newValue = 1;
-			}
+		if ((value & (value - 1)) == 0) {
+			setMemoryCapacityInternal(value);
+		} else {
+			if (value > memoryCapacity) {
+				setMemoryCapacityInternal(memoryCapacity * 2);
+			} else if(value < memoryCapacity) {
+				let newValue: number = memoryCapacity / 2;
+				if (newValue < 1) {
+					newValue = 1;
+				}
 
-			setMemoryCapacityInternal(newValue);
+				setMemoryCapacityInternal(newValue);
+			}
 		}
 	};
 
@@ -38,9 +44,11 @@ const useMemorySimulator = (simpleView: boolean) => {
 		}
 	}, [memoryCapacity]);
 
+
 	// comparaison view
 	useEffect(() => {
 		if (manager.current != null) {
+			console.log("Hey")
 			manager.current.simpleView = simpleView;
 			setStarted(false);
 			setRunning(false);
@@ -101,7 +109,7 @@ const useMemorySimulator = (simpleView: boolean) => {
 			setStarted(false);
 			manager.current.reset();
 		}
-	}, [memoryCapacity, processes, selectedAlgorithm, setSelectedAlgorithms]);
+	}, [memoryCapacity, processes, selectedAlgorithm, selectedAlgorithms]);
 
 	// simulation results
 	const [results, setResults] = useState<{[key: string]: MemorySimulatorResults}>({});
@@ -164,6 +172,22 @@ const useMemorySimulator = (simpleView: boolean) => {
 
 	const play = () => setRunning(true);
 	const pause = () => setRunning(false);
+
+
+	useEffect(() => {
+		// memory capacity must be a power of 2?
+		let forcePower: boolean = 
+			(simpleView && selectedAlgorithm == "buddy")
+			|| (!simpleView && selectedAlgorithms.indexOf("buddy") >= 0);
+
+		if (forcePower) {
+			if ((memoryCapacity & (memoryCapacity)) != 0) {
+				// capacity is not a power of 2
+				let power: number = Math.ceil(Math.log(memoryCapacity) / Math.log(2));
+				setMemoryCapacityInternal(2**power);
+			}
+		}
+	}, [memoryCapacity, selectedAlgorithm, selectedAlgorithms]);
 
 	// load and save simulations
 	const saveFile = (download: (content: string) => void) => {

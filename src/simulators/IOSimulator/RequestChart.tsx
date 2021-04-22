@@ -1,7 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-
 import { SVG, PointArray } from "@svgdotjs/svg.js";
-
+import { useTranslation } from "react-i18next";
 
 interface RequestChartProps {
 	tracks?: number;
@@ -21,6 +20,8 @@ const RADIUS: number = 6;
 const TEXT_SIZE: number = 8;
 
 function RequestChart(props: RequestChartProps) {
+	const { t } = useTranslation();
+
 	const container = useRef<HTMLDivElement>(null);
 	const chart = useRef(SVG());
 
@@ -101,18 +102,11 @@ function RequestChart(props: RequestChartProps) {
 			return sum;
 		};
 
+		let txt = aux.text(t("io.time"))
+		   .font({ size: TEXT_SIZE });	
+		txt.move(WIDTH - txt.length(), HEIGHT - TEXT_SIZE - AXIS_WIDTH);
+
 		if (numberOfRequests > 1) {
-			for(let i = 0; i < numberOfRequests; i++) {
-
-				let text = aux.text(i.toString())
-				.move(x(sumDisplacements(i)), HEIGHT - TEXT_SIZE)
-				.font({ fill: LINE_COLOR, size: TEXT_SIZE });
-
-				aux.rect(AXIS_WIDTH / 2, AXIS_WIDTH)
-					.move(x(sumDisplacements(i)) + (text.length() - AXIS_WIDTH / 2) / 2, HEIGHT - AXIS_WIDTH * 1.5 - TEXT_SIZE)
-					.fill({ color: LINE_COLOR });
-			}
-
 			for (let i = 0; i < props.requests.length; i++) {			
 				// line between requests
 				if (i > 0) {
