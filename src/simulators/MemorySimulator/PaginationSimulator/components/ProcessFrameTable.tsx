@@ -1,10 +1,14 @@
 import React from "react";
-import { Process, ProcessEntry } from "./../PaginationSimulator";
+import { Process, Request, ProcessEntry } from "./../PaginationSimulator";
 
 interface ProcessFrameTable {
 	process: Process;
 	entry: ProcessEntry;
 	showPointer: boolean;
+	accessBit: boolean;
+	modifiedBit: boolean;
+	request?: Request;
+	pageFailure?: number;
 }
 
 function ProcessFrameTable(props: ProcessFrameTable) {
@@ -13,20 +17,29 @@ function ProcessFrameTable(props: ProcessFrameTable) {
 	for (let i = 0; i < props.process.frames; i++) {
 		let child: React.ReactNode = (
 			<div key={i} className={"frame" + ((props.showPointer && i == props.entry.pointer) ? " selected" : "")}>
+				<div className="frame-index">
+					<span>
+						{i < props.entry.loadedPages.length ?
+							props.entry.pages[props.entry.loadedPages[i]].data.frame
+							:
+							"-"
+						}
+					</span>
+				</div>
+
 				<div className="frame-content">
 					{i < props.entry.loadedPages.length ?
 						<>
 							{props.entry.loadedPages[i]}
-							{props.entry.pages[props.entry.loadedPages[i]].data.accessBit &&
+							{props.accessBit && props.entry.pages[props.entry.loadedPages[i]].data.accessBit &&
 								<sup>A</sup>}
-							{props.entry.pages[props.entry.loadedPages[i]].data.modifiedBit &&
+							{props.modifiedBit && props.entry.pages[props.entry.loadedPages[i]].data.modifiedBit &&
 								<sub>M</sub>}
 						</>
 						:
 						"-"
 					}
 				</div>
-				<div className="frame-index">{i}</div>
 			</div>
 		);
 
@@ -34,8 +47,30 @@ function ProcessFrameTable(props: ProcessFrameTable) {
 	}
 
 	return (
-		<div className="process-frames">
-			{childs}
+		<div className="process-snapshot">
+			<span className="">
+				{props.request ?
+					<>
+						{props.request.page}
+						{props.request.modified && <sup>*</sup>}
+					</>
+					:
+					<>&nbsp;</>
+				}
+			</span>
+			<div className="process-frames">
+				{childs}
+			</div>
+			<span>
+				{(props.pageFailure != undefined && props.pageFailure > 0) ?
+					<>
+						F
+						{props.modifiedBit && props.pageFailure > 1 && <sup>*</sup>} 
+					</>
+					:
+					<>&nbsp;</>
+				}
+			</span>
 		</div>
 	);
 }

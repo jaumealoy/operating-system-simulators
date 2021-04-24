@@ -186,7 +186,7 @@ function AllocationPage(props: AllocationPageProps) {
 					<>
 						<Col md={4}>
 							<div className="x-centered">
-								<h3>Memoria</h3>
+								<h3>{t("memory.allocation.memory")}</h3>
 								<MemoryChart 
 									capacity={memoryCapacity}
 									blocks={

@@ -30,9 +30,17 @@ interface ProcessEntry {
 	pages: ProcessPageWrap[];
 	pointer: number;
 	loadedPages: number[];
+	failures: number;
 }
 
 type ProcessTable = {[key: string]: ProcessEntry};
+
+interface ProcessTableSnapshot {
+	table: ProcessEntry;
+	pageFailure: number;
+	write: boolean;
+	request: Request;
+}
 
 class PaginationSimulator extends Simulator {
 	// processes and requests
@@ -52,12 +60,14 @@ class PaginationSimulator extends Simulator {
 
 	// memory and process tables
 	private _processTable: ProcessTable;
+	private _snapshots: {[key: string]: ProcessTableSnapshot[]};
 
 	// simulator callbacks
 	public onProcessTableChange: (table: ProcessTable) => void;
 	public onMemoryChange: (memory: number[], pages: number[]) => void;
 	public onPageFailuresChange: (value: number) => void;
 	public onCurrentCycleChange: (value: number) => void;
+	public onSnapshotsChange: (snaphshots: {[key: string]: ProcessTableSnapshot[]}) => void;
 
 	// variables only used when SINGLE_STEP is true
 	private _algorithmStep: number;
@@ -82,6 +92,7 @@ class PaginationSimulator extends Simulator {
 		this._algorithm = "optimal";
 
 		this._processTable = {};
+		this._snapshots = {};
 
 		this._algorithmStep = 0;
 		this._algorithmIndex = 0;
@@ -93,6 +104,7 @@ class PaginationSimulator extends Simulator {
 		this.onMemoryChange = () => {};
 		this.onPageFailuresChange = () => {};
 		this.onCurrentCycleChange = () => {};
+		this.onSnapshotsChange = () => {};
 	}
 
 	public hasNextStep(): boolean {
@@ -227,6 +239,7 @@ class PaginationSimulator extends Simulator {
 			this._counter = simulatorStatus.cycle;
 			this._pageFailures = simulatorStatus.pageFailures;
 			this._processTable = simulatorStatus.processTable;
+			this._snapshots = simulatorStatus.snapshots;
 
 			// recover algorithm status
 			let algorithmStatus = state.stepData;
@@ -239,6 +252,7 @@ class PaginationSimulator extends Simulator {
 			this.onPageFailuresChange(this._pageFailures);
 			this.onCurrentCycleChange(this._counter);
 			this.onProcessTableChange(this._processTable);
+			this.onSnapshotsChange(this._snapshots);
 		}
 	}
 
@@ -250,7 +264,8 @@ class PaginationSimulator extends Simulator {
 				pages: this._pages,
 				cycle: this._counter,
 				pageFailures: this._pageFailures,
-				processTable: this._processTable
+				processTable: this._processTable,
+				snapshots: this._snapshots
 			},
 			{
 				step: this._algorithmStep,
@@ -267,6 +282,7 @@ class PaginationSimulator extends Simulator {
 		this.onProcessTableChange(this._processTable);
 		this.onMemoryChange(this._memory, this._pages);
 		this.onCurrentCycleChange(this._counter);
+		this.onSnapshotsChange(this._snapshots);
 	}
 
 	private update() : void {
@@ -289,6 +305,7 @@ class PaginationSimulator extends Simulator {
 
 				// is this page loaded?
 				let loaded: boolean = pageTable.pages[request.page].data.frame >= 0;
+				let requiresWrite: boolean = false;
 				
 				if (loaded) {
 					// this page is loaded, do nothing
@@ -320,6 +337,10 @@ class PaginationSimulator extends Simulator {
 						pageTable.pages[replacedPage].data.frame = -1;
 						pageTable.pages[replacedPage].arrival = -1;
 
+						if (pageTable.pages[replacedPage].data.modifiedBit) {
+							requiresWrite = true;
+						}
+
 						pageTable.pages[request.page].data.frame = frame;
 						pageTable.pages[request.page].arrival = this._counter;
 						this._pages[frame] = request.page;
@@ -336,6 +357,8 @@ class PaginationSimulator extends Simulator {
 
 					// this is a page fault
 					this._pageFailures++;
+					this._processTable[request.process].failures++;
+
 					this.onPageFailuresChange(this._pageFailures);
 
 					this._memory[frame] = this.getProcessIndex(request.process) + 1;
@@ -359,6 +382,23 @@ class PaginationSimulator extends Simulator {
 				if (request.modified) {
 					pageTable.pages[request.page].data.modifiedBit = true;
 				}
+
+				// a request has been processed, create the Process Table snapshot
+				let tableSnapshot: ProcessEntry = {
+					pages: pageTable.pages.map(p => ({...p, data: {...p.data}})),
+					pointer: pageTable.pointer,
+					loadedPages: [...pageTable.loadedPages],
+					failures: pageTable.failures
+				};
+
+				let snapshot: ProcessTableSnapshot = {
+					table: tableSnapshot,
+					write: false,
+					request: request,
+					pageFailure: (loaded ? 0 : (requiresWrite ? 2 : 1))
+				};
+
+				this._snapshots[request.process].push(snapshot);
 			}
 		}
 
@@ -537,8 +577,11 @@ class PaginationSimulator extends Simulator {
 		this._processTable[process.id] = {
 			pages: [],
 			pointer: 0,
-			loadedPages: []
+			loadedPages: [],
+			failures: 0
 		};
+
+		this._snapshots[process.id] = [];
 
 		this.requests.map(request => {
 			if (request.process == process.id) {
@@ -667,4 +710,4 @@ class PaginationSimulator extends Simulator {
 }
 
 export { PaginationSimulator };
-export type { Process, Request, ProcessTable, ProcessEntry };
+export type { Process, Request, ProcessTable, ProcessEntry, ProcessTableSnapshot };

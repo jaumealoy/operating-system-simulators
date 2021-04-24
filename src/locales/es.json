@@ -169,7 +169,7 @@
             "frame": "Marco",
             "processes_pages": "Páginas y procesos",
             "page_failures": "Fallos de página",
-            "process_name": "Process {{name}}",
+            "process_name": "Proceso {{name}}",
             "page": "Página",
             "last_access": "Último acceso",
             "select_algorithm": "Selecciona un algoritmo o más para utilizar la vista comparativa",

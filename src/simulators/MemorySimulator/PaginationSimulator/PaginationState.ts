@@ -1,4 +1,4 @@
-import { ProcessTable, Request } from "./PaginationSimulator";
+import { ProcessTable, Request, ProcessTableSnapshot } from "./PaginationSimulator";
 import State from "../../State";
 
 interface AlgorithmStepData {
@@ -14,6 +14,7 @@ interface SimulatorStatusData {
 	cycle: number;
 	pageFailures: number;
 	processTable: ProcessTable;
+	snapshots: {[key: string]: ProcessTableSnapshot[]};
 };
 
 class PaginationState extends State {
@@ -24,6 +25,7 @@ class PaginationState extends State {
 	private _counter: number;
 	private _pageFailures: number;
 	private _processTable: ProcessTable;
+	private _snapshots: {[key: string]: ProcessTableSnapshot[]};
 
 	// algorithm steps
 	private _stepData: AlgorithmStepData;
@@ -38,16 +40,15 @@ class PaginationState extends State {
 		this._counter = simulatorData.cycle;
 		this._pageFailures = simulatorData.pageFailures;
 
+		let snaphshots: {[key: string]: ProcessTableSnapshot[]} = {};
+		Object.entries(simulatorData.snapshots).map(([key, value]) => {
+			snaphshots[key] = [...value];
+		});
+		this._snapshots = snaphshots;
+
 		// process table is a bit trickier, we cannot make a direct shallow copy
 		// data such as bits are inside the ProcessPage object, we must deep copy it!
-		this._processTable = {};
-		Object.entries(simulatorData.processTable).map(([key, value]) => {
-			this._processTable[key] = {
-				pages: value.pages.map(page => ({ ...page, data: {...page.data} })),
-				loadedPages: [...value.loadedPages],
-				pointer: value.pointer
-			}
-		});
+		this._processTable = PaginationState.copyProcessTable(simulatorData.processTable);
 
 		// initialize step data
 		this._stepData = stepData;
@@ -60,12 +61,27 @@ class PaginationState extends State {
 			pages: this._pages,
 			cycle: this._counter,
 			pageFailures: this._pageFailures,
-			processTable: this._processTable
+			processTable: this._processTable,
+			snapshots: this._snapshots
 		};
 	}
 
 	get stepData() : AlgorithmStepData {
 		return this._stepData;
+	}
+
+	public static copyProcessTable(table: ProcessTable) : ProcessTable {
+		let processTable: ProcessTable = {};
+		Object.entries(table).map(([key, value]) => {
+			processTable[key] = {
+				pages: value.pages.map(page => ({ ...page, data: {...page.data} })),
+				loadedPages: [...value.loadedPages],
+				pointer: value.pointer,
+				failures: value.failures
+			}
+		});
+
+		return processTable;
 	}
 }
 

@@ -2,11 +2,13 @@ import { Manager } from "./../../Manager";
 import { 
 	PaginationSimulator, 
 	ProcessTable,
-	Process, Request
+	Process, Request,
+	ProcessTableSnapshot
 } from "./PaginationSimulator";
 
 interface PaginationResult {
 	processTable: ProcessTable;
+	snapshots: {[key: string]: ProcessTableSnapshot[]};
 	memory: number[];
 	pages: number[];
 	pageFailures: number;
@@ -57,6 +59,13 @@ class PaginationManager extends Manager<PaginationSimulator> {
 		// clear manager lists
 		this._processes = [];
 		this._requests = [];
+
+		this.invokeChangeCallback();
+	}
+
+	public reset() : void {
+		super.reset();
+		this.invokeChangeCallback();
 	}
 
 	public addProcess(process: Process) : void {
@@ -154,6 +163,7 @@ class PaginationManager extends Manager<PaginationSimulator> {
 	private createEmptyResults() : PaginationResult {
 		return {
 			processTable: {},
+			snapshots: {},
 			memory: [],
 			pages: [],
 			pageFailures: 0,
@@ -180,6 +190,7 @@ class PaginationManager extends Manager<PaginationSimulator> {
 
 		simulator.onPageFailuresChange = (value) => ref.pageFailures = value;
 		simulator.onCurrentCycleChange = (value) => ref.currentCycle = value; 
+		simulator.onSnapshotsChange = (value) => ref.snapshots = value;
 	}
 
 	private invokeChangeCallback() : void {

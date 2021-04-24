@@ -349,19 +349,21 @@ h3 {
 }
 
 .process-frames {
-    display: flex;
+    display: inline-flex;
     flex-shrink: 1;
-    flex-direction: row;
+    flex-direction: column;
     border: 1px solid gray;
 }
 
 .process-frames .frame {
-    border-right: 1px solid gray;
+    display: flex;
+    flex-direction: row;
     flex-grow: 1;
+    border-bottom: 1px solid gray;
 }
 
 .process-frames .frame:last-child {
-    border-right: none;
+    border-bottom: none;
 }
 
 .process-frames .frame .frame-content {
@@ -377,17 +379,25 @@ h3 {
 }
 
 .process-frames .frame .frame-index {
+    display: flex;
     font-size: 10px;
-    padding: 0;
-    border-top: 1px solid gray;
-    margin-top: -10px;
+    padding: 0 5px;
+    min-width: 20px;
+    border-right: 1px solid gray;
     text-align: center;
+    align-items: center;
 }
 
-.logo-uib {
-    display: inline-block;
-    background: url("../../assets/images/uib_logo.svg");
-    background-size: 100% 100%;
-    width: 32px;
-    height: 32px;
+.process-snapshot {
+    display: inline-flex;
+    flex-direction: column;
+    width: auto;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+small.foot-note {
+    color:rgba(0, 0, 0, 0.45);
+    font-size: 10px;
 }

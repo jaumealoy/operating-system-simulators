@@ -21,6 +21,27 @@ const EXAMPLES: PaginationExample[] = [
 	{
 		frames: 3,
 		processes: [
+			{ id: "A", frames: 3 }
+		],
+		requests: [
+			{ process: "A", page: 0, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 0, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 0, modified: false },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 4, modified: false }
+		]
+	},
+
+	{
+		frames: 3,
+		processes: [
 			{ id: "A", frames: 3 },
 			{ id: "B", frames: 4 },
 			{ id: "C", frames: 2 },
@@ -73,18 +94,18 @@ const EXAMPLES: PaginationExample[] = [
 			{ id: "A", frames: 3 }
 		],
 		requests: [
-			{ process: "A", page: 1, modified: false },
 			{ process: "A", page: 2, modified: false },
-			{ process: "A", page: 1, modified: true },
-			{ process: "A", page: 0, modified: false },
-			{ process: "A", page: 4, modified: true },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 2, modified: true },
 			{ process: "A", page: 1, modified: false },
-			{ process: "A", page: 3, modified: true },
-			{ process: "A", page: 4, modified: true },
+			{ process: "A", page: 5, modified: true },
 			{ process: "A", page: 2, modified: false },
-			{ process: "A", page: 1, modified: true },
-			{ process: "A", page: 4, modified: false },
-			{ process: "A", page: 1, modified: true },
+			{ process: "A", page: 4, modified: true },
+			{ process: "A", page: 5, modified: true },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 2, modified: true },
+			{ process: "A", page: 5, modified: false },
+			{ process: "A", page: 2, modified: true },
 		]
 	},
 
@@ -254,10 +275,11 @@ function PaginationPage(props: PaginationPageProps) {
 			</Row>
 
 			{/* Simulator results */}
-			{props.simpleView && (selectedAlgorithm in results) &&
+			{props.simpleView && (selectedAlgorithm in results) && processes.length > 0 && 
 			<Row>
 				<h2>{t("common.simulator_results")}</h2>
 				<Col md={4}>
+					<h3>{t("memory.allocation.memory")}</h3>
 					<MemoryChart
 						processes={processes.map(p => p.id)}
 						capacity={processes.map(p => p.frames).reduceRight((a, b) => a + b, 0)}
@@ -298,84 +320,115 @@ function PaginationPage(props: PaginationPageProps) {
 						
 						</Col>
 					</Row>
-					<Row className="scrollable-x">
+					<Row>
 						{Object.entries(results[selectedAlgorithm].processTable).map(([key, value]) => 
-							<Col key={`table_${key}`} md={4}>
-								<h3>{t("memory.pagination.process_name", { name: key })}</h3>
-
-								{processes.map(process => {
-									if (process.id == key) {
-										return (
-											<ProcessFrameTable 
-												process={process}
-												entry={value}
-												showPointer={["nru", "clock"].indexOf(selectedAlgorithm) >= 0} />
-											);
-									}
-								})}
-
-								<table className="table">
-									<thead>
-										<tr>
-											<th>{t("memory.pagination.page")}</th>
-											<th>{t("memory.pagination.frame")}</th>
-											{selectedAlgorithm == "fifo" && <th>{t("cpu.arrival")}</th>}
-											{selectedAlgorithm == "lru" && <th>{t("memory.pagination.last_access")}</th>}
-											{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 && <th>A</th>}
-											{selectedAlgorithm == "nru" && <th>M</th>}
-										</tr>
-									</thead>
-
-									<tbody>
-										{value.pages.map((entry, index) => 
-											<tr key={`entry_${key}_${index	}`}>
-												<td>
-													{selectedAlgorithm == "clock" && 
-														index == value.loadedPages[value.pointer] &&
-														"-> "
-													}
-													{index}
-												</td>
-												<td>
-													{entry.data.frame < 0 ?
-														"-"
-														:
-														entry.data.frame
-													}
-												</td>
-												{selectedAlgorithm == "fifo" &&
-													<td>
-														{entry.data.frame < 0 ?
-															"-"
-															:
-															entry.arrival
-														}
-													</td>
-												}
-												{selectedAlgorithm == "lru" &&
-													<td>
-														{entry.data.frame < 0 ?
-															"-"
-															:
-															entry.lastUse
-														}
-													</td>
-												}
-												{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 &&
-													<td>
-														{entry.data.accessBit ? "1" : "0"}
-													</td>
-												}
-												{selectedAlgorithm == "nru" &&
-													<td>
-														{entry.data.modifiedBit ? "1" : "0"}
-													</td>
-												}
+							<Row>
+								<Col md={4}>
+									<table className="table">
+										<thead>
+											<tr>
+												<th>{t("memory.pagination.page")}</th>
+												<th>{t("memory.pagination.frame")}</th>
+												{selectedAlgorithm == "fifo" && <th>{t("cpu.arrival")}</th>}
+												{selectedAlgorithm == "lru" && <th>{t("memory.pagination.last_access")}</th>}
+												{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 && <th>A<sup>1</sup></th>}
+												{selectedAlgorithm == "nru" && <th>M<sup>2</sup></th>}
 											</tr>
-										)}
-									</tbody>
-								</table>
-							</Col>
+										</thead>
+
+										<tbody>
+											{value.pages.map((entry, index) => 
+												<tr key={`entry_${key}_${index	}`}>
+													<td>
+														{selectedAlgorithm == "clock" && 
+															index == value.loadedPages[value.pointer] &&
+															"-> "
+														}
+														{index}
+													</td>
+													<td>
+														{entry.data.frame < 0 ?
+															"-"
+															:
+															entry.data.frame
+														}
+													</td>
+													{selectedAlgorithm == "fifo" &&
+														<td>
+															{entry.data.frame < 0 ?
+																"-"
+																:
+																entry.arrival
+															}
+														</td>
+													}
+													{selectedAlgorithm == "lru" &&
+														<td>
+															{entry.data.frame < 0 ?
+																"-"
+																:
+																entry.lastUse
+															}
+														</td>
+													}
+													{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 &&
+														<td>
+															{entry.data.accessBit ? "1" : "0"}
+														</td>
+													}
+													{selectedAlgorithm == "nru" &&
+														<td>
+															{entry.data.modifiedBit ? "1" : "0"}
+														</td>
+													}
+												</tr>
+											)}
+										</tbody>
+									</table>
+								</Col>
+
+								<Col key={`table_${key}`} md={8}>
+									<h3>{t("memory.pagination.process_name", { name: key })}</h3>
+									{t("memory.pagination.page_failures")}: {value.failures}
+									
+									<Row className="scrollable-x">
+										{processes.map(process => {
+											if (process.id == key) {
+												let moreRequestsFromThisProcess: boolean = false;
+												requests.slice(results[selectedAlgorithm].currentCycle).map(request => {
+													moreRequestsFromThisProcess = moreRequestsFromThisProcess || (key == request.process);
+												});
+
+												return (
+													<>
+														{(key in results[selectedAlgorithm].snapshots) &&
+															results[selectedAlgorithm].snapshots[key].map(snapshot =>
+																<ProcessFrameTable 
+																	process={process}
+																	entry={snapshot.table}
+																	request={snapshot.request}
+																	pageFailure={snapshot.pageFailure}
+																	showPointer={["nru", "clock"].indexOf(selectedAlgorithm) >= 0}
+																	accessBit={["nru", "clock"].indexOf(selectedAlgorithm) >= 0}
+																	modifiedBit={selectedAlgorithm == "nru"} />
+															)
+														}
+
+														{moreRequestsFromThisProcess &&
+															<ProcessFrameTable 
+																process={process}
+																entry={value}
+																showPointer={["nru", "clock"].indexOf(selectedAlgorithm) >= 0}
+																accessBit={["nru", "clock"].indexOf(selectedAlgorithm) >= 0}
+																modifiedBit={selectedAlgorithm == "nru"} />
+														}
+													</>
+												);
+											}
+										})}
+									</Row>
+								</Col>
+							</Row>
 						)}
 					</Row>
 				</Col>
@@ -389,7 +442,7 @@ function PaginationPage(props: PaginationPageProps) {
 				<Row className="scrollable-x">
 				{selectedAlgorithms.map((algorithm) => 
 					(algorithm in results) &&
-					<Col md={4}>
+					<Col md={6}>
 						<h3>{t(`memory.pagination.algorithms.${algorithm}`)}</h3>
 
 						<table className="table">
@@ -414,38 +467,69 @@ function PaginationPage(props: PaginationPageProps) {
 						</table>
 
 						{processes.map(process => 
-							Object.entries(results[algorithm].processTable).map(([key, value]) => {
-								if (key == process.id) {
-									return (
-										<div className="mb-1">
-											<div>{key}</div>
-											<ProcessFrameTable 
-												process={process}
-												entry={value}
-												showPointer={["nru", "clock"].indexOf(algorithm) >= 0}	/>
-										</div>
-									)
-								}
-							})
-						)}
+							<>
+								
+								{Object.entries(results[algorithm].processTable).map(([key, value]) => {
+									if (key == process.id) {
+										let moreRequestsFromThisProcess: boolean = false;
+										requests.slice(results[algorithm].currentCycle).map(request => {
+											moreRequestsFromThisProcess = moreRequestsFromThisProcess || (key == request.process);
+										});
 
-						<MemoryChart
-							processes={processes.map(p => p.id)}
-							capacity={processes.map(p => p.frames).reduceRight((a, b) => a + b, 0)}
-							data={results[algorithm].memory}
-							groupBlocks={false}
-							customBlockText={(slot) => {
-								if (results[algorithm].memory[slot] != undefined) {
-									return processes[results[algorithm].memory[slot] - 1].id + " - " + results[algorithm].pages[slot];
-								}
+										return (
+											<>
+												<p>
+													{key} <br/>
+													{t("memory.pagination.page_failures")}: {value.failures}
+												</p>
+												<Row className="scrollable-x">
+												{(key in results[algorithm].snapshots) &&
+													results[algorithm].snapshots[key].map(snapshot =>
+														<ProcessFrameTable 
+															process={process}
+															entry={snapshot.table}
+															request={snapshot.request}
+															pageFailure={snapshot.pageFailure}
+															showPointer={["nru", "clock"].indexOf(algorithm) >= 0}
+															accessBit={["nru", "clock"].indexOf(algorithm) >= 0}
+															modifiedBit={algorithm == "nru"} />
+													)
+												}
 
-								return "";
-							}} />
-						
+												{moreRequestsFromThisProcess &&
+													<ProcessFrameTable 
+														process={process}
+														entry={value}
+														showPointer={["nru", "clock"].indexOf(algorithm) >= 0}
+														accessBit={["nru", "clock"].indexOf(algorithm) >= 0}
+														modifiedBit={algorithm == "nru"} />
+												}
+												</Row>
+											</>
+										);
+									}
+								})}
+							</>
+						)}						
 					</Col>
 				)}
 				</Row>
 			</Row>
+			}
+
+			{props.simpleView && ["nru", "clock"].indexOf(selectedAlgorithm) >= 0 &&
+				<small className="foot-note">
+					<sup>1</sup> Bit de acceso o referencia
+				</small>	
+			}
+
+			{(props.simpleView && selectedAlgorithm == "nru") && 
+				<>
+					<br />
+					<small className="foot-note">
+						<sup>2</sup> Bit de modificació o dirty bit
+					</small>	
+				</>
 			}
 
 			<AlgorithmModal />

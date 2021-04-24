@@ -137,6 +137,7 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 
 			if (!manager.current.hasNextStep()) {
 				setStarted(false);
+				setRunning(false);
 			}
 		}
 	};
