@@ -339,11 +339,7 @@ function PaginationPage(props: PaginationPageProps) {
 										<tbody>
 											{value.pages.map((entry, index) => 
 												<tr key={`entry_${key}_${index	}`}>
-													<td>
-														{selectedAlgorithm == "clock" && 
-															index == value.loadedPages[value.pointer] &&
-															"-> "
-														}
+													<td className="cell-border-right">
 														{index}
 													</td>
 													<td>
