@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { BsListOl } from "react-icons/bs";
 import { 
 	PaginationSimulator, 
@@ -260,6 +260,15 @@ const usePaginationSimulator = (isSimpleView: boolean) => {
 			alert("Invalid save file");
 		}
 	};
+
+	// auto scroll to the right
+	useLayoutEffect(() => {
+		let elements = document.getElementsByClassName("auto-scroll-end");
+		
+		for (let i = 0; i < elements.length; i++) {
+			elements[i].scrollLeft = elements[i].scrollWidth;
+		}
+	}, [results]);
 
 	return {
 		selectedAlgorithm, selectedAlgorithms, selectAlgorithm,

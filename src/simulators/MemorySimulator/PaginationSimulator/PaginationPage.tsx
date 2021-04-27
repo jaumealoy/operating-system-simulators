@@ -327,7 +327,7 @@ function PaginationPage(props: PaginationPageProps) {
 									<table className="table">
 										<thead>
 											<tr>
-												<th>{t("memory.pagination.page")}</th>
+												<th className="text-end border-bottom-0">{t("memory.pagination.page")}</th>
 												<th>{t("memory.pagination.frame")}</th>
 												{selectedAlgorithm == "fifo" && <th>{t("cpu.arrival")}</th>}
 												{selectedAlgorithm == "lru" && <th>{t("memory.pagination.last_access")}</th>}
@@ -339,7 +339,7 @@ function PaginationPage(props: PaginationPageProps) {
 										<tbody>
 											{value.pages.map((entry, index) => 
 												<tr key={`entry_${key}_${index	}`}>
-													<td className="cell-border-right">
+													<td className="cell-border-right text-end border-bottom-0">
 														{index}
 													</td>
 													<td>
@@ -387,7 +387,7 @@ function PaginationPage(props: PaginationPageProps) {
 									<h3>{t("memory.pagination.process_name", { name: key })}</h3>
 									{t("memory.pagination.page_failures")}: {value.failures}
 									
-									<Row className="scrollable-x">
+									<Row className="scrollable-x auto-scroll-end">
 										{processes.map(process => {
 											if (process.id == key) {
 												let moreRequestsFromThisProcess: boolean = false;
@@ -478,7 +478,7 @@ function PaginationPage(props: PaginationPageProps) {
 													{key} <br/>
 													{t("memory.pagination.page_failures")}: {value.failures}
 												</p>
-												<Row className="scrollable-x">
+												<Row className="scrollable-x auto-scroll-end">
 												{(key in results[algorithm].snapshots) &&
 													results[algorithm].snapshots[key].map(snapshot =>
 														<ProcessFrameTable 

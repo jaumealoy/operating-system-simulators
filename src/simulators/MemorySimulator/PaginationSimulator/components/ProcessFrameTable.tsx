@@ -62,10 +62,10 @@ function ProcessFrameTable(props: ProcessFrameTable) {
 				{childs}
 			</div>
 			<span>
-				{(props.pageFailure != undefined && props.pageFailure > 0) ?
+				{(props.pageFailure != undefined && (props.pageFailure & 0b100) > 0) ?
 					<>
-						F
-						{props.modifiedBit && props.pageFailure > 1 && <sup>*</sup>} 
+						{((props.pageFailure & 0b01) == 0) ? "f" : "F"}
+						{props.modifiedBit && ((props.pageFailure & 0b10) > 0) && <sup>*</sup>} 
 					</>
 					:
 					<>&nbsp;</>

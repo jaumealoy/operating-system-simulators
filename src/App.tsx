@@ -4,7 +4,8 @@ import './App.css';
 import Menu from './components/Menu';
 
 import { 
-	BrowserRouter as Router, 
+	HashRouter as Router,
+	//BrowserRouter as Router, 
 	Route, 
 	Switch 
 } from "react-router-dom"; 

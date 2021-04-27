@@ -97,12 +97,15 @@ function MemoryChart(props: MemoryChartProps) {
 			canvas.rect(MEMORY_WIDTH, HEIGHT)
 				  .move(extraWidth, BORDER_WIDTH + ARROW_SIZE / 2)
 				  .fill("transparent")
-				  .stroke({ color: "black", width: BORDER_WIDTH })
+				  .stroke({ color: "black", width: BORDER_WIDTH });
 
+			// hack to align different memories in comparaison view when one has a pointer
+			canvas.rect(1, ARROW_SIZE).fill("transparent");
+			
 			// draw blocks, pointers and groups
 			let y = (logicalPosition: number) : number => 
 				BORDER_WIDTH + 
-				ARROW_SIZE / 2 + 
+				ARROW_SIZE / 2 +
 				(logicalPosition / props.capacity) * HEIGHT;
 
 			let pattern = chart.current.pattern(10, 10, (add) => {
@@ -180,6 +183,26 @@ function MemoryChart(props: MemoryChartProps) {
 				}
 
 				extraWidth += maxTextWidth;
+			}
+
+
+			// show legend if necessary
+			let fragmentation: boolean = false;
+			for (let i = 0; i < props.blocks.length && !fragmentation; i++) {
+				fragmentation = props.blocks[i].type < 0;
+			}
+
+			if (fragmentation) {
+				let x = BORDER_WIDTH;
+				let y = canvas.height() + BORDER_WIDTH * 4 + 10;
+
+				canvas.rect(20, 20)
+					  .stroke({ color: "black", width: BORDER_WIDTH })
+					  .fill(pattern)
+					  .move(x, y);
+
+				canvas.text("Fragmentación interna")
+					  .move(x + 30, y);
 			}
 
 			chart.current.size(canvas.width() + extraWidth + BORDER_WIDTH, canvas.height() + BORDER_WIDTH * 2 + 100);

@@ -200,6 +200,7 @@ const useCPUSimulator = () => {
 	const stop = () => {
 		manager.current.reset();
 		setStarted(false);
+		setRunning(false);
 	};
 
 	const reset = () => {

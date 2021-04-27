@@ -306,6 +306,8 @@ class PaginationSimulator extends Simulator {
 				// is this page loaded?
 				let loaded: boolean = pageTable.pages[request.page].data.frame >= 0;
 				let requiresWrite: boolean = false;
+
+				let pageFailureBits: number = 0;
 				
 				if (loaded) {
 					// this page is loaded, do nothing
@@ -337,13 +339,16 @@ class PaginationSimulator extends Simulator {
 						pageTable.pages[replacedPage].data.frame = -1;
 						pageTable.pages[replacedPage].arrival = -1;
 
+						pageFailureBits = 0b101;
 						if (pageTable.pages[replacedPage].data.modifiedBit) {
 							requiresWrite = true;
+							pageFailureBits = pageFailureBits | 0b010;
 						}
 
 						pageTable.pages[request.page].data.frame = frame;
 						pageTable.pages[request.page].arrival = this._counter;
 						this._pages[frame] = request.page;
+
 					} else {
 						// we could allocate a new frame as this process hasn't reached its limit
 						let page: ProcessPageWrap = pageTable.pages[request.page];
@@ -353,6 +358,8 @@ class PaginationSimulator extends Simulator {
 
 						// add a new page to the loaded pages
 						pageTable.loadedPages.push(request.page);
+
+						pageFailureBits = 0b100;
 					}
 
 					// this is a page fault
@@ -395,7 +402,7 @@ class PaginationSimulator extends Simulator {
 					table: tableSnapshot,
 					write: false,
 					request: request,
-					pageFailure: (loaded ? 0 : (requiresWrite ? 2 : 1))
+					pageFailure: pageFailureBits
 				};
 
 				this._snapshots[request.process].push(snapshot);
@@ -419,9 +426,11 @@ class PaginationSimulator extends Simulator {
 	}
 
 	private Optimal(request: Request) : number {
+		// loadedPages indicates for each page when the page will be used
 		let loadedPages: {[key: number]: number} = {};
 		for (let i = 0; i < this._processTable[request.process].pages.length; i++) {
 			if (this._processTable[request.process].pages[i].data.frame >= 0) {
+				// mark the page as it will not be used in the future
 				loadedPages[i] = this.requests.length + 1;
 			}
 		}
@@ -436,10 +445,13 @@ class PaginationSimulator extends Simulator {
 
 		let max: number = -1;
 		let maxUsage: number = -1;
+		let maxFrame: number = -1;
 		Object.entries(loadedPages).map(([page, nextUsage]) => {
-			if (nextUsage > maxUsage) {
+			if (nextUsage > maxUsage 
+				|| (nextUsage == maxUsage && this._processTable[request.process].loadedPages.indexOf(parseInt(page)) < maxFrame)) {
 				max = parseInt(page);
 				maxUsage = nextUsage;
+				maxFrame = this._processTable[request.process].loadedPages.indexOf(parseInt(page));
 			}
 		});
 

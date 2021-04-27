@@ -345,8 +345,13 @@ class MemorySimulator extends Simulator {
 
 					let process: ProcessWrap = this.queues.incoming[i];
 					process.start = this._currentCycle;
-					process.blockBegin = block.start;
-					process.blockEnd = block.start + block.size - 1;
+					process.blockBegin = processBlock.start;
+
+					if (this._algorithm == "budyd") {
+
+					} else {
+						process.blockEnd = block.start + block.size - 1;
+					}
 
 					this.queues.allocated.push(process);
 					this.queues.incoming.splice(i, 1);
@@ -410,8 +415,6 @@ class MemorySimulator extends Simulator {
 	private NextFit(process: Process) : MemoryBlock | null {
 		let block: MemoryBlock | null = null;
 
-		console.log("Memory blocks: ", this._memory);
-
 		let displacement: number = 0;
 		while (displacement < this._capacity && block == null) {
 			// find the block where the pointer is pointing
@@ -422,10 +425,7 @@ class MemorySimulator extends Simulator {
 				index++;
 			}
 
-			console.log("Pointer is pointing to block ", index)
-
 			let actualSize: number = this._memory[index].size + this._memory[index].start - this._lastSearch + 1;
-			console.log(`actual size is ${actualSize} and process needs are ${process.size}`)
 
 			// check if this block has enough space for this process
 			if (this._memory[index].type == 0 && process.size < actualSize) {
@@ -433,7 +433,6 @@ class MemorySimulator extends Simulator {
 				if (this._memory[index].start == this._lastSearch) {
 					// we have found a valid block
 					block = this._memory[index];
-					console.log("Next fit has found a full block");
 				} else {
 					let firstBlock: MemoryBlock = {
 						start: this._memory[index].start,
@@ -469,10 +468,6 @@ class MemorySimulator extends Simulator {
 			i++;
 		}
 
-		console.log("Found suitable block", i, this._memory[i])
-
-		console.log(this._memory, this._memoryGroups)
-
 		if (i < this._memory.length) {
 			// find the equivalent memory group
 			let sum: number = 0;
@@ -481,8 +476,6 @@ class MemorySimulator extends Simulator {
 				sum += this._memoryGroups[j];
 				j++;
 			}
-
-			console.log("This block is linked to memory group " + j)
 
 			// once we have found a suitable block, we must shrink it to the minimum size possible
 			while ((this._memory[i].size >> 1) >= process.size) {

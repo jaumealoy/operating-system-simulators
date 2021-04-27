@@ -139,12 +139,12 @@
         "pagination_menu": "Paginación",
 
         "allocation": {
-            "capacity": "Capacidad",
+            "capacity": "Capacidad (KB)",
             "current_cycle": "Ciclo actual:",
             "next_requests": "Próximas peticiones:",
             "process": "Proceso",
             "duration": "Duración",
-            "requested_memory": "Memoria solicitada",
+            "requested_memory": "Memoria solicitada (KB)",
             "permanent": "permanente",
             "not_enough_memory": "No hay memoria suficiente",
             "no_more_requests": "No hay más peticiones de memoria",
