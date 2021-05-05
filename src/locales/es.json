@@ -144,6 +144,7 @@
             "next_requests": "Próximas peticiones:",
             "process": "Proceso",
             "duration": "Duración",
+            "end": "Finalización",
             "requested_memory": "Memoria solicitada (KB)",
             "permanent": "permanente",
             "not_enough_memory": "No hay memoria suficiente",

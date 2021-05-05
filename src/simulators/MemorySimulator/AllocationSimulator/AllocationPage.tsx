@@ -45,13 +45,15 @@ const EXAMPLES: AllocationExample[] = [
 		]
 	},
 
-	{ //
-		capacity: 1024,
+	{
+		capacity: 32,
 		processes: [
-			{ id: "A", size: 70, arrival: 0, duration: 1 },
-			{ id: "B", size: 35, arrival: 0, duration: 3 },
-			{ id: "C", size: 80, arrival: 0, duration: 5 },
-			{ id: "D", size: 60, arrival: 1, duration: 4 },
+			{ id: "P1", size: 6, arrival: 0, duration: 5 },
+			{ id: "P2", size: 6, arrival: 1, duration: 3 },
+			{ id: "P3", size: 8, arrival: 2, duration: 5 },
+			{ id: "P4", size: 7, arrival: 3, duration: 1 },
+			{ id: "P5", size: 7, arrival: 4, duration: 2 },
+			{ id: "P6", size: 5, arrival: 5, duration: 2 }
 		]
 	}
 ];
@@ -323,8 +325,32 @@ function AllocationPage(props: AllocationPageProps) {
 									}
 									groups={algorithm == "buddy" ? results[algorithm].memoryGroups : undefined}
 									pointer={(algorithm == "next_fit" ? results[algorithm].nextPointer : undefined)}
-									showEmptyBlocks={(algorithm != "buddy") ? true : true}
+									showEmptyBlocks={(algorithm != "buddy") ? true : false}
 									/>
+
+								
+
+								{processes.filter(p => (results[algorithm].currentCycle >= p.arrival) && (p.arrival + p.duration) >= results[algorithm].currentCycle).length > 0 &&
+								<table className="table">
+									<thead>
+										<tr>
+											<th>{t("memory.allocation.process")}</th>
+											<th>{t("memory.allocation.end")}</th>
+										</tr>
+									</thead>
+
+									<tbody>
+										{processes.filter(p => (results[algorithm].currentCycle >= p.arrival) && (p.arrival + p.duration) >= results[algorithm].currentCycle)
+										.map(p => 
+											<tr>
+												<td>{p.id}</td>
+												<td>{p.arrival + p.duration}</td>
+											</tr>
+										)}
+									</tbody>
+									
+								</table>
+								}
 							</Col>
 						)}
 					</Row>

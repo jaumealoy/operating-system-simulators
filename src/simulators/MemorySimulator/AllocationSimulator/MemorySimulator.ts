@@ -353,8 +353,6 @@ class MemorySimulator extends Simulator {
 						process.blockEnd = block.start + processBlock.size - 1;
 					}
 
-					console.log("Hey ", process)
-
 					this.queues.allocated.push(process);
 					this.queues.incoming.splice(i, 1);
 					this._allocationHistory.push(process);
