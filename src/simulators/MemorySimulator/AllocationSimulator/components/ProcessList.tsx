@@ -26,6 +26,7 @@ function ProcessList(props: ProcessListProps) {
 						<tr>
 							<th>{t("cpu.name")}</th>
 							<th>{t("cpu.arrival")}</th>
+							<th>{t("memory.allocation.duration")}</th>
 							<th>{t("memory.allocation.memory")}</th>
 						</tr>
 					</thead>
@@ -44,6 +45,7 @@ function ProcessList(props: ProcessListProps) {
 									}
 								</td>
 								<td>{process.arrival}</td>
+								<td>{process.duration}</td>
 								<td>{process.size}</td>
 							</tr>
 						)}

@@ -218,7 +218,7 @@ function MemoryChart(props: MemoryChartProps) {
 					  .move(x + 30, y);
 			}
 
-			chart.current.size(canvas.width() + extraWidth + BORDER_WIDTH, canvas.height() + BORDER_WIDTH * 2 + 100);
+			chart.current.size(canvas.width() + extraWidth + BORDER_WIDTH, canvas.height() + BORDER_WIDTH * 2);
 
 			fitAvailableSize();
 		}
