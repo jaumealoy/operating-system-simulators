@@ -347,11 +347,13 @@ class MemorySimulator extends Simulator {
 					process.start = this._currentCycle;
 					process.blockBegin = processBlock.start;
 
-					if (this._algorithm == "budyd") {
-
-					} else {
+					if (this._algorithm == "buddy") {
 						process.blockEnd = block.start + block.size - 1;
+					} else {
+						process.blockEnd = block.start + processBlock.size - 1;
 					}
+
+					console.log("Hey ", process)
 
 					this.queues.allocated.push(process);
 					this.queues.incoming.splice(i, 1);

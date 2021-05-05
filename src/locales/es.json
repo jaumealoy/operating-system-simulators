@@ -135,7 +135,7 @@
     },
 
     "memory": {
-        "allocation_menu": "Asignación de memoria",
+        "allocation_menu": "Particiones variables",
         "pagination_menu": "Paginación",
 
         "allocation": {
@@ -151,7 +151,7 @@
             "no_requests_completed": "No se ha atendido ninguna petición de memoria",
             "no_requests_added": "No se han añadido peticiones.",
             "completed_requests": "Peticiones de memoria atendidas:",
-            "assigned_block": "Bloque asignado",
+            "assigned_block": "Partición asignada",
             "cycle": "Ciclo",
             "memory": "Memoria",
 

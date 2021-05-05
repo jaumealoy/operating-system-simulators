@@ -20,6 +20,7 @@ interface MemoryChartProps {
 	groups?: number[];
 	pointer?: number;
 	height?: number;
+	showEmptyBlocks?: boolean;
 }
 
 const PROCESS_COLORS: string[] = [
@@ -115,34 +116,46 @@ function MemoryChart(props: MemoryChartProps) {
 			});
 
 			for (let i = 0; i < props.blocks.length; i++) {
-				if (props.blocks[i].type == 0) continue;
+				if (props.blocks[i].type == 0) {
+					if (props.showEmptyBlocks) {
+						let start = props.blocks[i].start;
+						let blockSize: number = props.blocks[i].end - start;
 
-				let start = props.blocks[i].start;
-				let end = props.blocks[i].end;
-
-				let blockHeight: number = y(end) - y(start);
-
-				let block = canvas.rect(MEMORY_WIDTH, blockHeight)
-								  .stroke({ color: "black", width: BORDER_WIDTH })
-								  .move(BORDER_WIDTH, y(start));
-
-				if (props.blocks[i].type < 0) {
-					block.fill(pattern);
+						let availableHeight: number = y(props.blocks[i].end) - y(start);
+						if (availableHeight >= FONT_SIZE) {
+							let text: Text = canvas.text(blockSize.toString() + "KB").font({ size: FONT_SIZE });
+							text.move(MEMORY_WIDTH - 10 - text.length(), y(start));
+						}
+					}
 				} else {
-					block.fill(PROCESS_COLORS[(props.blocks[i].type - 1) % PROCESS_COLORS.length])
-				}
+					let start = props.blocks[i].start;
+					let end = props.blocks[i].end;
 
-				let text = props.blocks[i].text;
-				if (text != undefined) {
-					let element = canvas.text(text)
-										.fill("white")
-										.font({ size: FONT_SIZE })
-										.move(block.x() + BORDER_WIDTH * 4, block.y() + BORDER_WIDTH);
+					let blockHeight: number = y(end) - y(start);
 
-					if ((block.height() - BORDER_WIDTH) < FONT_SIZE) {
-						element.font({ size: block.height() / 1.75 })
+					let block = canvas.rect(MEMORY_WIDTH, blockHeight)
+									.stroke({ color: "black", width: BORDER_WIDTH })
+									.move(BORDER_WIDTH, y(start));
+
+					if (props.blocks[i].type < 0) {
+						block.fill(pattern);
+					} else {
+						block.fill(PROCESS_COLORS[(props.blocks[i].type - 1) % PROCESS_COLORS.length])
+					}
+
+					let text = props.blocks[i].text;
+					if (text != undefined) {
+						let element = canvas.text(text)
+											.fill("white")
+											.font({ size: FONT_SIZE })
+											.move(block.x() + BORDER_WIDTH * 4, block.y() + BORDER_WIDTH);
+
+						if ((block.height() - BORDER_WIDTH) < FONT_SIZE) {
+							element.font({ size: block.height() / 1.75 })
+						}
 					}
 				}
+
 			}
 
 			// pointer and groups	

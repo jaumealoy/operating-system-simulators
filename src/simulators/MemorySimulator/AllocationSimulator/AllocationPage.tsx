@@ -25,9 +25,9 @@ const EXAMPLES: AllocationExample[] = [
 		capacity: 830,
 		processes: [
 			{ id: "P1", size: 180, arrival: 0, duration: 0 },
-			{ id: "A", size: 400, arrival: 0, duration: 1 },
+			{ id: "P7", size: 400, arrival: 0, duration: 1 },
 			{ id: "P2", size: 100, arrival: 0, duration: 0 },
-			{ id: "B", size: 150, arrival: 0, duration: 1 },
+			{ id: "P8", size: 150, arrival: 0, duration: 1 },
 			{ id: "P4", size: 120, arrival: 2, duration: 0 },
 			{ id: "P5", size: 200, arrival: 2, duration: 0 },
 			{ id: "P6", size: 80, arrival: 2, duration: 0 }
@@ -201,6 +201,7 @@ function AllocationPage(props: AllocationPageProps) {
 									}
 									groups={selectedAlgorithm == "buddy" ? results[selectedAlgorithm].memoryGroups : undefined}
 									pointer={(selectedAlgorithm == "next_fit" ? results[selectedAlgorithm].nextPointer : undefined)}
+									showEmptyBlocks={(selectedAlgorithm != "buddy") ? true : false}
 									/>
 							</div>
 						</Col>
@@ -322,6 +323,7 @@ function AllocationPage(props: AllocationPageProps) {
 									}
 									groups={algorithm == "buddy" ? results[algorithm].memoryGroups : undefined}
 									pointer={(algorithm == "next_fit" ? results[algorithm].nextPointer : undefined)}
+									showEmptyBlocks={(algorithm != "buddy") ? true : true}
 									/>
 							</Col>
 						)}
