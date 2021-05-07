@@ -3,7 +3,9 @@ import React, { useEffect, useState, useRef, FormEvent, ChangeEvent } from "reac
 import { GiNextButton, GiPreviousButton, GiOpenFolder, GiPauseButton } from "react-icons/gi";
 import { BsFillStopFill, BsPlayFill, BsArrowCounterclockwise } from "react-icons/bs";
 import { MdSave } from "react-icons/md";
-import { FaFileUpload } from "react-icons/fa";
+import { IoIosHelpBuoy } from "react-icons/io";
+import Tour, { ReactourStep } from 'reactour'
+import useTutorial from "./../helpers/useTutorial";
 
 import { 
 	FormControl, 
@@ -13,7 +15,6 @@ import {
 } from "react-bootstrap";
 
 import useInterval from "./../helpers/useInterval";
-import { SaveFile } from "../simulators/Simulator";
 import { useTranslation } from "react-i18next";
 
 interface SimulatorControlProps {
@@ -114,6 +115,51 @@ function SimulatorControl(props: SimulatorControlProps) {
 			}
 		}
 	};
+
+	// tutorial steps
+	const STEPS: ReactourStep[] = [
+		{
+			selector: '[data-tut="control_bar_overview"]',
+			content: t("common.tutorial.control_bar_overview")
+		},
+
+		{
+			selector: '[data-tut="control_bar_reset"]',
+			content: t("common.tutorial.control_bar_reset")
+		},
+
+		{
+			selector: '[data-tut="control_bar_stop"]',
+			content: t("common.tutorial.control_bar_stop")
+		},
+
+		{
+			selector: '[data-tut="control_bar_previous_step"]',
+			content: t("common.tutorial.control_bar_previous_step")
+		},
+
+		{
+			selector: '[data-tut="control_bar_next_step"]',
+			content: t("common.tutorial.control_bar_next_step")
+		},
+
+		{
+			selector: '[data-tut="control_bar_play"]',
+			content: t("common.tutorial.control_bar_play")
+		},
+
+		{
+			selector: '[data-tut="control_bar_speed"]',
+			content: t("common.tutorial.control_bar_speed")
+		},
+
+		{
+			selector: '[data-tut="storage"]',
+			content: t("common.tutorial.storage")
+		}
+	];
+
+	const Tutorial = useTutorial("control_bar", STEPS.length, false);
 	
 	return (
 		<>
@@ -196,6 +242,17 @@ function SimulatorControl(props: SimulatorControlProps) {
 						onChange={onSpeedInputChange}
 						type="range"/>
 
+					<div className="float-right">
+						<OverlayTrigger
+							overlay={<Tooltip id="previous_step_btn_tooltip">{t("common.buttons.tutorial")}</Tooltip>}>
+							<button 
+								onClick={Tutorial.show}
+								className="control-button">
+								<IoIosHelpBuoy />
+							</button>
+						</OverlayTrigger>
+					</div>
+
 					<div
 						data-tut="storage" 
 						className="float-right">
@@ -257,6 +314,15 @@ function SimulatorControl(props: SimulatorControlProps) {
 					<a ref={downloadLink}></a>
 				</Modal.Body>
 			</Modal>
+
+			<Tour
+				steps={STEPS}
+				onAfterOpen={Tutorial.onOpen}
+				goToStep={Tutorial.step}
+				nextStep={Tutorial.nextStep}
+				prevStep={Tutorial.prevStep}
+				onRequestClose={Tutorial.close}
+				isOpen={Tutorial.visible} />
 		</>
 	);
 }

@@ -9,7 +9,7 @@ interface StepAction {
 	onFinish?: () => void;
 }
 
-const useTutorial = (simulator: string, maxSteps: number, actions?: {[key: number]: StepAction}) => {
+const useTutorial = (simulator: string, maxSteps: number, forceShow: boolean, actions?: {[key: number]: StepAction}) => {
 	// indicates whether the page tour is visible or not
 	const [visible, setVisible] = useState<boolean>(false);
 
@@ -24,7 +24,7 @@ const useTutorial = (simulator: string, maxSteps: number, actions?: {[key: numbe
 			setVisible(true);
 		} else {
 			let tutorials: string[] = JSON.parse(data);
-			if (tutorials.indexOf(simulator) < 0) {
+			if (tutorials.indexOf(simulator) < 0 && forceShow) {
 				// we haven't seen this tutorial before
 				setVisible(true);
 			}
@@ -58,6 +58,7 @@ const useTutorial = (simulator: string, maxSteps: number, actions?: {[key: numbe
 		if (step == (maxSteps - 1)) {
 			return;
 		}
+		console.log("Next step");
 
 		// fire callback functions
 		let previousStep: number = step;
@@ -113,11 +114,16 @@ const useTutorial = (simulator: string, maxSteps: number, actions?: {[key: numbe
 				fn();
 			}
 		}
-	}, [step])
+	}, [step]);
+
+	const onStepChange = (step: number) => {
+		console.log("hey")
+		setStep(step);
+	};
 
 	return {
 		visible, step, prevStep, nextStep, onOpen,
-		close, show
+		close, show, onStepChange
 	};
 };
 

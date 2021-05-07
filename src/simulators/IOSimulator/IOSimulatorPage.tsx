@@ -137,46 +137,6 @@ function IOSimulatorPage() {
 		},
 
 		{
-			selector: '[data-tut="control_bar_overview"]',
-			content: t("common.tutorial.control_bar_overview")
-		},
-
-		{
-			selector: '[data-tut="control_bar_reset"]',
-			content: t("common.tutorial.control_bar_reset")
-		},
-
-		{
-			selector: '[data-tut="control_bar_stop"]',
-			content: t("common.tutorial.control_bar_stop")
-		},
-
-		{
-			selector: '[data-tut="control_bar_previous_step"]',
-			content: t("common.tutorial.control_bar_previous_step")
-		},
-
-		{
-			selector: '[data-tut="control_bar_next_step"]',
-			content: t("common.tutorial.control_bar_next_step")
-		},
-
-		{
-			selector: '[data-tut="control_bar_play"]',
-			content: t("common.tutorial.control_bar_play")
-		},
-
-		{
-			selector: '[data-tut="control_bar_speed"]',
-			content: t("common.tutorial.control_bar_speed")
-		},
-
-		{
-			selector: '[data-tut="storage"]',
-			content: t("common.tutorial.storage")
-		},
-
-		{
 			selector: '[data-tut="repeat_tutorial"]',
 			content: t("common.tutorial.repeat_tutorial")
 		}
@@ -194,7 +154,7 @@ function IOSimulatorPage() {
 		}
 	};
 
-	const Tutorial = useTutorial("io", STEPS.length, STEP_ACTIONS);
+	const Tutorial = useTutorial("io", STEPS.length, true, STEP_ACTIONS);
 
 	const chartRequests = (algorithm: string) : number[] => {
 		let requests: number[] = [initialPosition];
@@ -681,6 +641,7 @@ function IOSimulatorPage() {
 				steps={STEPS}
 				onAfterOpen={Tutorial.onOpen}
 				goToStep={Tutorial.step}
+				getCurrentStep={Tutorial.onStepChange}
 				nextStep={Tutorial.nextStep}
 				prevStep={Tutorial.prevStep}
 				onRequestClose={Tutorial.close}

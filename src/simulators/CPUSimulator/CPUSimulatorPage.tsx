@@ -225,52 +225,15 @@ function CPUSimulatorPage() {
 		},
 
 		{
-			selector: '[data-tut="control_bar_overview"]',
-			content: t("common.tutorial.control_bar_overview")
-		},
-
-		{
-			selector: '[data-tut="control_bar_reset"]',
-			content: t("common.tutorial.control_bar_reset")
-		},
-
-		{
-			selector: '[data-tut="control_bar_stop"]',
-			content: t("common.tutorial.control_bar_stop")
-		},
-
-		{
-			selector: '[data-tut="control_bar_previous_step"]',
-			content: t("common.tutorial.control_bar_previous_step")
-		},
-
-		{
-			selector: '[data-tut="control_bar_next_step"]',
-			content: t("common.tutorial.control_bar_next_step")
-		},
-
-		{
-			selector: '[data-tut="control_bar_play"]',
-			content: t("common.tutorial.control_bar_play")
-		},
-
-		{
-			selector: '[data-tut="control_bar_speed"]',
-			content: t("common.tutorial.control_bar_speed")
-		},
-
-		{
-			selector: '[data-tut="storage"]',
-			content: t("common.tutorial.storage")
-		},
-
-		{
 			selector: '[data-tut="repeat_tutorial"]',
 			content: t("common.tutorial.repeat_tutorial")
 		}
 	];
 
-	const { visible, onOpen, close, step, nextStep, prevStep, show  } = useTutorial("cpu", STEPS.length, ACTIONS);
+	const { 
+		visible, onOpen, close, step, nextStep,
+		prevStep, show, onStepChange
+	} = useTutorial("cpu", STEPS.length, true, ACTIONS);
 
 
 	return (
@@ -598,6 +561,7 @@ function CPUSimulatorPage() {
 				steps={STEPS}
 				onAfterOpen={onOpen}
 				isOpen={visible}
+				getCurrentStep={onStepChange}
 				onRequestClose={close}
 				goToStep={step}
 				nextStep={nextStep}
