@@ -256,7 +256,12 @@ function IOSimulatorPage() {
 											value={maxTracks}
 											disabled={isStarted}
 											min={1} 
-											onChange={(e) => setMaxTracks(parseInt(e.target.value))}
+											max={1000}
+											onChange={(e) => { 
+												if (parseInt(e.target.value) <= 1000) {
+													setMaxTracks(parseInt(e.target.value));
+												}
+											}}
 											isInvalid={isFieldInvalid("maxTracks")}
 											type="number" />
 									</FormGroup>
