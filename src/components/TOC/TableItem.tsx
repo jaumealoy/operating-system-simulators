@@ -1,4 +1,4 @@
-import React from "react";
+import React, { MouseEvent } from "react";
 import { TOCItem } from "./TableOfContent";
 
 interface TableItemProps {
@@ -9,10 +9,20 @@ interface TableItemProps {
 }
 
 function TableItem(props: TableItemProps) {
+	let onClick = (e: MouseEvent, id: string) => {
+		e.preventDefault();
+
+		let element: HTMLElement | null = document.getElementById(id);
+
+		if (element != null) {
+			element.scrollIntoView({block: "start", behavior: "smooth" });
+		}
+	};
+
 	return (
 		<>
 			<li id={props.id}>
-				<a href={`#${props.target}`}>{props.title}</a>
+				<a href="#" onClick={(e: MouseEvent) => onClick(e, props.target)}>{props.title}</a>
 			</li>
 
 			{props.items.length > 0 &&

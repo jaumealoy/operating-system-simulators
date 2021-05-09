@@ -9,13 +9,10 @@ function CPUHelp() {
 
 	return (
 		<>
-			<h2>Planificación de CPU</h2>
-			<p>
-				El simulador de planificación de procesador permite observar el funcionamiento de los distintos 
-				algoritmos que se utilizan a la hora de poner en ejecución un proceso.
-			</p>
+			<h2>{t("help.cpu.title")}</h2>
+			<p>{t("help.cpu.text_1")}</p>
 
-			<h3>Algoritmos</h3>
+			<h3>{t("help.algorithms")}</h3>
 
 			<h4>{t("cpu.algorithms.fifo")}</h4>
 			<p>{t("help.modals.cpu.fifo.text_1")}</p>
@@ -59,88 +56,77 @@ function CPUHelp() {
 			</p>
 			<p>{t("help.modals.cpu.feedback.text_4")}</p>
 
-			<h3>Funcionamiento</h3>
-			<p>
-				En la página del simulador se puede consultar el tutorial específico del simulador que realiza 
-				una visita guiada a las distintas funcionalidades del simulador.
-			</p>
+			<h3>{t("help.working")}</h3>
+			<p>{t("help.cpu.text_2")}</p>
+
 			
-			<h4>Procesos</h4>
+			<h4>{t("cpu.processes")}</h4>
 			<p>
-				Para empezar a utilizar el simulador es necesario introducir, como mínimo, un proceso. Para introducir un proceso se debe indicar:
+				{t("help.cpu.working.text_1")}
 				<ul>
-					<li>El nombre del proceso, que debe ser único. Por defecto, se utilizará una letra disponible.</li>
-					<li>El ciclo de llegada.</li>
+					<li>{t("help.cpu.working.text_1_1")}</li>
+					<li>{t("help.cpu.working.text_1_2")}</li>
 					<li>
-						La duración del proceso y la distribución de sus ciclos. <br/>
-						Se puede especificar si el proceso estará bloqueado por E/S o utilizando el procesador en cada uno de los ciclos.
+						{t("help.cpu.working.text_1_3")}
+						<br/>
+						{t("help.cpu.working.text_1_4")}
 					</li>
 				</ul>
 			</p>
 
-			<p>También se puede cargar uno de los ejemplos del simulador, que carga una lista de procesos predeterminada.</p>
-			<p>
-				Una vez introducidos los procesos, estos se pueden eliminar de la lista de procesos. 
-				Para eliminarlos se debe presionar el botón situado al lado del nombre del proceso en la lista de procesos.
-			</p>
+			<p>{t("help.cpu.working.text_2")}</p>
+			<p>{t("help.cpu.working.text_3")}</p>
 
-			<h4>Vista simple y comparativa</h4>
-			<p>
-				Si se está usando la “Vista simple” del simulador se puede seleccionar un único algoritmo. 
-				Los algoritmos que requieran configuración adicional mostrarán un panel al lado de la selección del algoritmo una vez seleccionados.
-			</p>
+			<h4>{t("help.cpu.working.views_title")}</h4>
+			<p>{t("help.cpu.working.text_4")}</p>
 
 			<p>
-				En cambio, si se está usando la “Vista comparativa” se pueden seleccionar los distintos algoritmos al mismo tiempo. <br/>
-				En este modo, es necesario crear configuraciones de aquellos algoritmos que lo requieran. Para hacerlo, primero se debe marcar el algoritmo 
-				y presionar el botón “Añadir” que aparece bajo su nombre. A continuación, se mostrará el panel de configuración del algoritmo. 
-				Para guardar la configuración se debe presionar el botón “Añadir configuración”.
+				{t("help.cpu.working.text_5_1")}
+				<br/>
+				{t("help.cpu.working.text_5_2")}
 			</p>
 
-			<p>
-				Una vez iniciada la simulación no se pueden realizar cambios en la lista de procesos o características de los algoritmos. 
-				Para poder hacer cambios es necesario finalizar la simulación.
-			</p>
+			<p>{t("help.cpu.working.text_6")}</p>
 
-			<h3>Resultados de la simulación</h3>
+			<h3>{t("help.cpu.working.results_title")}</h3>
 			
-			<h4>Diagrama temporal</h4>
+			<h4>{t("help.cpu.working.time_chart_title")}</h4>
 			<p>
-				El diagrama temporal permite visualizar qué procesos se han ejecutado o han estado bloqueados por E/S en cada ciclo de la simulación.
+				{t("help.cpu.working.text_7_1")}
 				<div className="text-center"><img src={TimeChartImage}/></div>
-				Los distintos procesos se ordenan a lo largo del eje vertical según el orden de introducción en el simulador. 
-				El eje horizontal es el tiempo, expresado en ciclos de procesador.
+				{t("help.cpu.working.text_7_2")}
 			</p>
 
 			<p>
-				En función del estado del procesos en cada unos de los ciclos se representan de la siguiente manera:
+				{t("help.cpu.working.text_8_1")}
 				<ul>
-					<li>Con un color sólido, el proceso se estaba ejecutando en ese instante</li>
-					<li>Con un rectángulo rayado, el proceso estaba bloqueado por E/S en ese instante</li>
-					<li>Sin rectángulo, el proceso no estaba en ejecución ni bloqueado</li>
+					<li>{t("help.cpu.working.text_8_2")}</li>
+					<li>{t("help.cpu.working.text_8_3")}</li>
+					<li>{t("help.cpu.working.text_8_4")}</li>
 				</ul>
 			</p>
 
-			<h4 id="cpu_summary">Tabla resumen</h4>
+			<h4 id="cpu_summary">{t("help.cpu.working.summary_table_title")}</h4>
 			<p>
-				La tabla resumen de planificación muestra un resumen de cada uno de los procesos de la simulación. Para cada uno de ellos indica:
+				{t("help.cpu.working.text_9")}
 
 				<ul>
-					<li>El ciclo de llegada del proceso.</li>
-					<li>El ciclo de inicio del proceso, cuando ha empezado a recibir tiempo de procesador.</li>
-					<li>El ciclo de finalización del proceso.</li>
-					<li>El tiempo de respuesta, que es el tiempo entre la llegada de un proceso y su inicio.</li>
-					<li>El tiempo de servicio (T<sub>s</sub>).</li>
-					<li>El tiempo de retorno (T<sub>r</sub>), que es el tiempo de espera más el tiempo de ejecución.</li>
+					<li>{t("help.cpu.working.text_9_1")}</li>
+					<li>{t("help.cpu.working.text_9_2")}</li>
+					<li>{t("help.cpu.working.text_9_3")}</li>
+					<li>{t("help.cpu.working.text_9_4")}</li>
+					<li>{t("help.cpu.working.text_9_5")} (T<sub>s</sub>).</li>
+					<li>{t("help.cpu.working.text_9_6")} (T<sub>r</sub>), {t("help.cpu.working.text_9_7")}</li>
 					<li>
-						El tiempo de retardo normalizado calculado a partir de &nbsp;
+						{t("help.cpu.working.text_9_8")}
 						<Latex display={false}>
 							{"T_r / T_s"}
 						</Latex>
 					</li>
 				</ul>
 
-				De las columnas tiempo de retorno y tiempo de retorno normalizado se muestra la media de sus valores.
+				{t("help.cpu.working.text_10")}
+				
 			</p>
 		</>
 	)

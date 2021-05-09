@@ -18,7 +18,7 @@ function MemorySimulatorPage() {
 			<TopBar
 				simpleView={isSimpleView}
 				onChangeView={setSimpleView}>
-				<div className="float-right mr-2">
+				<div className="float-right mt-2 mt-md-0 mr-md-2">
 					<div className="btn-group">
 						<input 
 							type="radio"

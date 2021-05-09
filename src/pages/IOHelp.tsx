@@ -14,13 +14,10 @@ function IOHelp() {
 
 	return (
 		<>
-			<h2>Planificación de E/S</h2>
-			<p>
-				El simulador de Entrada y Salida permite observar el funcionamiento de 
-				los algoritmos utilizados para atender a las peticiones de acceso a disco.
-			</p>
+			<h2>{t("help.io.title")}</h2>
+			<p>{t("help.io.text_1")}</p>
 
-			<h3>Elementos de un disco duro</h3>
+			<h3>{t("help.io.hdd_parts")}</h3>
 			
 			<div className="text-center">
 				<LocaleImage 
@@ -29,36 +26,22 @@ function IOHelp() {
 					default={HardDrive_es} />
 			</div>
 			<p>
-				El disco duro es un dispositivo de almacenamiento que hace uso de las 
-				propiedades magnéticas de sus discos para almacenar información. El dispositivo se puede dividir en distintas partes: 
+				{t("help.io.text_2")}
 				<ul>
 					<li>
-						Los platos son cada uno de los discos donde se guarda la información bit a bit. 
+						{t("help.io.text_2_1")}
 						<br/>
-						Estos platos están hechos de un material con unas propiedades magnéticas que permiten cambiar la orientación del campo magnético.
+						{t("help.io.text_2_2")}
 					</li>
 
-					<li>
-						Las pistas son cada una de las divisiones radiales en el plato.
-					</li>
-
-					<li>
-						Las pistas se dividen en sectores, que son la unidad mínima de información. 
-						Los sectores situados más a la periferia tendrán una densidad de información inferior a los situados en pistas más interiores.
-					</li>
-
-					<li>
-						El cilindro es el conjunto de una pista en los distintos platos.
-					</li>
-
-					<li>
-						El cabezal es una pieza móvil que realiza la lectura o escritura de la información en los sectores. 
-						Esta pieza puede cambiar la orientación del campo magnético de los platos, en función de la información que se quiere escribir.
-					</li>
+					<li>{t("help.io.text_2_3")}</li>
+					<li>{t("help.io.text_2_4")}</li>
+					<li>{t("help.io.text_2_5")}</li>
+					<li>{t("help.io.text_2_6")}</li>
 				</ul>
 			</p>
 
-			<h3>Algoritmos</h3>
+			<h3>{t("help.algorithms")}</h3>
 			<h4>FCFS</h4>
 			<p>{t("help.modals.io.fcfs.text_1")}</p>
 			<p>{t("help.modals.io.fcfs.text_2")}</p>
@@ -82,13 +65,10 @@ function IOHelp() {
 			<h4>C-LOOK</h4>
 			<p>{t("help.modals.io.clook.text_1")}</p>
 			
-			<h3>Funcionamiento</h3>
-			<p>
-				El simulador permite seleccionar entre los distintos algoritmos, la posición inicial del cabezal y la cantidad de pistas del disco. 
-			</p>
-
-			<p>Los algoritmos que requieren una configuración adicional como SCAN y LOOK (y sus variantes) permiten indicar el sentido inicial del recorrido.</p>
-			<p>Para añadir una petición al simulador, se debe introducir un valor numérico en el rango [0, número de pistas) y pulsar el botón “Añadir petición”. </p>
+			<h3>{t("help.working")}</h3>
+			<p>{t("help.io.working.text_1")}</p>
+			<p>{t("help.io.working.text_2")}</p>
+			<p>{t("help.io.working.text_3")}</p>
 
 			<div className="text-center">
 				<LocaleImage 
@@ -96,19 +76,17 @@ function IOHelp() {
 					default={AddRequest_es} />
 			</div>
 
-			<p>
-			También se pueden eliminar las peticiones añadidas haciendo click en el icono de eliminar petición situado a la derecha del número de pista.
-			</p>
+			<p>{t("help.io.working.text_4")}</p>
 
 			<div className="text-center">
 				<img width="250px" src={RemoveRequest} />
 			</div>
 
 			<p>
-				Los resultados del simulador son:
+				{t("help.io.working.text_5")}
 				<ul>
-					<li>Un gráfico que muestra las distintas peticiones y cómo han sido atendidas. El eje horizontal representa el orden de atención y el vertical el número de pista.</li>
-					<li>Una tabla con cada uno de los desplazamientos, indicando la posición inicial y final del desplazamiento.</li>
+					<li>{t("help.io.working.text_5_1")}</li>
+					<li>{t("help.io.working.text_5_2")}</li>
 				</ul>
 			</p>
 		</>

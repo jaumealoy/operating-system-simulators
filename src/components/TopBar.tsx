@@ -1,5 +1,5 @@
 import React from "react";
-import { Row, Col } from "react-bootstrap";
+import { Row, Col, Dropdown } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { IoIosHelpBuoy } from "react-icons/io";
 import { BsFillGridFill, BsFillSquareFill } from "react-icons/bs";
@@ -30,7 +30,7 @@ function TopBar(props: TopBarProps) {
 
 				<div
 					data-tut="view_bar"
-					className="btn-group float-right">
+					className="btn-group float-right d-none d-md-block">
 					<input 
 						type="radio"
 						name="view-select"
@@ -60,6 +60,38 @@ function TopBar(props: TopBarProps) {
 						<BsFillSquareFill className="mr-1" />
 						{t("common.buttons.simpleview")}
 					</label>
+				</div>
+
+				<div
+					data-tut="view_bar"
+					className="float-right d-sm-block d-md-none">
+					
+					<Dropdown>
+						<Dropdown.Toggle variant="outline-secondary" size="sm">
+							{props.simpleView ?
+								<>
+									<BsFillSquareFill className="mr-1" />
+									{t("common.buttons.simpleview")}
+								</>
+								:
+								<>
+									<BsFillGridFill className="mr-1" />
+									{t("common.buttons.comparaisonview")}
+								</>
+							}
+						</Dropdown.Toggle>
+
+						<Dropdown.Menu>
+							<Dropdown.Item onClick={() => callbackFn(true)}>
+								<BsFillSquareFill className="mr-1" />
+								{t("common.buttons.simpleview")}
+							</Dropdown.Item>
+							<Dropdown.Item onClick={() => callbackFn(false)}>
+								<BsFillGridFill className="mr-1" />
+								{t("common.buttons.comparaisonview")}
+							</Dropdown.Item>
+						</Dropdown.Menu>
+					</Dropdown>
 				</div>
 
 				{props.children}

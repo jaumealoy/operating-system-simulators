@@ -34,6 +34,7 @@ import {
 } from "react-icons/bs";
 
 import { IoIosHelpBuoy } from "react-icons/io";
+import TopBar from "../../components/TopBar";
 
 
 /* EXAMPLES */
@@ -192,51 +193,10 @@ function IOSimulatorPage() {
 	return (
 		<>
 			{/* Tutorial and view select bar */}
-			<Row className="mb-3">
-				<Col>
-					<button
-						data-tut="repeat_tutorial"
-						onClick={Tutorial.show}
-						className="btn btn-sm btn-outline-secondary">
-						<IoIosHelpBuoy className="mr-1" />
-						{t("common.buttons.tutorial")}
-					</button>
-
-					<div
-						data-tut="view_bar"
-						className="btn-group float-right">
-						<input 
-							type="radio"
-							name="view-select"
-							id="comparaison-view-button"
-							checked={!isSimpleView}
-							onChange={() => setSimpleView(false)}
-							className="btn-check" />
-
-						<label 
-							htmlFor="comparaison-view-button"
-							className="btn btn-sm btn-outline-secondary">
-							<BsFillGridFill className="mr-1" />
-							{t("common.buttons.comparaisonview")}
-						</label>
-
-						<input 
-							type="radio"
-							name="view-select"
-							id="simple-view-button"
-							checked={isSimpleView}
-							onChange={() => setSimpleView(true)}
-							className="btn-check" />
-
-						<label
-							htmlFor="simple-view-button"
-							className="btn btn-sm btn-outline-secondary">
-							<BsFillSquareFill className="mr-1" />
-							{t("common.buttons.simpleview")}
-						</label>
-					</div>
-				</Col>
-			</Row>
+			<TopBar
+				simpleView={isSimpleView} 
+				onChangeView={setSimpleView}
+				onClickTutorial={Tutorial.show} />
 
 			{/* Simulator settings and requests */}
 			<Row>

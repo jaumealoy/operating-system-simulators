@@ -496,7 +496,7 @@ function CPUSimulatorPage() {
 							
 							<button 
 								className="btn btn-xs btn-icon"
-								onClick={() => history.push("/help#cpu_summary")}>
+								onClick={() => history.push("/help?scrollTo=cpu_summary")}>
 								<FiInfo />
 							</button>
 						</h3>

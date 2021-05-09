@@ -332,6 +332,114 @@
                     }
                 }
             }
+        },
+
+        "working": "Funcionamiento",
+        "algorithms": "Algoritmos",
+
+        "memory": {
+            "management": "Gestión de memoria",
+            "allocation": {
+                "text_1": "El sistema de particiones variables consiste en asignar particiones de memoria de la dimensión necesaria para almacenar un proceso. Los procesos (o peticiones de memoria) se atienden según su orden de llegada. Una vez los procesos finalizan, se libera la partición asignada, dejando un hueco libre de memoria y creando fragmentación externa.",
+                "text_2": "Para solventar los problemas de la fragmentación externa se debe compactar la memoria para maximizar el uso de la memoria, pero esta operación requiere dedicar ciclos de procesador. El algoritmo seleccionado para asignar las particiones de memoria puede influir en la cantidad de fragmentación externa generada.",
+                "text_3": "El primer paso para utilizar el simulador es configurar la cantidad de memoria disponible. Para ello se debe introducir un valor entero en el campo de texto \"Capacidad\".",
+                "text_4": "Para introducir peticiones se debe utilizar el formulario situado en la sección de “Peticiones” y rellenar los distintos campos de texto:",
+                "text_4_1": "El nombre del proceso",
+                "text_4_2": "La duración es el número de ciclos que el proceso estará en ejecución",
+                "text_4_3": "La memoria es la cantidad de memoria que el proceso solicita",
+                "text_4_4": "La llegada es el instante o ciclo en el cual el proceso se iniciará",
+                "text_5": "Los resultados del simulador son un gráfico en el cual se puede observar la distribución de la memoria en todo momento y unas tablas resumen que indican qué particiones han ocupado cada uno de los procesos.",
+                "text_6": "Si en un determinado instante no hay espacio suficiente para un proceso, éste quedará en la cola de procesos pendientes y tendrá prioridad sobre los demás procesos.",
+                "text_7": "También se puede consultar el tutorial del simulador en la página del propio simulador."
+            },
+
+            "pagination": {
+                "text_1": "La paginación es una técnica que intenta resolver el problema de la fragmentación externa permitiendo que un proceso no tenga que ocupar posiciones contiguas de la memoria.",
+                "text_2": "La memoria física se divide en particiones o marcos de un tamaño fijo y la memoria lógica se divide en bloques o páginas del mismo tamaño que los marcos. Es necesario establecer una equivalencia entre las direcciones físicas y las direcciones lógicas, para ello se utiliza una tabla de páginas que contiene el número de marco asignado a cada página.",
+                "text_3": "Los procesos no tienen, en general, todas sus páginas cargadas en la memoria principal. Cuando se quiere acceder a una página que no está cargada en la memoria principal se produce un fallo de página, que supone liberar un marco de la memoria principal para cargar la página solicitada. En función del algoritmo de remplazo utilizado se pueden minimizar los fallos de página producidos.",
+
+                "text_4": "Una vez seleccionado el algoritmo de simulación solo se deben introducir los procesos y sus peticiones, el número de marcos de la memoria principal se obtiene a partir de los marcos que pueden estar asignados a los procesos.",
+                "text_5": "Para añadir un proceso se debe introducir un nombre único y la cantidad de marcos que puede utilizar y pulsar icono \"+\".",
+                
+                "text_6": "Para añadir una petición se debe seleccionar el proceso que realiza la solicitud y la página que se quiere consultar. También se puede indicar si esta petición modifica o no la página utilizando la casilla de \"Escritura\".",
+                
+                "text_7": "Los resultados del simulador son una representación de la memoria física con los marcos y la página que tienen cargada. También para cada uno de los procesos se muestra la tabla de páginas y la evolución de esta en cada uno de los pasos."
+            }
+        },
+
+        "cpu": {
+            "title": "Planificación de CPU",
+            "text_1": "El simulador de planificación de procesador permite observar el funcionamiento de los distintos algoritmos que se utilizan a la hora de poner en ejecución un proceso.",
+			"text_2": "En la página del simulador se puede consultar el tutorial específico del simulador que realiza una visita guiada a las distintas funcionalidades del simulador.",
+            
+            "working": {
+                "text_1": "Para empezar a utilizar el simulador es necesario introducir, como mínimo, un proceso. Para introducir un proceso se debe indicar:",
+                "text_1_1": "El nombre del proceso, que debe ser único. Por defecto, se utilizará una letra disponible.",
+                "text_1_2": "El ciclo de llegada.",
+                "text_1_3": "La duración del proceso y la distribución de sus ciclos.",
+                "text_1_4": "Se puede especificar si el proceso estará bloqueado por E/S o utilizando el procesador en cada uno de los ciclos.",
+                "text_2": "También se puede cargar uno de los ejemplos del simulador, que carga una lista de procesos predeterminada.",
+                "text_3": "Una vez introducidos los procesos, estos se pueden eliminar de la lista de procesos. Para eliminarlos se debe presionar el botón situado al lado del nombre del proceso en la lista de procesos.",
+                
+                "views_title": "Vista simple y comparativa",
+                "text_4": "Si se está usando la “Vista simple” del simulador se puede seleccionar un único algoritmo. Los algoritmos que requieran configuración adicional mostrarán un panel al lado de la selección del algoritmo una vez seleccionados.",
+                "text_5_1": "En cambio, si se está usando la “Vista comparativa” se pueden seleccionar los distintos algoritmos al mismo tiempo.",
+                "text_5_2": "En este modo, es necesario crear configuraciones de aquellos algoritmos que lo requieran. Para hacerlo, primero se debe marcar el algoritmo y presionar el botón “Añadir” que aparece bajo su nombre. A continuación, se mostrará el panel de configuración del algoritmo. Para guardar la configuración se debe presionar el botón “Añadir configuración”.",
+                "text_6": "Una vez iniciada la simulación no se pueden realizar cambios en la lista de procesos o características de los algoritmos. Para poder hacer cambios es necesario finalizar la simulación.",
+
+                "results_title": "Resultados de la simulación",
+                "time_chart_title": "Diagrama temporal",
+                "text_7_1": "El diagrama temporal permite visualizar qué procesos se han ejecutado o han estado bloqueados por E/S en cada ciclo de la simulación.",
+                "text_7_2": "Los distintos procesos se ordenan a lo largo del eje vertical según el orden de introducción en el simulador. El eje horizontal es el tiempo, expresado en ciclos de procesador.",
+
+                "text_8_1": "En función del estado del procesos en cada unos de los ciclos se representan de la siguiente manera:",
+                "text_8_2": "Con un color sólido, el proceso se estaba ejecutando en ese instante",
+                "text_8_3": "Con un rectángulo rayado, el proceso estaba bloqueado por E/S en ese instante",
+                "text_8_4": "Sin rectángulo, el proceso no estaba en ejecución ni bloqueado",
+
+                "summary_table_title": "Tabla resumen",
+                "text_9": "La tabla resumen de planificación muestra un resumen de cada uno de los procesos de la simulación. Para cada uno de ellos indica:",
+                "text_9_1": "El ciclo de llegada del proceso.",
+                "text_9_2": "El ciclo de inicio del proceso, cuando ha empezado a recibir tiempo de procesador.",
+                "text_9_3": "El ciclo de finalización del proceso.",
+                "text_9_4": "El tiempo de respuesta, que es el tiempo entre la llegada de un proceso y su inicio.",
+                "text_9_5": "El tiempo de servicio",
+                "text_9_6": "El tiempo de retorno ",
+                "text_9_7": " que es el tiempo de espera más el tiempo de ejecución.",
+                "text_9_8": "El tiempo de retardo normalizado calculado a partir de ",
+                "text_10": "De las columnas tiempo de retorno y tiempo de retorno normalizado se muestra la media de sus valores."
+            }
+        },
+
+        "io": {
+            "title": "Planificación de E/S",
+            "text_1": "El simulador de Entrada y Salida permite observar el funcionamiento de los algoritmos utilizados para atender a las peticiones de acceso a disco.",
+            "hdd_parts": "Elementos de un disco duro",
+            "text_2": "El disco duro es un dispositivo de almacenamiento que hace uso de las propiedades magnéticas de sus discos para almacenar información. El dispositivo se puede dividir en distintas partes: ",
+            "text_2_1": "Los platos son cada uno de los discos donde se guarda la información bit a bit.",
+            "text_2_2": "Estos platos están hechos de un material con unas propiedades magnéticas que permiten cambiar la orientación del campo magnético.",
+            "text_2_3": "Las pistas son cada una de las divisiones radiales en el plato.",
+            "text_2_4": "Las pistas se dividen en sectores, que son la unidad mínima de información. Los sectores situados más a la periferia tendrán una densidad de información inferior a los situados en pistas más interiores.",
+            "text_2_5": "El cilindro es el conjunto de una pista en los distintos platos.",
+            "text_2_6": "El cabezal es una pieza móvil que realiza la lectura o escritura de la información en los sectores. Esta pieza puede cambiar la orientación del campo magnético de los platos, en función de la información que se quiere escribir.",
+         
+            "working": {
+                "text_1": "El simulador permite seleccionar entre los distintos algoritmos, la posición inicial del cabezal y la cantidad de pistas del disco.",
+                "text_2": "Los algoritmos que requieren una configuración adicional como SCAN y LOOK (y sus variantes) permiten indicar el sentido inicial del recorrido.",
+                "text_3": "Para añadir una petición al simulador, se debe introducir un valor numérico en el rango [0, número de pistas) y pulsar el botón \"Añadir petición\".",
+                "text_4": "También se pueden eliminar las peticiones añadidas haciendo click en el icono de eliminar petición situado a la derecha del número de pista.",
+                "text_5": "Los resultados del simulador son:",
+                "text_5_1": "Un gráfico que muestra las distintas peticiones y cómo han sido atendidas. El eje horizontal representa el tiempo y el vertical el número de pista.",
+                "text_5_2": "Una tabla con cada uno de los desplazamientos, indicando la posición inicial y final del desplazamiento."
+            }
+        },
+
+        "about": {
+            "title": "Sobre la aplicación",
+            "text_1": "En esta sección puedes encontrar información sobre los propios simuladores y de los conceptos relacionados con ellos.",
+            "text_2": "Esta aplicación ha sido desarrollada como Trabajo de Fin de Grado del Grado en Ingeniería Informática de la ",   
+            "developed_by": "Aplicación desarrollada por ",
+            "supervision": " con la supervisión de Adelaida Delgado Domínguez."
         }
     }
 }

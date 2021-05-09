@@ -189,7 +189,7 @@ const useAlgorithmHelp = (simulator: string) => {
 			},
 
 			best_fit: {
-				title: "Next Fit",
+				title: "Best Fit",
 				body: 
 					<>
 						<p>{t("help.modals.memory.allocation.best_fit.text_1")}</p>

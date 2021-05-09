@@ -1,42 +1,40 @@
 import React from "react";
 import { Row, Col } from "react-bootstrap";
+import { useTranslation } from "react-i18next";
 import TableOfContent from "../components/TOC/TableOfContent";
 import CPUHelp from "./CPUHelp";
 import IOHelp from "./IOHelp";
-
-
+import MemoryHelp from "./MemoryHelp";
 
 function HelpPage() {
-
-	
-
-
+	const { t } = useTranslation();
 	return (
 		<>
 			<Row>
 				<Col className="faq" md={8}>
-					<h1>Ayuda</h1>
-					<p>
-						En esta sección puedes encontrar información sobre los propios simuladores y de los conceptos relacionados con ellos.
-					</p>
+					<h1>{t("menu.FAQ")}</h1>
+					<p>{t("help.about.text_1")}</p>
 
 					<IOHelp />
 
 					<CPUHelp />
 
-					<h2>Sobre la aplicación</h2>
+					<MemoryHelp />
+
+					<h2>{t("help.about.title")}</h2>
 					<p>
-						Esta aplicación ha sido desarrollada como Trabajo de Fin de Grado del Grado en Ingeniería Informática de la 
-						&nbsp; <a href="https://uib.cat" target="_blank">Universitat de les Illes Balears</a>
+						{t("help.about.text_2")}
+						&nbsp; <a href="https://uib.cat" target="_blank">Universitat de les Illes Balears</a>.
 					</p>
 
 					<p>
-						Aplicación desarrollada por <a href="https://github.com/jaumealoy/" target="_blank">Jaume Aloy Vich</a> con la supervisión de Adelaida Delgado Domínguez.
+						{t("help.about.developed_by")}
+						<a href="https://github.com/jaumealoy/" target="_blank">Jaume Aloy Vich</a>
+						{t("help.about.supervision")}
 					</p>
 				</Col>
 
 				<TableOfContent root="h2" />
-
 			</Row>
 		</>
 	);

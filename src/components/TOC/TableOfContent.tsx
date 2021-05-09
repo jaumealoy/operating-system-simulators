@@ -183,14 +183,13 @@ function TableOfContent(props: TableOfContentProps) {
 		window.addEventListener("scroll", onScroll);
 
 		// scroll to the selected element, if any and exists
-		if (location.hash.indexOf("#") >= 0) {
-			let index: number = location.hash.indexOf("#") + 1;
-			let id: string = location.hash.substr(index);
+		let search = new URLSearchParams(location.search);
+		if (search.has("scrollTo")) {
+			let id: string | null = search.get("scrollTo");
 
-			if (id.length > 0) {
+			if (id != null && id.length > 0) {
 				let element: HTMLElement | null = document.getElementById(id);
 				if (element != null) {
-					console.log(element)
 					element.scrollIntoView({block: "start", behavior: "smooth" });
 				}
 			}
