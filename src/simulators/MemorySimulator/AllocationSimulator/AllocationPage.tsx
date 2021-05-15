@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useImperativeHandle, forwardRef, ForwardedRef, FunctionComponent } from "react";
 import MemoryChart from "./components/MemoryChart";
 import {
 	Row, Col, FormControl, FormGroup, FormCheck,
@@ -13,7 +13,7 @@ import { Algorithm } from "../../Simulator";
 import { MemorySimulator, Process } from "./MemorySimulator";
 import AddProcessForm from "./components/AddProcessForm";
 import ProcessList from "./components/ProcessList";
-import useAlgorithmHelp from "./../../../components/AlgorithmModalHelp/useAlgorithmHelp";
+import useAlgorithmHelp from "../../../components/AlgorithmModalHelp/useAlgorithmHelp";
 
 interface AllocationExample {
 	capacity: number;
@@ -62,7 +62,11 @@ interface AllocationPageProps {
     simpleView: boolean;
 }
 
-function AllocationPage(props: AllocationPageProps) {
+interface AllocationPageFunctions {
+	tutorialStep: (step: number) => void;
+}
+
+const AllocationPage = forwardRef<AllocationPageFunctions, AllocationPageProps>((props: AllocationPageProps, ref: React.Ref<AllocationPageFunctions>) => {
     const { t } = useTranslation();
 
     const {
@@ -82,13 +86,28 @@ function AllocationPage(props: AllocationPageProps) {
 		showAlgorithmModal(algorithm);
 	};
 
+	useImperativeHandle(ref, () => ({
+		tutorialStep: (step: number) => {
+			if (step == 1) {
+				selectAlgorithm("buddy");
+				setMemoryCapacity(EXAMPLES[1].capacity);
+				loadProcessesFromList(EXAMPLES[1].processes);
+
+				for (let i = 0; i < 7; i++) {
+					nextStep();
+				}
+			}
+		}
+	}));
 
     return (
         <>
             {/* Simulator settings and process form */}
 			<Row className="mb-3">
 				<Col md={5}>
-					<div className="simulator-group">
+					<div
+						data-tut="allocation_settings" 
+						className="simulator-group">
 						<div className="simulator-group-content">
 							<div className="title">{t("common.simulator_settings")}</div>
 
@@ -136,7 +155,9 @@ function AllocationPage(props: AllocationPageProps) {
 				</Col>
 
 				<Col md={7}>
-					<div className="simulator-group mt-3 mt-md-0">
+					<div
+						data-tut="allocation_requests" 
+						className="simulator-group mt-3 mt-md-0">
 						<div className="simulator-group-content">
 							<div className="title">{t("io.requests")}</div>
 
@@ -181,7 +202,7 @@ function AllocationPage(props: AllocationPageProps) {
 			</Row>
 
 			{/* Simulation results */}
-			<Row>
+			<Row data-tut="allocation_results">
 				<h2>{t("common.simulator_results")}</h2>
 				
 				{props.simpleView && (selectedAlgorithm in results) &&
@@ -375,6 +396,7 @@ function AllocationPage(props: AllocationPageProps) {
 			/>
         </>
     );
-}
+});
 
-export default AllocationPage;
+export { AllocationPage };
+export type { AllocationPageFunctions };

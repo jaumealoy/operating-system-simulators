@@ -1,3 +1,4 @@
+import { Manager } from "../Manager";
 import { Simulator } from "../Simulator";
 import AlgorithmSettings from "./components/AlgorithmSettings";
 import { 
@@ -14,9 +15,8 @@ interface SimulationResult {
 	events: ProcessSnapshot[][];
 };
 
-class CPUManager {
+class CPUManager extends Manager<CPUSimulator> {
 	// single simulator for simple view
-	private _simulator: CPUSimulator;
 	private _simulationResult: SimulationResult;
 
 	// multiple simulators for comparaison view
@@ -24,8 +24,6 @@ class CPUManager {
 	private _simulationResults: {[key:string]: SimulationResult[]};
 	private _selectedAlgorithms: string[];
 
-	// whether the simple view is enabled or not
-	private _simpleView: boolean;
 
 	// process list
 	private _processes: Process[];
@@ -34,12 +32,14 @@ class CPUManager {
 	public onResultsChange: (results: {[key: string]: SimulationResult[]}) => void;
 
 	constructor() {
+		super();
+
 		this._processes = [];
-		this._simulator = this.createSimulator();
-		this._simulator.onQueueChange = (queues) => this._simulationResult.queues = queues;
-		this._simulator.onProcessChange = (process) => this._simulationResult.currentProcess = process;
-		this._simulator.onProcessFinish = (p) => this._simulationResult.summary[p.process.id] = p;
-		this._simulator.algorithm = "fifo";
+		this.simulator = this.createSimulator();
+		this.simulator.onQueueChange = (queues) => this._simulationResult.queues = queues;
+		this.simulator.onProcessChange = (process) => this._simulationResult.currentProcess = process;
+		this.simulator.onProcessFinish = (p) => this._simulationResult.summary[p.process.id] = p;
+		this.simulator.algorithm = "fifo";
 		this._simulationResult = this.createEmptyResults();
 
 		// initializing simulator lists
@@ -59,43 +59,11 @@ class CPUManager {
 	}
 
 	/**
-	 * @returns whether or not there is a next step
-	 */
-	public hasNextStep() : boolean {
-		if (this._simpleView) {
-			return this._simulator.hasNextStep();
-		} else {
-			let nextStep: boolean = false;
-			Object.values(this._simulators).map(value => {
-				nextStep = value.reduce((a, b) => a || b.hasNextStep(), nextStep);
-			});
-
-			return nextStep;
-		}
-	}
-
-	/**
-	 * @returns whether or not there is a previous step
-	 */
-	public hasPreviousStep() : boolean {
-		if (this._simpleView) {
-			return this._simulator.hasPreviousStep();
-		} else {
-			let nextStep: boolean = false;
-			Object.values(this._simulators).map(value => {
-				nextStep = value.reduce((a, b) => a || b.hasPreviousStep(), nextStep);
-			});
-
-			return nextStep;
-		}
-	}
-
-	/**
 	 * Steps one step in the simulation
 	 */
 	public nextStep() : void {
 		if (this._simpleView) {
-			let results = this._simulator.processNextRequest();
+			let results = this.simulator.processNextRequest();
 			this._simulationResult.events.push(results);
 		} else{
 			Object.entries(this._simulators)
@@ -114,11 +82,11 @@ class CPUManager {
 
 	public previousStep() : void {
 		if (this._simpleView) {
-			this._simulator.previousStep();
+			this.simulator.previousStep();
 			this._simulationResult.events.pop();
 
 			Object.entries(this._simulationResult.summary).map(([id, value]) => {
-				if (value.finishCycle == this._simulator.cycle) {
+				if (value.finishCycle == this.simulator.cycle) {
 					delete this._simulationResult.summary[id];
 				}
 			})
@@ -147,7 +115,7 @@ class CPUManager {
 	 */
 	public reset() : void {
 		// simple view simulator
-		this._simulator.reset();
+		this.simulator.reset();
 		this._simulationResult = this.createEmptyResults();
 
 		// comparaison view simulator
@@ -170,7 +138,7 @@ class CPUManager {
 	 */
 	public selectAlgorithm(id: string) : void {
 		if (this._simpleView) {
-			this._simulator.algorithm = id;
+			this.simulator.algorithm = id;
 			this._simulationResult = this.createEmptyResults();
 			this.invokeChangeResults();
 		} else {
@@ -277,7 +245,7 @@ class CPUManager {
 		this._processes.push(process);
 
 		// add this process to all existing simulators
-		this._simulator.addProcess(process);
+		this.simulator.addProcess(process);
 		Object.values(this._simulators)
 		.map(list => 
 			list.map(simulator => simulator.addProcess(process))
@@ -291,7 +259,7 @@ class CPUManager {
 		this._processes = [];
 
 		// and clear the simulation results
-		this._simulator.clear();
+		this.simulator.clear();
 		this._simulationResult = this.createEmptyResults();
 		
 		Object.values(this._simulators).map(list =>
@@ -315,7 +283,7 @@ class CPUManager {
 		this._processes.splice(index, 1);
 		
 		// remove this process from all existing simulators
-		this._simulator.removeProcess(index);
+		this.simulator.removeProcess(index);
 		Object.values(this._simulators)
 		.map(list => 
 			list.map(simulator => simulator.removeProcess(index))	
@@ -327,7 +295,7 @@ class CPUManager {
 	 */
 	public get simulationTicks() : number {
 		if (this._simpleView) {
-			return this._simulator.simulationTicks;
+			return this.simulator.simulationTicks;
 		} else {
 			let max: number = Number.MIN_SAFE_INTEGER;
 
@@ -356,7 +324,7 @@ class CPUManager {
 	private invokeChangeResults() : void {
 		if (this._simpleView) {
 			this.onResultsChange({
-				[this._simulator.algorithm]: [this._simulationResult]
+				[this.simulator.algorithm]: [this._simulationResult]
 			});
 		} else {
 			this.onResultsChange(this._simulationResults);
@@ -365,9 +333,9 @@ class CPUManager {
 
 	public set algorithmSettings(settings: AlgorithmSettings)  {
 		if (this._simpleView) {
-			this._simulator.quatum = settings.quantum;
-			this._simulator.quantumMode = settings.quantumMode;
-			this._simulator.maxQueues = settings.maxQueues;
+			this.simulator.quatum = settings.quantum;
+			this.simulator.quantumMode = settings.quantumMode;
+			this.simulator.maxQueues = settings.maxQueues;
 		}
 	}
 
@@ -378,6 +346,16 @@ class CPUManager {
 			this._simulationResults[key] = [];
 		});
 	}
+
+	get simulators() : CPUSimulator[] {
+		let list: CPUSimulator[] = [];
+
+		Object.values(this._simulators).map(value => {
+			list = [...list, ...value];
+		});
+
+		return list;
+	};
 }
 
 export { CPUManager };

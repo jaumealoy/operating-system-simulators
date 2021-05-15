@@ -47,26 +47,6 @@ const EXAMPLES: CPUExample[] = [
 			{
 				id: "A",
 				arrival: 0,
-				cycles: [false, false, false, false],
-				estimatedDuration: 0
-			},
-
-			{
-				id: "B",
-				arrival: 2,
-				cycles: [false, false, false, false],
-				estimatedDuration: 0
-			}
-
-		],
-		quantum: 1
-	},
-
-	{
-		processList: [
-			{
-				id: "A",
-				arrival: 0,
 				cycles: [false, false, false],
 				estimatedDuration: 0
 			},

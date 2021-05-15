@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef, Ref, useImperativeHandle } from "react";
 import SimulatorControl from "../../../components/SimulatorControl";
 import { Row, Col, FormCheck, FormGroup } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
@@ -166,7 +166,11 @@ interface PaginationPageProps {
 	simpleView: boolean;
 }
 
-function PaginationPage(props: PaginationPageProps) {
+interface PaginationPageFunctions {
+	tutorialStep: (step: number) => void;
+}
+
+const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<PaginationPageFunctions>) => {
 	const { t } = useTranslation();
 
 	const {
@@ -187,12 +191,26 @@ function PaginationPage(props: PaginationPageProps) {
 		showAlgorithmModal(algorithm);
 	};
 
+	useImperativeHandle(ref, () => ({
+		tutorialStep: (step: number) => {
+			if (step == 1) {
+				loadProcessesFromList(EXAMPLES[2].processes);
+				loadRequestsFromList(EXAMPLES[2].requests);
+				selectAlgorithm("nru");
+
+				for (let i = 0; i < 5; i++) {
+					nextStep();
+				}
+			}
+		}
+	}));
+
 	return (
 		<>
 			{/* Simulator settings */}
 			<Row>
 				<Col md={6}>
-					<div className="simulator-group">
+					<div className="simulator-group" data-tut="pagination_settings">
 						<div className="simulator-group-content">
 							<div className="title">{t("common.simulator_settings")}</div>
 							
@@ -238,18 +256,23 @@ function PaginationPage(props: PaginationPageProps) {
 					<div className="simulator-group">
 						<div className="simulator-group-content">
 							<div className="title">{t("processes_pages")}</div>
-							<ProcessForm 
-								processes={processes}
-								onAddProcess={addProcess}
-								onRemoveProcess={removeProcess}
-								enabled={!isStarted} />
 
-							<RequestsForm 
-								processes={processes}
-								requests={requests}
-								onAddRequest={addRequest}
-								onRemoveRequest={removeRequest}
-								enabled={!isStarted} />
+							<div data-tut="pagination_processes">
+								<ProcessForm 
+									processes={processes}
+									onAddProcess={addProcess}
+									onRemoveProcess={removeProcess}
+									enabled={!isStarted} />
+							</div>
+
+							<div data-tut="pagination_requests">
+								<RequestsForm 
+									processes={processes}
+									requests={requests}
+									onAddRequest={addRequest}
+									onRemoveRequest={removeRequest}
+									enabled={!isStarted} />
+							</div>
 						</div>
 
 						<div 
@@ -276,7 +299,7 @@ function PaginationPage(props: PaginationPageProps) {
 
 			{/* Simulator results */}
 			{props.simpleView && (selectedAlgorithm in results) && processes.length > 0 && 
-			<Row>
+			<Row data-tut="pagination_results_1">
 				<h2>{t("common.simulator_results")}</h2>
 				<Col md={4}>
 					<h3>{t("memory.allocation.memory")}</h3>
@@ -322,7 +345,7 @@ function PaginationPage(props: PaginationPageProps) {
 					</Row>
 					<Row>
 						{Object.entries(results[selectedAlgorithm].processTable).map(([key, value]) => 
-							<Row>
+							<Row data-tut="pagination_results_2">
 								<Col md={4}>
 									<table className="table">
 										<thead>
@@ -515,7 +538,7 @@ function PaginationPage(props: PaginationPageProps) {
 
 			{props.simpleView && ["nru", "clock"].indexOf(selectedAlgorithm) >= 0 &&
 				<small className="foot-note">
-					<sup>1</sup> Bit de acceso o referencia
+					<sup>1</sup> {t("memory.pagination.access_bit")}
 				</small>	
 			}
 
@@ -523,7 +546,7 @@ function PaginationPage(props: PaginationPageProps) {
 				<>
 					<br />
 					<small className="foot-note">
-						<sup>2</sup> Bit de modificació o dirty bit
+						<sup>2</sup> {t("memory.pagination.modified_bit")}
 					</small>	
 				</>
 			}
@@ -545,6 +568,7 @@ function PaginationPage(props: PaginationPageProps) {
 				onOpenFile={loadFile} />
 		</>
 	);
-}
+});
 
-export default PaginationPage;
+export { PaginationPage };
+export type { PaginationPageFunctions };

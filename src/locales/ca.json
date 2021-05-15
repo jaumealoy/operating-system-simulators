@@ -6,37 +6,460 @@
             "comparaisonview": "Vista comparativa",
             "tutorial": "Tutorial",
             "previous_step": "Passa anterior",
-            "next_step": "Següent pasa",
-            "reset": "Esborrar dades",
+            "next_step": "Següent passa",
+            "reset": "Esborra les dades",
             "pause": "Pausar",
             "play": "Iniciar",
             "stop": "Reiniciar simulació",
             "load_file": "Carregar simulació",
-            "save_file": "Desar simulació"
+            "save_file": "Desar simulació",
+            "add": "Afegir",
+            "save": "Guardar",
+            "save_simulation": "Guardar simulació"
         },
         "example_number": "Exemple {{number}}",
         "examples": "Exemples",
-        "simulation_algorithm": "Algoritme simulació",
+        "simulation_algorithm": "Algorisme de simulació",
         "simulator_settings": "Configuració del simulador",
+        "simulator_results": "Resultats",
         "tutorial": {
-            "control_bar_overview": "Aquesta barra és la barra de control del simulador, que permet controlar la simulació.",
-            "control_bar_reset": "Aquest botó reinicia el simulador: esborra totes les peticions.",
-            "control_bar_stop": "Aquest botó reinicia la simulació, sense esborrar les peticions.",
-            "control_bar_previous_step": "Aquest botó permite tornar una passa enrera la simulació.",
-            "control_bar_next_step": "Aquest botó avança en una passo la simulació, permet veure la simulació passa a passa.",
+            "control_bar_overview": "Això és la barra de control del simulador que permet controlar la simulació.",
+            "control_bar_reset": "Aquest botó reinicia el simulador: elimina totes les peticions.",
+            "control_bar_stop": "Aquest botó reinicia la simulació, sense eliminar les peticions.",
+            "control_bar_previous_step": "Aquest botó permet tornar a l'estat anterior de la simulació",
+            "control_bar_next_step": "Aquest botó avança una passa de la simulació, permet veure la simulació passa a passa.",
             "control_bar_play": "Aquest botó permet iniciar o aturar la simulació automàtica.",
-            "control_bar_speed": "Pots ajustar la velocitat de la simulació amb aquesta barra.",
-            "view_bar": "Pots canviar entre una vista d'un únic simulador i una vista de múltiples simuladors per realitzar comparacions",
-            "storage": "Pots guardar i carregar les configuracions del simulador.",
-            "repeat_tutorial": "Pots consultar aquest tutorial en qualsevol moment fent-me clic."
-        }
+            "control_bar_speed": "Pots ajustar la velocitat de la simulació automàtica amb aquesta barra",
+            "view_bar": "Pots triar entre una vista d'un simulador i una vista de múltiples simuladors per realitzar comparacions.",
+            "storage": "Pots guardar i carregar a la configuració del teu simulador.",
+            "repeat_tutorial": "Pots tornar a veure aquest tutorial en qualsevol moment amb aquest botó."
+        },
+        "filename": "Nom del fitxer",
+        "filename_text": "El nom del fitxer només pot contenir caràcters alfanumèrics."
     },
 
     "io": {
-        
+        "requests": "Peticions",
+        "add_request": "Afegir petició",
+        "no_requests_added": "No s'ha introduït cap petició.",
+        "track": "Pista",
+        "direction": "Sentit",
+        "upwards": "Ascendent",
+        "downwards": "Descendent",
+        "initial_position": "Posició inicial",
+        "final_position": "Posició final",
+        "track_number": "Número de pistes",
+        "request_number": "# petició",
+        "displacement": "Desplaçament",
+        "results": "Resultats",
+        "total": "Total",
+        "average": "Mitjana",
+        "time": "temps",
+        "no_requests_completed": "No s'ha completat cap petició",
+        "algorithms": {
+            "fcfs": "First Come First Served (FCFS)",
+            "sstf": "Shortest Seek Time First (SSTF)",
+            "scan": "SCAN",
+            "cscan": "CSCAN",
+            "look": "LOOK",
+            "clook": "CLOOK"
+        },
+
+        "tutorial": {
+            "algorithm_select": "Aquí pots seleccionar l'algorisme de la simulació. Si ets a la vista comparativa podràs seleccionar més d'un.",
+            "simulator_settings": "Pots configurar el nombre de pistes i la posició inicial del capçal. També es pot indicar el sentit inicial del moviment, si els algorismes seleccionats ho permeten.",
+            "request_list": "Aquí pots indicar les peticions que vols simular i observar les peticions que es processaran",
+            "request_list_add": "Per afegir una petició introdueix un valor numèric entre {{min}} i {{max}} i pitja el botó \"Afegir petició\".",
+            "request_list_remove": "Aquí apareixen totes les peticions així com les has introduïdes. Pots eliminar-les fent clic a l'icona amb una \"X\"",
+            "demo_requests": "El simulador ja inclou alguns exemples de peticions per observar el seu funcionament. Si selecciones un exemple, s'afegiran automàticament les peticions."
+        }
+    },
+
+    "cpu": {
+        "algorithms": {
+            "fifo": "First In First Out (FIFO, FCFS)",
+            "spn": "Shortest Process Next (SPN)",
+            "srtn": "Shortest Remaining Time (SRT)",
+            "hrrn": "Highest Response Ratio Next (HRRN)",
+            "feedback": "Feedback",
+            "rr": "Round Robin"
+        },
+
+        "quantum": "Quantum",
+        "add_process": "Afegir procés",
+        "processes": "Processos",
+        "introduced_processes": "Processos introduïts",
+        "results": "Resultats",
+        "timeline": "Línia temporal",
+        "cpu": "Processador",
+        "no_process_running": "Actualment no hi ha cap procés en execució.",
+        "name": "Nom",
+        "cycle_distribution": "Distribució",
+        "cycle_distribution_form": "Distribució dels cicles",
+        "incoming_processes": "Arribada de processos",
+        "remaining_cycles": "Cicles restants",
+        "waiting_cycles": "Cicles esperant",
+        "waiting_time": "Temps esperant",
+        "blocked": "Bloquejats",
+        "ready": "Preparats",
+        "priority_number": "Prioritat {{value}}",
+        "schedule_summary": "Resum planificació",
+        "process_already_exists": "Ja hi ha un procés amb aquest nom",
+        "arrival": "Arribada",
+        "duration": "Cicles",
+        "value_equal_or_higher_than": "El valor ha de ser igual o superior a {{value}}",
+        "maximum_queues": "Màxim de coes",
+        "zero_is_unlimited": "El valor 0 indica il·limitat",
+        "fixed": "Fix",
+        "add_variant": "Afegir configuració",
+        "process_list_empty": "No has introduït cap petició",
+        "queue_empty": "No hi ha processos en aquesta coa",
+        "average": "Mitjana",
+        "variant_tag": {
+            "unlimited_queues": "il·limitades",
+            "value_max_queues": "{{value}} coes"
+        },
+        "ratio": "Ràtio",
+        "summary": {
+            "start": "Inici",
+            "end": "Finalització",
+            "process": "Procés",
+            "service_time": "Temps de servei",
+            "turnaround_time": "Temps de retorn",
+            "response_time": "Temps de resposta",
+            "normalized_response_time": "Temps de resposta normalitzat"
+        },
+        "tutorial": {
+            "process_list": "Aquí pots veure i eliminar els processos que has introduït. Pots veure el seu cicle d'arribada i la seva distribució de cicles.",
+            "summary_table": "Aquesta taula mostra un resum de la planificació del processador. Cada fila és un procés i inclou informació sobre la seva execució (arribada, finalització, temps de resposta i de retorn).",
+            "process_queues": "A la vista simple pots veure en tot moment l'estat de les coes. Els processos estan ordenats per ordre d'arribada, els elements de dalt són els que han arribat primer.",
+            "time_chart": "Aquest diagrama temporal mostra l'estat de l'processos (en execució o bloquejat) en cada cicle de processador.",
+            "current_process": "També es mostra l'estat actual de l'processador i es mostra informació del procés en execució."
+        }
+    },
+
+    "memory": {
+        "allocation_menu": "Particions variables",
+        "pagination_menu": "Paginació",
+
+        "allocation": {
+            "capacity": "Capacitat (KB)",
+            "current_cycle": "Cicle actual:",
+            "next_requests": "Properes peticions:",
+            "process": "Procés",
+            "duration": "Durada",
+            "end": "Finalització",
+            "requested_memory": "Memòria sol·licitada (KB)",
+            "permanent": "permanent",
+            "not_enough_memory": "No hi ha memòria suficient",
+            "no_more_requests": "No hi ha més peticions de memòria",
+            "no_requests_completed": "No s'ha atès cap petició de memòria",
+            "no_requests_added": "No s'han afegit peticions.",
+            "completed_requests": "Peticions de memòria ateses:",
+            "assigned_block": "Partició assignada",
+            "cycle": "Cicle",
+            "memory": "Memòria",
+
+            "algorithms": {
+                "first_fit": "First fit",
+                "next_fit": "Next fit",
+                "worst_fit": "Worst fit",
+                "best_fit": "Best fit",
+                "buddy": "Buddy system"
+            }
+        },
+
+        "pagination": {
+            "frames": "Marcs",
+            "frame": "Marc",
+            "processes_pages": "Pàgines i processos",
+            "page_failures": "Errors de pàgina",
+            "process_name": "Procés {{name}}",
+            "page": "Pàgina",
+            "last_access": "Darrer accés",
+            "select_algorithm": "Selecciona un algorisme o més per utilitzar la vista comparativa",
+            "write": "Escriptura",
+            "added_requests": "Peticions introduïdes",
+            "name_frames": "Nom i marcs",
+            "no_processes": "No has introduït cap procés",
+
+            "algorithms": {
+                "optimal": "Òptim",
+                "fifo": "First In First Out",
+                "lru": "Least Recently Used",
+                "clock": "Rellotge",
+                "nru": "Not Recently Used"
+            },
+
+            "access_bit": "Bit d'accés o referència",
+            "modified_bit": "Bit de modificació o dirty bit"
+        },
+
+        "tutorial": {
+            "text_1": "El simulador de memòria està format pel simulador de particions variables i de paginació. Pots canviar entre els simuladors utilitzant aquests botons.",
+            "text_2": "Al simulador de particions variables pots configurar la capacitat de la memòria i l'algorisme de la simulació.",
+            "text_3": "Per afegir peticions de memòria s'ha d'introduir un nom únic, la durada del procés, la memòria sol·licitada i el cicle d'arribada.",
+            "text_4": "Els resultats són un gràfic de la memòria i una taula resum de cada procés.",
+
+            "text_5": "Al simulador de paginació només pots seleccionar l'algorisme de la simulació, el número de marcs es calcula automàticament a partir dels processos introduïts.",
+            "text_6": "Per utilitzar el simulador de paginació, primer has d'introduir els processos i el número de marcs que tendran assignats.",
+            "text_7": "A continuació pots afegir les peticions de pàgines de cada un dels processos. També pots indicar si la petició modifica la pàgina accedida.",
+            "text_8": "El resultat del simulador és una visió general de la memòria i l'estat de les pàgines de cada procés.",
+            "text_9": "De cada procés es pot visualitzar la seva taula de pàgines i la seva evolució al llarg del temps. Si l'algorisme ho permet, se visualitza el punter amb una casella de color diferent."
+        }
     },
 
     "menu": {
-        "IOSimulator": "Simulador E/S"
+        "IOSimulator": "Simulador E/S",
+        "CPUSimulator": "Simulador CPU",
+        "MemorySimulator": "Simulador memòria",
+        "FAQ": "Ajuda"
+    },
+
+    "help": {
+        "modals": {
+            "io": {
+                "fcfs": {
+                    "text_1": "L'algoritme First Come First Served processa els accessos a disc seqüencialment. La primera petició que es rep és la primera petició processada.",
+                    "text_2": "Quan es realitzen moltes peticions, aquest algoritme es comporta com una planificació aleatòria, encara que és el sistema més just de tots."
+                },
+
+                "sstf": {
+                    "text_1": "L'algoritme Shortest Seek Time First conegut com \"primer amb el temps de cerca menor\" atén primer aquelles peticions que es troben més a prop del capçal.",
+                    "text_2": "Aquest sistema afavoreix les peticions que es troben prop del capçal, desfavorint les peticions perifèriques."
+                },
+
+                "scan": {
+                    "text_1": "L'algoritme SCAN intenta simular el comportament d'un ascensor. El capçal es mou des de la primera pista, encara que no hi hagi peticions, fins a la darrera processant les peticions que es troba. Quan arriba a un extrem, realitza el mateix recorregut en sentit contrari.",
+                    "text_2": "L'objectiu de l'algorisme és reduir els canvis de sentit, però afavoreix les peticions recents."
+                },
+
+                "cscan": {
+                    "text_1": "L'algoritme C-SCAN intenta simular el comportament d'un ascensor com l'algoritme SCAN. El capçal es mou en un únic sentit (ascendent o descendent) i quan arriba a un extrem se situa ràpidament al contrari sense atendre peticions.",
+                    "text_2": "El principal objectiu és eliminar la discriminació entre les pistes interiors i les perifèriques."
+                },
+
+                "look": {
+                    "text_1": "L'algoritme LOOK simula el comportament d'un ascensor. Aquest algoritme processa totes les peticions que es troba en un sentit fins arribar a la darrera pista. Després realitza el mateix recorregut però en sentit contrari fins arribar a la darrera petició, sense arribar a l'extrem del disc.",
+                    "text_2": "La principal diferència entre LOOK i SCAN és que el primer no arriba fins als límits del disc, en canvi, SCAN sí."
+                },
+
+                "clook": {
+                    "text_1": "L'algoritme C-LOOK té un comportament similar al LOOK. Aquest algoritme sempre atén totes les peticions que es troba en un sentit, i sempre és el mateix. A diferència del C-SCAN, aquest no arriba als extrems del disc, només fins a la pista amb peticions."
+                }
+            },
+
+            "cpu": {
+                "fifo": {
+                    "text_1": "L'algoritme First In First Out (FIFO), també conegut com First Come First Served (FCFS) o \"primer en arribar, primer en servir-se\", és la política de planificació més simple.",
+                    "text_2": "Aquesta política de planificació consisteix en executar els processos en el mateix ordre que arriben a la coa de processos preparats.",
+                    "text_3": "Així, si un procés en execució queda bloquejat per E/S, quan finalitzi la E/S, serà el darrer de la coa de processos preparats i per tant, el darrer en executar-se.",
+                    "text_4": "Aquest algoritme facilita l'execució de processos de llarga durada i afavoreix aquells limitats pel processador."
+                },
+
+                "spn": {
+                    "text_1": "L'algoritme Shortest Process Next (SPN) o \"primer el més curt\" és una política de planificació que consisteix en executar el procés que s'espera que sigui el més curt.",
+                    "text_2": "Alguns inconvenients d'aquesta política és la necessitat de poder estimar la durada del procés i la possible inanició dels processos més llargs que seran menys prioritaris davant els processos curts.",
+                    "text_3": "En el simulador, el valor de l'estimació és el nombre de cicles del procés."
+                },
+
+                "srtn": {
+                    "text_1": "L'algoritme Shortest Remaining Time (SRT) és la versió apropiativa de l'algoritme SPN que consisteix en executar el procés amb un temps restant d'execució inferior.",
+                    "text_2": "El temps restant d'un procés es pot calcular a partir del número de cicles que ha estat en execució i el temps de servei, o estimació, del procés.",
+                    "text_3": "Aquest sistema de planificació pot produir inanició i afavoreix els processos curts enfront dels processos més llargs."
+                },
+
+                "hrrn": {
+                    "text_1": "L'algoritme Highest Response Ratio Next (HRRN) o \"primer el de major ràtio de resposta\" és un algoritme no apropiatiu que executa el procés amb el major ràtio de resposta.",
+                    "text_2": "Per cada un dels processos a la coa de preparats es calcula el seu ràtio de resposta seguint la següent fórmula:",
+                    "text_3": "I es selecciona el procés que maximitzi aquest resultat.",
+                    "text_4": "Al principi afavoreix els processos curts, però evita la inanició dels processos llargs perquè es té en compte el seu temps d'espera."
+                }, 
+
+                "rr": {
+                    "text_1": "L'algoritme Round Robin o torn rotatori és un algoritme apropiatiu basat en un rellotge. Els processos reben un temps limitat, conegut com quantum, de processador de manera rotatòria fins que finalitzen. Si els processos han consumit el temps assignat i no han finalitzat, són expulsats i tornen a situar-se al final de la coa de processos preparats.",
+                    "text_2": "Els principals inconvenients d'aquest sistema són fixar un quantum de temps adequat, el baix rendiment dels processos limitats per E / S i la sobrecàrrega que suposa canviar de procés."
+                },
+
+                "feedback": {
+                    "text_1": "L'algoritme Feedback o retroalimentació és un sistema apropiatiu que fa ús d'un sistema de coes de prioritat dinàmica i un sistema de quantums de temps. ",
+                    "text_2": "Els processos comencen a la coa de màxima prioritat i quan finalitza el seu quantum (i no han finalitzat) o queden bloquejats per E/S passen a la següent coa de menor prioritat.",
+                    "text_3_1": "Per exemple, és habitual que el quantum de temps sigui una potència de 2 de la forma ",
+                    "text_3_2": ", on i és la prioritat de la cua (i=0 és la coa més prioritària).",
+                    "text_4": "Aquest sistema dona preferència als processos curts i penalitza els processos llargs que han estat molt de temps en execució, ja que es troben en coes de baixa prioritat."
+                }
+
+            },
+
+            "memory": {
+                "allocation": {
+                    "first_fit": {
+                        "text_1": "L'algorisme First Fit assigna la primera partició disponible amb la capacitat suficient per emmagatzemar el procés, sense cercar si hi ha altres blocs de memòria més adequats per a la quantitat de memòria sol·licitada.",
+                        "text_2": "Aquest sistema és el més ràpid i senzill que permet tenir molts processos carregats a l'inici de memòria entre els quals s'ha de trobar un bloc lliure."
+                    },
+
+                    "best_fit": {
+                        "text_1": "L'algoritme Best Fit assigna la partició més petita amb capacitat suficient per emmagatzemar el procés.",
+                        "text_2": "El rendiment global d'aquest sistema no és tan bo com el d'altres sistemes i provoca molta fragmentació externa, fent necessari compactar la memòria freqüentment."
+                    },
+
+                    "next_fit": {
+                        "text_1": "L'algoritme Next fit assigna el següent bloc de memòria amb capacitat per emmagatzemar el procés a partir del darrer bloc de memòria assignat.",
+                        "text_2": "Aquest sistema provoca fragmentació externa perquè el major bloc de memòria es troba al final de la memòria i aquest es divideix ràpidament en blocs més petits.",
+                        "text_3": "Per la seva implementació, és necessari emmagatzemar la posició del darrer bloc assignat."
+                    },
+
+                    "worst_fit": {
+                        "text_1": "L'algoritme Worst fit assigna el major bloc de memòria amb capacitat pel procés amb la intenció de reduir la fragmentació."
+                    },
+
+                    "buddy": {
+                        "text_1": "El buddy system intenta aconseguir un equilibri entre els sistemes de particions fixes i els sistemes de particions variables. Aquest sistema només permet crear blocs de memòria de capacitat igual a una potència en base 2.",
+                        "text_2": "En un instant inicial, la memòria forma un únic bloc de memòria, però es pot anar dividint entre 2 per atendre una petició de memòria. Els processos ocupen un bloc de memòria òptim, que és aquell amb la capacitat mínima necessària.",
+                        "text_3": "Quan s'allibera un bloc, el bloc alliberat es pot fusionar amb els blocs adjacents sempre que siguin descendents del mateix bloc de potència superior."
+                    }
+                },
+
+                "pagination": {
+                    "optimal": {
+                        "text_1": "L'algoritme òptim o mínim és un algoritme teòric que minimitza els errors de pàgina. Aquest algoritme substitueix la pàgina d'un procés que estarà més temps en ser referenciada.",
+                        "text_2": "A la pràctica, és impossible d'implementar ja que suposaria conèixer les pàgines que seran referenciades, cosa que no és possible."
+                    },
+
+                    "fifo": {
+                        "text_1": "L'algoritme FIFO o \"primer en arribar, primer en partir\" és un algoritme que selecciona la pàgina que més temps ha estat carregat a la memòria, és a dir, la pàgina que ha arribat primer.",
+                        "text_2": "Aquest algoritme és fàcil d'implementar, però fa un ús pobre de la localitat temporal, ja que és possible que una pàgina s'utilitzi freqüentment i sigui la primera en carregar-se.",
+                        "text_3": "És possible pensar que si s'incrementen el número de marcs assignats a cada procés es reduiran la quantitat d'errors de pàgina. L'anomalia de Belady explica que és possible que el número d'errors de pàgina augmenti si s'incrementen la quantitat de marcs assignats a cada procés."
+                    },
+
+                    "lru": {
+                        "text_1": "L'algoritme Least Recently Used (LRU) o \"menys usat recentment\" fa ús del principi de localitat espacial per substituir una pàgina. La pàgina substituïda és la que no ha estat referenciada des de fa més temps, que és la pàgina que té menor probabilitat de ser referenciada en el futur proper.",
+                        "text_2": "Aquest algoritme s'aproxima a l'algoritme òptim i és el que menys errors de pàgina genera. Per implementar-lo és necessari etiquetar cada pàgina en l'instant en què és referenciada."
+                    },
+
+                    "clock": {
+                        "text_1": "L'algoritme del rellotge o de la segona oportunitat intenta aprofitar el principi de temporalitat per triar la pàgina a substituir. Això permet tenir pàgines molt utilitzades que han estat a la memòria durant molt de temps.",
+                        "text_2": "Per implementar aquest algoritme és necessari introduir un bit d'accés a la pàgina, que s'activa quan es referencia una pàgina, i un punter, que indica la pàgina candidata a ser eliminada. Quan es vol substituir una pàgina poden donar-se dos casos:",
+                        "text_2_1": "El punter es troba a una pàgina amb el bit d'accés a 0. La pàgina eliminada és la indicada pel punter i s'avança el punter.",
+                        "text_2_2": "El punter es troba en una pàgina amb el bit d'accés a 1. En aquest cas, es desactiva el bit d'accés i s'avança el punter. El procés es repeteix fins trobar una pàgina amb el bit d'accés a 0."
+                    },
+
+                    "nru": {
+                        "text_1": "L'algorisme Not Recently Used o \"no utilitzats recentment\" és una millora de l'algorisme del rellotge que fa ús del bit d'escriptura per evitar substituir pàgines que requereixin d'escriptura a la memòria secundària.",
+                        "text_2": "Per a la seva implementació, a més dels bits d'accés i modificació, es fa ús d'un punter. Quan es vol substituir una pàgina es segueixen els següents passos:",
+                        "text_2_1": "Es cerca una pàgina amb els bits d'accés i modificació desactivats, sense avançar el punter. Si es troba, aquesta és la pàgina que s'ha d'eliminar.",
+                        "text_2_2": "En cas de no trobar una pàgina, es cerca una pàgina amb el bit d'accés desactivat i el de modificació activat. Mentre s'avança el punter, es desactiva el bit d'accés de la pàgina."
+                    }
+                }
+            }
+        },
+
+        "working": "Funcionament",
+        "algorithms": "Algorismes",
+
+        "memory": {
+            "management": "Gestió de memòria",
+            "allocation": {
+                "text_1": "El sistema de particions variables consisteix en assignar particions de memòria de la dimensió necessària per emmagatzemar un procés. Els processos (o peticions de memòria) s'atenen segons el seu ordre d'arribada. Una vegada els processos finalitzen, s'allibera la partició assignada, deixant un espair lliure de memòria i creant fragmentació externa.",
+                "text_2": "Per solucionar els problemes de la fragmentació externa s'ha de compactar la memòria per maximitzar el seu ús, però aquesta operació requereix dedicar cicles de processador. L'algoritme seleccionat per assignar les particions de memòria pot influir en la quantitat de fragmentació externa generada.",
+                "text_3": "El primer pas per utilitzar el simulador és configurar la quantitat de memòria disponible. Per això s'ha d'introduir un valor sencer al camp de text \"Capacitat\".",
+                "text_4": "Per introduir peticions s'ha d'utilitzar el formulari situat a la secció de \"Peticions\" i omplir els diferents camps de text:",
+                "text_4_1": "El nom del procés",
+                "text_4_2": "La durada és el número de cicles que el procés estarà en execució",
+                "text_4_3": "La memòria és la quantitat de memòria que el procés sol·licita",
+                "text_4_4": "L'arribada és l'instant o cicle en el qual el procés s'iniciarà",
+                "text_5": "Els resultats del simulador són un gràfic en el qual es pot observar la distribució de la memòria en tot moment i unes taules resum que indiquen quines particions han ocupat cadascun dels processos.",
+                "text_6": "Si en un determinat instant no hi ha espai suficient per un procés, aquest quedarà a la coa de processos pendents i tendrà prioritat sobre els altres processos.",
+                "text_7": "També es pot consultar el tutorial del simulador a la pàgina del propi simulador."
+            },
+
+            "pagination": {
+                "text_1": "La paginació és una tècnica que intenta resoldre el problema de la fragmentació externa permetent que un procés no hagi d'ocupar posicions contigües de la memòria.",
+                "text_2": "La memòria física es divideix en particions o marcs d'una mida fixa i la memòria lògica es divideix en blocs o pàgines de la mateixa mida que els marcs. És necessari establir una equivalència entre les adreces físiques i les adreces lògiques, per això s'utilitza una taula de pàgines que conté el nombre de marc assignat a cada pàgina.",
+                "text_3": "Els processos no tenen, en general, totes les seves pàgines carregades a la memòria principal. Quan es vol accedir a una pàgina que no està carregada a la memòria principal es produeix un error de pàgina, que suposa alliberar un marc de la memòria principal per carregar la pàgina sol·licitada. En funció de l'algoritme de substitució utilitzat es poden minimitzar els errors de pàgina produïts.",
+
+                "text_4": "Una vegada seleccionat l'algorisme de simulació només s'han d'introduir els processos i les seves peticions, el nombre de marcs de la memòria principal s'obté a partir dels marcs que poden estar assignats als processos.",
+                "text_5": "Per afegir un procés s'ha d'introduir un nom únic i la quantitat de marcs que pot utilitzar i pitjar icona \"+\".",
+                
+                "text_6": "Per afegir una petició s'ha de seleccionar el procés que realitza la sol·licitud i la pàgina que es vol consultar. També es pot indicar si aquesta petició modifica o no la pàgina utilitzant la casella de \"Escriptura\".",
+                
+                "text_7": "Els resultats de l'simulador són una representació de la memòria física amb els marcs i la pàgina que tenen carregada. També per cada un dels processos es mostra la taula de pàgines i l'evolució d'aquesta en cada una de les passes."
+            }
+        },
+
+        "cpu": {
+            "title": "Planificació de CPU",
+            "text_1": "El simulador de planificació de processador permet observar el funcionament dels diferents algoritmes que s'utilitzen a l'hora de posar en execució un procés.",
+			"text_2": "A la pàgina del simulador es pot consultar el tutorial específic de l'simulador que realitza una visita guiada a les diferents funcionalitats del simulador.",
+            
+            "working": {
+                "text_1": "Per començar a utilitzar el simulador és necessari introduir, com a mínim, un procés. Per introduir un procés s'ha d'indicar:",
+                "text_1_1": "El nom del procés, que ha de ser únic. Per defecte, s'utilitzarà una lletra disponible.",
+                "text_1_2": "El cicle d'arribada.",
+                "text_1_3": "La durada del procés i la distribució dels seus cicles.",
+                "text_1_4": "Es pot especificar si el procés estarà bloquejat per E/S o utilitzant el processador en cada un dels cicles.",
+                "text_2": "També es pot carregar un dels exemples del simulador, que carrega una llista de processos per defecte.",
+                "text_3": "Una vegada introduïts els processos, aquests es poden eliminar de la llista de processos. Per eliminar-los s'ha de pressionar el botó situat al costat del nom del procés a la llista de processos.",
+                
+                "views_title": "Vista simple i comparativa",
+                "text_4": "Si s'està utilitzant la \"Vista simple\" del simulador es pot seleccionar un únic algorisme. Els algorismes que necessiten configuració addicional mostraran un panell al costat de la selecció de l'algorisme una vegada seleccionats.",
+                "text_5_1": "En canvi, si s'està utilitzant la \"Vista comparativa\" es poden seleccionar els diferents algoritmes al mateix temps.",
+                "text_5_2": "En aquest cas, és necessari crear configuracions d'aquells algoritmes que ho requereixin. Per fer-ho, primer s'ha de marcar l'algoritme i pitjar el botó \"Afegir\" que apareix davall el seu nom. A continuació, es mostrarà el panell de configuració de l'algorisme. Per desar la configuració s'ha de pressionar el botó \"Afegir configuració\".",
+                "text_6": "Una vegada iniciada la simulació no es poden fer canvis a la llista de processos o paràmetres dels algorismes. Per poder fer canvis és necessari finalitzar la simulació.",
+
+                "results_title": "Resultats de la simulació",
+                "time_chart_title": "Diagrama temporal",
+                "text_7_1": "El diagrama temporal permet visualitzar quins processos s'han executat o han estat bloquejats per E/S en cada cicle de la simulació.",
+                "text_7_2": "Els diferents processos s'ordenen al llarg de l'eix vertical segons l'ordre d'introducció al simulador. L'eix horitzontal és el temps, expressat en cicles de processador.",
+
+                "text_8_1": "En funció de l'estat del procés a cada cicle es representa de la següent manera:",
+                "text_8_2": "Amb un color sòlid, el procés s'estava executant en aquell instant",
+                "text_8_3": "Amb un rectangle ratllat, el procés estava bloquejat per E/S en aquell instant",
+                "text_8_4": "Sense rectangle, el procés no estava en execució ni bloquejat",
+
+                "summary_table_title": "Taula resum",
+                "text_9": "La taula resum de planificació mostra un resum de cada un dels processos de la simulació. Per cada un d'ells indica:",
+                "text_9_1": "El cicle d'arribada del procés.",
+                "text_9_2": "El cicle d'inici del procés, quan ha començat a rebre temps de processador.",
+                "text_9_3": "El cicle de finalització del procés.",
+                "text_9_4": "El temps de resposta, que és el temps entre l'arribada d'un procés i el seu inici.",
+                "text_9_5": "El temps de servei",
+                "text_9_6": "El temps de retorn ",
+                "text_9_7": "que és el temps d'espera més el temps d'execució.",
+                "text_9_8": "El temps de retard normalitzat calculat a partir de ",
+                "text_10": "De les columnes temps de retorn i temps de retorn normalitzat es mostra la mitjana dels seus valors."
+            }
+        },
+
+        "io": {
+            "title": "Planificació d'E/S",
+            "text_1": "El simulador d'Entrada i Sortida permet observar el funcionament dels algoritmes utilitzats per atendre les peticions d'accés a disc.",
+            "hdd_parts": "Elements d'un disc dur",
+            "text_2": "El disc dur és un dispositiu d'emmagatzematge que fa ús de les propietats magnètiques dels seus discs per emmagatzemar informació. El dispositiu es pot dividir en diferents parts: ",
+            "text_2_1": "Els plats són cada un dels discs on es guarda la informació bit a bit.",
+            "text_2_2": "Aquests plats estan fets d'un material amb unes propietats magnètiques que permeten canviar l'orientació del camp magnètic.",
+            "text_2_3": "Les pistes són cadascuna de les divisions radials del plat.",
+            "text_2_4": "Les pistes es divideixen en sectors, que són la unitat mínima d'informació. Els sectors situats més a la perifèria tendran una densitat d'informació inferior als situats en pistes més interiors.",
+            "text_2_5": "El cilindre és el conjunt d'una pista en els diferents plats.",
+            "text_2_6": "El capçal és una peça mòbil que realitza la lectura o escriptura de la informació en els sectors. Aquesta peça pot canviar l'orientació del camp magnètic dels plats, en funció de la informació que es vol escriure.",
+         
+            "working": {
+                "text_1": "El simulador permet seleccionar entre els diferents algorismes, la posició inicial del capçal i la quantitat de pistes del disc.",
+                "text_2": "Els algoritmes que requereixen una configuració addicional com SCAN i LOOK (i les seves variants) permeten indicar el sentit inicial del recorregut.",
+                "text_3": "Per afegir una petició a l'simulador, s'ha d'introduir un valor numèric en el rang [0, nombre de pistes) i prémer el botó \"Afegir petició\".",
+                "text_4": "També es poden eliminar les peticions afegides fent clic a la icona d'eliminar petició situat a la dreta el número de pista.",
+                "text_5": "Els resultats del simulador són:",
+                "text_5_1": "Un gràfic que mostra les diferents peticions i com han estat ateses. L'eix horitzontal representa el temps i el vertical el número de pista.",
+                "text_5_2": "Una taula amb cada un dels desplaçaments, indicant la posició inicial i final del desplaçament."
+            }
+        },
+
+        "about": {
+            "title": "Sobre l'aplicació",
+            "text_1": "En aquesta secció pots trobar informació sobre els propis simuladors i dels conceptes relacionats amb ells.",
+            "text_2": "Aquesta aplicació ha estat desenvolupada com Treball de Fi de Grau de l'Grau en Enginyeria Informàtica de la ",   
+            "developed_by": "Aplicació desenvolupada per ",
+            "supervision": " amb la supervisió d'Adelaida Delgado Domínguez."
+        }
     }
 }

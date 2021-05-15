@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Row, Col } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import TableOfContent from "../components/TOC/TableOfContent";

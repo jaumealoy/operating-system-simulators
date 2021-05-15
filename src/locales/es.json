@@ -13,7 +13,9 @@
             "stop": "Reiniciar simulación",
             "load_file": "Cargar simulación",
             "save_file": "Guardar simulación",
-            "add": "Añadir"
+            "add": "Añadir",
+            "save": "Guardar",
+            "save_simulation": "Guardar simulación"
         },
         "example_number": "Ejemplo {{number}}",
         "examples": "Ejemplos",
@@ -31,7 +33,9 @@
             "view_bar": "Puedes cambiar entre una vista de un solo simulador y una vista de múltiples simuladores para realizar comparaciones.",
             "storage": "Puedes guardar y cargar las configuraciones de tu simulador.",
             "repeat_tutorial": "Puedes volver a ver este tutorial en cualquier momento pulsándome."
-        }
+        },
+        "filename": "Nombre del archivo",
+        "filename_text": "El nombre del archivo solo puede contener carácteres alfanuméricos."
     },
 
     "io": {
@@ -185,7 +189,23 @@
                 "lru": "Least Recently Used",
                 "clock": "Reloj",
                 "nru": "Not Recently Used"
-            }
+            },
+
+            "access_bit": "Bit de acceso o referencia",
+            "modified_bit": "Bit de modificación o dirty bit"
+        },
+
+        "tutorial": {
+            "text_1": "El simulador de memoria está formado por el simulador de particiones variables y paginación. Para cambiar entre los simuladores puedes usar estos botones.",
+            "text_2": "En el simulador de particiones variables puedes configurar la capacidad de la memoria y el algoritmo de la simulación.",
+            "text_3": "Para añadir peticiones de memoria debes introducir un nombre único, la duración del proceso, la memoria solicitada y el instante de llegada.",
+            "text_4": "Los resultados son un gráfico de la memoria y una tabla resumen de cada proceso.",
+
+            "text_5": "En el simulador de paginación solo puedes seleccionar el algoritmo de la simulación, el número de marcos se calculará automáticamente a partir de los procesos.",
+            "text_6": "Para utilizar el simulador de paginación, primero debes introducir los procesos y el número de marcos que tendrán asignados",
+            "text_7": "A continuación puedes añadir la solicitudes de páginas de cada uno de los procesos. También puedes indicar si la petición modifica la página accedida.",
+            "text_8": "El resultado del simulador es una visión general de la memoria y el estado de las páginas de cada proceso.",
+            "text_9": "De cada proceso puedes visualizar su tabla de páginas y la evolución de ésta a lo largo del tiempo. Si el algoritmo lo permite, se visualiza el puntero con una casilla de color diferente"
         }
     },
 
@@ -200,7 +220,7 @@
         "modals": {
             "io": {
                 "fcfs": {
-                    "text_1": "El algoritmo First Come First Served procesa los accesos a disco secuencialment. La primera petición que se recibe es la primera petición procesada.",
+                    "text_1": "El algoritmo First Come First Served procesa los accesos a disco secuencialmente. La primera petición que se recibe es la primera petición procesada.",
                     "text_2": "Al realizarse muchas peticiones, este algoritmo se comporta como una planificación aleatoria, aunque es el sistema más justo de todos."
                 },
 
@@ -232,14 +252,14 @@
             "cpu": {
                 "fifo": {
                     "text_1": "El algoritmo First In First Out (FIFO), también conocido como First Come First Served (FCFS) o “primero en llegar, primero servirse”, es la política de planificación más simple.",
-                    "text_2": "Esta política planificación consiste en ejecutar los procesos en el mismo orden que llegan a la cola de procesos listos.",
+                    "text_2": "Esta política de planificación consiste en ejecutar los procesos en el mismo orden que llegan a la cola de procesos listos.",
                     "text_3": "Así, si un proceso en ejecución queda bloqueado por E/S, cuando finalice la E/S, será el último de la cola de procesos listos y por tanto, el último en ejecutarse.",
                     "text_4": "Este algoritmo facilita la ejecución de procesos de larga duración y favorece aquellos limitados por el procesador."
                 },
 
                 "spn": {
                     "text_1": "El algoritmo Shortest Process Next (SPN) o “primero el más corto” es una política de planificación que consiste en ejecutar el proceso que se espera que sea más corto.",
-                    "text_2": "Algunos inconvenientes de esta política es la necesidad de poder estimar la duración del proceso y la posible inanición de los procesos más largos que será menos prioritarios frente los procesos cortos.",
+                    "text_2": "Algunos inconvenientes de esta política es la necesidad de poder estimar la duración del proceso y la posible inanición de los procesos más largos que seran menos prioritarios frente los procesos cortos.",
                     "text_3": "En el simulador, el valor de la estimación es el número de ciclos del proceso."
                 },
 
@@ -325,7 +345,7 @@
                     },
 
                     "nru": {
-                        "text_1": "El algoritmo Not Recently Used o \"no usados recientemente\" es una mejora del algoritmo del reloj que hace uso del bit de escritura para evitar remplazar que requieren escritura en la memoria secundaria.",
+                        "text_1": "El algoritmo Not Recently Used o \"no usados recientemente\" es una mejora del algoritmo del reloj que hace uso del bit de escritura para evitar remplazar páginas que requieren escritura en la memoria secundaria.",
                         "text_2": "Para su implementación, además de los bits de acceso y modificación, se hace uso de un puntero. Cuando se quiere remplazar una página se siguen los siguientes pasos:",
                         "text_2_1": "Se busca una página con los bits de acceso y modificación desactivados, sin avanzar el puntero. Si se encuentra, esta es la página que se tiene que eliminar.",
                         "text_2_2": "En caso de no encontrar una página, buscar una página con el bit de acceso desactivado y el de modificación activado. Mientras se avanza el puntero, se desactiva el bit de acceso de la página."
@@ -392,7 +412,7 @@
                 "text_7_1": "El diagrama temporal permite visualizar qué procesos se han ejecutado o han estado bloqueados por E/S en cada ciclo de la simulación.",
                 "text_7_2": "Los distintos procesos se ordenan a lo largo del eje vertical según el orden de introducción en el simulador. El eje horizontal es el tiempo, expresado en ciclos de procesador.",
 
-                "text_8_1": "En función del estado del procesos en cada unos de los ciclos se representan de la siguiente manera:",
+                "text_8_1": "En función del estado del proceso en cada unos de los ciclos se representa de la siguiente manera:",
                 "text_8_2": "Con un color sólido, el proceso se estaba ejecutando en ese instante",
                 "text_8_3": "Con un rectángulo rayado, el proceso estaba bloqueado por E/S en ese instante",
                 "text_8_4": "Sin rectángulo, el proceso no estaba en ejecución ni bloqueado",

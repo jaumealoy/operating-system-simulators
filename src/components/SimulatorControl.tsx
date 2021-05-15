@@ -289,12 +289,12 @@ function SimulatorControl(props: SimulatorControlProps) {
 				onHide={() => setSaveModalVisible(false)}
 				show={isSaveModalVisible}>
 				<Modal.Header closeButton>
-					Guardar simulación
+					{t("common.buttons.save_simulation")}
 				</Modal.Header>
 
 				<Modal.Body>
 					<form onSubmit={onSaveFileSubmit}>
-						<label>Nombre del archivo</label>
+						<label>{t("common.filename")}</label>
 
 						<FormControl 
 							value={filename}
@@ -303,11 +303,11 @@ function SimulatorControl(props: SimulatorControlProps) {
 							required
 							type="text" />
 						
-						<small>El nombre del archivo solo puede contener carácteres alfanuméricos.</small>
+						<small>{t("common.filename_text")}</small>
 
 						<button 
 							className="btn btn-primary float-right mt-2">
-							Guardar
+							{t("common.buttons.save")}
 						</button>
 					</form>
 
