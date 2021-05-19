@@ -140,7 +140,7 @@
 
     "memory": {
         "allocation_menu": "Particiones variables",
-        "pagination_menu": "Paginación",
+        "pagination_menu": "Paginación: remplazo",
 
         "allocation": {
             "capacity": "Capacidad (KB)",
@@ -203,9 +203,9 @@
 
             "text_5": "En el simulador de paginación solo puedes seleccionar el algoritmo de la simulación, el número de marcos se calculará automáticamente a partir de los procesos.",
             "text_6": "Para utilizar el simulador de paginación, primero debes introducir los procesos y el número de marcos que tendrán asignados",
-            "text_7": "A continuación puedes añadir la solicitudes de páginas de cada uno de los procesos. También puedes indicar si la petición modifica la página accedida.",
+            "text_7": "A continuación puedes añadir la solicitudes de páginas de cada uno de los procesos. También puedes indicar si la petición modifica la página accedida, que se representará mediante el símbolo \"*\".",
             "text_8": "El resultado del simulador es una visión general de la memoria y el estado de las páginas de cada proceso.",
-            "text_9": "De cada proceso puedes visualizar su tabla de páginas y la evolución de ésta a lo largo del tiempo. Si el algoritmo lo permite, se visualiza el puntero con una casilla de color diferente"
+            "text_9": "De cada proceso puedes visualizar su tabla de páginas y la evolución de ésta a lo largo del tiempo. Si el algoritmo lo permite, se visualiza el puntero con una casilla de color diferente. En el algoritmo NRU, si la página remplazada require escritura, se indicarà tambíen con el símbolo \"*\"."
         }
     },
 

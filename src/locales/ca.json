@@ -140,7 +140,7 @@
 
     "memory": {
         "allocation_menu": "Particions variables",
-        "pagination_menu": "Paginació",
+        "pagination_menu": "Paginació: substitució",
 
         "allocation": {
             "capacity": "Capacitat (KB)",
@@ -203,9 +203,9 @@
 
             "text_5": "Al simulador de paginació només pots seleccionar l'algorisme de la simulació, el número de marcs es calcula automàticament a partir dels processos introduïts.",
             "text_6": "Per utilitzar el simulador de paginació, primer has d'introduir els processos i el número de marcs que tendran assignats.",
-            "text_7": "A continuació pots afegir les peticions de pàgines de cada un dels processos. També pots indicar si la petició modifica la pàgina accedida.",
+            "text_7": "A continuació pots afegir les peticions de pàgines de cada un dels processos. També pots indicar si la petició modifica la pàgina accedida, que es representarà mitjançant el símbol \"*\".",
             "text_8": "El resultat del simulador és una visió general de la memòria i l'estat de les pàgines de cada procés.",
-            "text_9": "De cada procés es pot visualitzar la seva taula de pàgines i la seva evolució al llarg del temps. Si l'algorisme ho permet, se visualitza el punter amb una casella de color diferent."
+            "text_9": "De cada procés es pot visualitzar la seva taula de pàgines i la seva evolució al llarg del temps. Si l'algorisme ho permet, se visualitza el punter amb una casella de color diferent. A l'algorisme NRU, si la pàgina substituïda necessita escriptura, s'indicarà mitjançant el símbol \"*\"."
         }
     },
 

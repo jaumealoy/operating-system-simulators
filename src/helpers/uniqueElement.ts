@@ -8,7 +8,6 @@ function uniqueElement<T>(candidates: T[], used: T[]) : (T | null) {
 
     let index: number;
     for (index = 0; index < candidates.length && !valid; index++) {
-        console.log("Candidate ", candidates[index])
         valid = used.indexOf(candidates[index]) < 0;
     }
 

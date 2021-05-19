@@ -129,6 +129,8 @@ class PaginationSimulator extends Simulator {
 
 		this.initializeProcessTables();
 		this.onProcessTableChange(this._processTable);
+
+		this.onPageFailuresChange(this._pageFailures);
 	}
 
 	public clear(): void {
@@ -137,12 +139,15 @@ class PaginationSimulator extends Simulator {
 		this._pendingRequests = [];
 		this.state = [];
 		this.running = false;
+		this._pageFailures = 0;
 
 		this.initializeMemory();
 		this.onMemoryChange(this._memory, this._pages);
 
 		this.initializeProcessTables();
 		this.onProcessTableChange(this._processTable);
+
+		this.onPageFailuresChange(this._pageFailures);
 	}
 
 	public addProcess(process: Process) : void {

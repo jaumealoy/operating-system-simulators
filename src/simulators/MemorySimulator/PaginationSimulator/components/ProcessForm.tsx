@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useState, forwardRef, useImperativeHandle, Ref } from "react";
 import { Row, Col, FormGroup, FormControl } from "react-bootstrap";
 import { FiDelete, FiPlusCircle } from "react-icons/fi";
 import uniqueElement from "./../../../../helpers/uniqueElement";
@@ -14,7 +14,11 @@ interface ProcessFormProps {
 	enabled?: boolean;
 }
 
-function ProcessForm(props: ProcessFormProps) {
+interface ProcessFormFunctions {
+	clearProcessForm: () => void;
+};
+
+function ProcessForm(props: ProcessFormProps, ref: Ref<ProcessFormFunctions>) {
 	const { t } = useTranslation();
 
 	// process name
@@ -43,10 +47,9 @@ function ProcessForm(props: ProcessFormProps) {
 		// process list 
 		let usedNames: string[] = props.processes.map(p => p.id);
 		let suggest: boolean = name.length == 0 || (usedNames.indexOf(name) >= 0);
+		let suggestion: string | null = uniqueElement<string>(DEFAULT_NAMES, props.processes.map(p => p.id));
 
-		if (suggest) {
-			let suggestion: string | null = uniqueElement<string>(DEFAULT_NAMES, props.processes.map(p => p.id));
-
+		if (suggest || (suggestion != null && DEFAULT_NAMES.indexOf(name) > DEFAULT_NAMES.indexOf(suggestion))) {
 			if (suggestion == null) {
 				suggestion = "";
 			}
@@ -54,6 +57,8 @@ function ProcessForm(props: ProcessFormProps) {
 			setName(suggestion);
 		}
 	}, [props.processes]);
+
+	let validName: boolean = props.processes.map(p => p.id).indexOf(name) == -1;
 
 	return (
 		<Row>
@@ -67,7 +72,8 @@ function ProcessForm(props: ProcessFormProps) {
 								onChange={(e) => setName(e.target.value)}
 								value={name}
 								required
-								type="text" />
+								type="text"
+								isInvalid={!validName} />
 
 							<FormControl 
 								type="number"
@@ -78,7 +84,7 @@ function ProcessForm(props: ProcessFormProps) {
 								required />
 							
 							<button 
-								disabled={!enabled}
+								disabled={!enabled || !validName}
 								className="input-group-text">
 								<FiPlusCircle />
 							</button>
@@ -93,7 +99,7 @@ function ProcessForm(props: ProcessFormProps) {
 					:
 					props.processes.map((process, index) => 
 						<span className="badge bg-secondary mr-1">
-							{process.id} - {process.frames}
+							{process.id}: {process.frames}
 
 							{enabled &&
 								<FiDelete 

@@ -1,6 +1,6 @@
 import React, { forwardRef, Ref, useImperativeHandle } from "react";
 import SimulatorControl from "../../../components/SimulatorControl";
-import { Row, Col, FormCheck, FormGroup } from "react-bootstrap";
+import { Row, Col, FormCheck, FormGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { PaginationSimulator, Request, Process } from "./PaginationSimulator";
 import ProcessForm from "./components/ProcessForm";
@@ -15,9 +15,31 @@ interface PaginationExample {
 	frames: number;
 	processes: Process[];
 	requests: Request[];
+	title?: string;
 }
 
 const EXAMPLES: PaginationExample[] = [
+	{
+		frames: 0,
+		processes: [
+			{ id: "A", frames: 3 }
+		],
+		requests: [
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 2, modified: true },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 5, modified: true },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 4, modified: true },
+			{ process: "A", page: 5, modified: true },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 2, modified: true },
+			{ process: "A", page: 5, modified: false },
+			{ process: "A", page: 2, modified: true },
+		]
+	},
+
 	{
 		frames: 3,
 		processes: [
@@ -40,6 +62,7 @@ const EXAMPLES: PaginationExample[] = [
 	},
 
 	{
+		title: "(Belady)",	
 		frames: 3,
 		processes: [
 			{ id: "A", frames: 3 },
@@ -47,65 +70,44 @@ const EXAMPLES: PaginationExample[] = [
 			{ id: "C", frames: 2 },
 		],
 		requests: [
-			{ process: "A", page: 0, modified: false },
-			{ process: "A", page: 1, modified: false },
-			{ process: "A", page: 2, modified: false },
-			{ process: "A", page: 3, modified: false },
-			{ process: "A", page: 0, modified: false },
-			{ process: "A", page: 1, modified: false },
-			{ process: "A", page: 4, modified: false },
-			{ process: "A", page: 0, modified: false },
 			{ process: "A", page: 1, modified: false },
 			{ process: "A", page: 2, modified: false },
 			{ process: "A", page: 3, modified: false },
 			{ process: "A", page: 4, modified: false },
-
-			{ process: "B", page: 0, modified: false },
-			{ process: "B", page: 1, modified: false },
-			{ process: "B", page: 2, modified: false },
-			{ process: "B", page: 3, modified: false },
-			{ process: "B", page: 0, modified: false },
-			{ process: "B", page: 1, modified: false },
-			{ process: "B", page: 4, modified: false },
-			{ process: "B", page: 0, modified: false },
-			{ process: "B", page: 1, modified: false },
-			{ process: "B", page: 2, modified: false },
-			{ process: "B", page: 3, modified: false },
-			{ process: "B", page: 4, modified: false },
-
-			{ process: "C", page: 0, modified: false },
-			{ process: "C", page: 1, modified: false },
-			{ process: "C", page: 2, modified: false },
-			{ process: "C", page: 3, modified: false },
-			{ process: "C", page: 0, modified: false },
-			{ process: "C", page: 1, modified: false },
-			{ process: "C", page: 4, modified: false },
-			{ process: "C", page: 0, modified: false },
-			{ process: "C", page: 1, modified: false },
-			{ process: "C", page: 2, modified: false },
-			{ process: "C", page: 3, modified: false },
-			{ process: "C", page: 4, modified: false },
-		]
-	},
-
-	{
-		frames: 0,
-		processes: [
-			{ id: "A", frames: 3 }
-		],
-		requests: [
-			{ process: "A", page: 2, modified: false },
-			{ process: "A", page: 3, modified: false },
-			{ process: "A", page: 2, modified: true },
 			{ process: "A", page: 1, modified: false },
-			{ process: "A", page: 5, modified: true },
 			{ process: "A", page: 2, modified: false },
-			{ process: "A", page: 4, modified: true },
-			{ process: "A", page: 5, modified: true },
-			{ process: "A", page: 3, modified: false },
-			{ process: "A", page: 2, modified: true },
 			{ process: "A", page: 5, modified: false },
-			{ process: "A", page: 2, modified: true },
+			{ process: "A", page: 1, modified: false },
+			{ process: "A", page: 2, modified: false },
+			{ process: "A", page: 3, modified: false },
+			{ process: "A", page: 4, modified: false },
+			{ process: "A", page: 5, modified: false },
+
+			{ process: "B", page: 1, modified: false },
+			{ process: "B", page: 2, modified: false },
+			{ process: "B", page: 3, modified: false },
+			{ process: "B", page: 4, modified: false },
+			{ process: "B", page: 1, modified: false },
+			{ process: "B", page: 2, modified: false },
+			{ process: "B", page: 5, modified: false },
+			{ process: "B", page: 1, modified: false },
+			{ process: "B", page: 2, modified: false },
+			{ process: "B", page: 3, modified: false },
+			{ process: "B", page: 4, modified: false },
+			{ process: "B", page: 5, modified: false },
+
+			{ process: "C", page: 1, modified: false },
+			{ process: "C", page: 2, modified: false },
+			{ process: "C", page: 3, modified: false },
+			{ process: "C", page: 4, modified: false },
+			{ process: "C", page: 1, modified: false },
+			{ process: "C", page: 2, modified: false },
+			{ process: "C", page: 5, modified: false },
+			{ process: "C", page: 1, modified: false },
+			{ process: "C", page: 2, modified: false },
+			{ process: "C", page: 3, modified: false },
+			{ process: "C", page: 4, modified: false },
+			{ process: "C", page: 5, modified: false },
 		]
 	},
 
@@ -255,7 +257,7 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 				<Col md={6} className="mt-3 mt-md-0">
 					<div className="simulator-group">
 						<div className="simulator-group-content">
-							<div className="title">{t("processes_pages")}</div>
+							<div className="title">{t("memory.pagination.processes_pages")}</div>
 
 							<div data-tut="pagination_processes">
 								<ProcessForm 
@@ -289,7 +291,11 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 										loadRequestsFromList(example.requests);
 									}}
 									className="btn btn-link">
-									{t("common.example_number", { number: (index + 1) })}
+									{example.title == undefined ?
+										t("common.example_number", { number: (index + 1) })
+										:
+										t("common.example_number", { number: (index + 1) }) + " " + example.title
+									}
 								</button>
 							)}
 						</div>
@@ -330,12 +336,26 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 									<tr>
 										<th>{t("io.requests")}</th>
 										<td>
-											{requests.map((request, index) =>  
-												<span className={"badge mr-1 " + (index < results[selectedAlgorithm].currentCycle ? "bg-success" : "bg-secondary")}>
-													{request.process} - {request.page}
-													{request.modified && <sup>*</sup>}
-												</span>
-											)}
+											{requests.map((request, index) => {
+												let background: string;
+
+												if (index < results[selectedAlgorithm].currentCycle) {
+													background = "bg-success";
+												} else if (index == results[selectedAlgorithm].currentCycle) {
+													background = "bg-warning";
+												} else {
+													background = "bg-secondary";
+												}
+
+												return (
+													<span
+														key={index}
+														className={`badge mr-1 ${background}`}>
+														{request.process} - {request.page}
+														{request.modified && <sup>*</sup>}
+													</span>
+												);
+											})}
 										</td>
 									</tr>
 								</tbody>
@@ -354,8 +374,18 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 												<th>{t("memory.pagination.frame")}</th>
 												{selectedAlgorithm == "fifo" && <th>{t("cpu.arrival")}</th>}
 												{selectedAlgorithm == "lru" && <th>{t("memory.pagination.last_access")}</th>}
-												{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 && <th>A<sup>1</sup></th>}
-												{selectedAlgorithm == "nru" && <th>M<sup>2</sup></th>}
+												{["clock", "nru"].indexOf(selectedAlgorithm) >= 0 && 
+													<OverlayTrigger
+														overlay={<Tooltip id="previous_step_btn_tooltip">{t("memory.pagination.access_bit")}</Tooltip>}>
+														<th>A</th>
+													</OverlayTrigger>
+												}
+												{selectedAlgorithm == "nru" && 
+													<OverlayTrigger
+														overlay={<Tooltip id="previous_step_btn_tooltip">{t("memory.pagination.modified_bit")}</Tooltip>}>
+														<th>M</th>
+													</OverlayTrigger>
+												}
 											</tr>
 										</thead>
 
@@ -474,12 +504,27 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 								<tr>
 									<th>{t("io.requests")}</th>
 									<td>
-										{requests.map((request, index) =>  
-											<span className={"badge mr-1 " + (index < results[algorithm].currentCycle ? "bg-success" : "bg-secondary")}>
-												{request.process} - {request.page}
-												{request.modified && <sup>*</sup>}
-											</span>
-										)}
+										{requests.map((request, index) => 
+										{
+											let background: string;
+
+											if (index < results[algorithm].currentCycle) {
+												background = "bg-success";
+											} else if (index == results[algorithm].currentCycle) {
+												background = "bg-warning";
+											} else {
+												background = "bg-secondary";
+											}
+
+											return (
+												<span
+													key={index}
+													className={`badge mr-1 ${background}`}>
+													{request.process} - {request.page}
+													{request.modified && <sup>*</sup>}
+												</span>
+											);
+										})}
 									</td>
 								</tr>
 							</tbody>
@@ -534,21 +579,6 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 				)}
 				</Row>
 			</Row>
-			}
-
-			{props.simpleView && ["nru", "clock"].indexOf(selectedAlgorithm) >= 0 &&
-				<small className="foot-note">
-					<sup>1</sup> {t("memory.pagination.access_bit")}
-				</small>	
-			}
-
-			{(props.simpleView && selectedAlgorithm == "nru") && 
-				<>
-					<br />
-					<small className="foot-note">
-						<sup>2</sup> {t("memory.pagination.modified_bit")}
-					</small>	
-				</>
 			}
 
 			<AlgorithmModal />
