@@ -31,7 +31,6 @@ class MemorySimulator extends Simulator {
 	private _allocationHistory: ProcessWrap[];
 
 	private _currentCycle: number;
-	//private _memory: number[];
 	private _memory: MemoryBlock[];
 
 	private states: MemoryState[];

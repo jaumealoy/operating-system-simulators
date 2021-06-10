@@ -113,7 +113,6 @@ class MemoryManager extends Manager<MemorySimulator> {
 	 * @param process
 	 */
 	public addProcess(process: Process) : void {
-		console.log("adding process", this.processes)
 		// add process to the list
 		this.processes.push(process);
 

@@ -47,32 +47,27 @@ const EXAMPLES: CPUExample[] = [
 			{
 				id: "A",
 				arrival: 0,
-				cycles: [false, false, false],
-				estimatedDuration: 0
+				cycles: [false, false, false]
 			},
 			{
 				id: "B",
 				arrival: 2,
-				cycles: [false, false, false, false, false, false],
-				estimatedDuration: 0
+				cycles: [false, false, false, false, false, false]
 			},
 			{
 				id: "C",
 				arrival: 4,
-				cycles: [false, false, false, false],
-				estimatedDuration: 0
+				cycles: [false, false, false, false]
 			},
 			{
 				id: "D",
 				arrival: 6,
-				cycles: [false, false, false, false, false],
-				estimatedDuration: 0
+				cycles: [false, false, false, false, false]
 			},
 			{
 				id: "E",
 				arrival: 8,
 				cycles: [false, false],
-				estimatedDuration: 0
 			},
 		],
 		quantum: 1
@@ -83,22 +78,19 @@ const EXAMPLES: CPUExample[] = [
 			{
 				id: "A",
 				arrival: 0,
-				cycles: [false, false, true, false],
-				estimatedDuration: 0
+				cycles: [false, false, true, false]
 			},
 
 			{
 				id: "B",
 				arrival: 2,
-				cycles: [false, false, false, false],
-				estimatedDuration: 0
+				cycles: [false, false, false, false]
 			},
 
 			{
 				id: "C",
 				arrival: 0,
-				cycles: [false, true, true, false, false],
-				estimatedDuration: 0
+				cycles: [false, true, true, false, false]
 			}
 
 		],

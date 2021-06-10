@@ -27,13 +27,11 @@ interface NextRequest {
 
 class IOSimulator extends Simulator {
 	// hard drive settings
-	private sectors: number;
 	private _tracks: number;
 	public static MIN: number = 0;
 
 	// simulation settings
 	private currentTrack: number;
-	private currentSector: number;
 	private _initialPosition: number;
 	private isUp: boolean;
 	private running: boolean;
@@ -54,10 +52,8 @@ class IOSimulator extends Simulator {
 	constructor(){
 		super();
 
-		this.sectors = 0;
 		this._tracks = 0;
 		this.currentTrack = 0;
-		this.currentSector = 0;
 		this._initialPosition = 0;
 
 		this.requests = [];
@@ -168,32 +164,6 @@ class IOSimulator extends Simulator {
 		this.proceesedRequests.push(processedRequest);
 		this.onProcessedRequestsChange(this.proceesedRequests);
 	}
-
-	/*public processRequest() : ProcessedRequest {
-		// save current state
-		let currentState: IOState = new IOState(this.currentTrack, [...this.pendingRequests], [...this.proceesedRequests]);
-		this.states.push(currentState);
-
-		let nextRequest: NextRequest = this.getNextRequest();
-
-		let processedRequest: ProcessedRequest = {
-			initialTrack: this.currentTrack,
-			finalTrack: nextRequest.request.track,
-			fast: nextRequest.request.fast || false,
-			index: nextRequest.request.requestIndex || 0
-		};
-
-		this.currentTrack = processedRequest.finalTrack;
-
-		// removing this request from the pending list
-		this.pendingRequests.splice(nextRequest.index, 1);
-
-		// add this request to the processed list
-		this.proceesedRequests.push(processedRequest);
-		this.onProcessedRequestsChange(this.proceesedRequests);
-
-		return processedRequest;
-	}*/
 
 	private FCFS() : number {
 		return 0;
@@ -458,7 +428,6 @@ class IOSimulator extends Simulator {
 			fakeSimulator.nextStep();
 			
 			sum += Math.abs(fakeSimulator.currentTrack - lastTrack);
-			console.log("current ", fakeSimulator.currentTrack, " - ", lastTrack)
 			lastTrack = fakeSimulator.currentTrack;
 		}
 

@@ -443,10 +443,19 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 									<Row className="scrollable-x auto-scroll-end">
 										{processes.map(process => {
 											if (process.id == key) {
+												// only show the next request process frame table if the
+												// the next request is from this process
 												let moreRequestsFromThisProcess: boolean = false;
-												requests.slice(results[selectedAlgorithm].currentCycle).map(request => {
-													moreRequestsFromThisProcess = moreRequestsFromThisProcess || (key == request.process);
-												});
+												let pageFailure: number = 0;
+												if (requests.length > results[selectedAlgorithm].currentCycle) {
+													let currentRequest: Request = requests[results[selectedAlgorithm].currentCycle];
+													moreRequestsFromThisProcess = currentRequest.process == key;
+												
+													if (value.loadedPages.indexOf(currentRequest.page) < 0) {
+														// page is not loaded
+														pageFailure = value.loadedPages.length == process.frames ? 0b101 : 0b100;
+													}
+												}
 
 												return (
 													<>
@@ -467,8 +476,10 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 															<ProcessFrameTable 
 																process={process}
 																entry={value}
+																request={requests[results[selectedAlgorithm].currentCycle]}
 																showPointer={["nru", "clock"].indexOf(selectedAlgorithm) >= 0}
 																accessBit={["nru", "clock"].indexOf(selectedAlgorithm) >= 0}
+																pageFailure={pageFailure}
 																modifiedBit={selectedAlgorithm == "nru"} />
 														}
 													</>
@@ -535,10 +546,19 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 								
 								{Object.entries(results[algorithm].processTable).map(([key, value]) => {
 									if (key == process.id) {
+										// only show the next request process frame table if the
+										// the next request is from this process
 										let moreRequestsFromThisProcess: boolean = false;
-										requests.slice(results[algorithm].currentCycle).map(request => {
-											moreRequestsFromThisProcess = moreRequestsFromThisProcess || (key == request.process);
-										});
+										let pageFailure: number = 0;
+										if (requests.length > results[algorithm].currentCycle) {
+											let currentRequest: Request = requests[results[algorithm].currentCycle];
+											moreRequestsFromThisProcess = currentRequest.process == key;
+												
+											if (value.loadedPages.indexOf(currentRequest.page) < 0) {
+												// page is not loaded
+												pageFailure = value.loadedPages.length == process.frames ? 0b101 : 0b100;
+											}
+										}
 
 										return (
 											<>
@@ -564,8 +584,10 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 													<ProcessFrameTable 
 														process={process}
 														entry={value}
+														request={requests[results[algorithm].currentCycle]}
 														showPointer={["nru", "clock"].indexOf(algorithm) >= 0}
 														accessBit={["nru", "clock"].indexOf(algorithm) >= 0}
+														pageFailure={pageFailure}
 														modifiedBit={algorithm == "nru"} />
 												}
 												</Row>

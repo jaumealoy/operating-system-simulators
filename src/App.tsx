@@ -47,8 +47,8 @@ function App() {
 
 	const HomeOptions = [
 		{ title: t("menu.CPUSimulator"), icon: <FiCpu />, url: "/cpu" },
-		{ title: t("menu.IOSimulator"), icon: <FiHardDrive />, url: "/memory" },
-		{ title: t("menu.MemorySimulator"), icon: <FaMemory />, url: "/io" },
+		{ title: t("menu.IOSimulator"), icon: <FiHardDrive />, url: "/io" },
+		{ title: t("menu.MemorySimulator"), icon: <FaMemory />, url: "/memory" },
 		{ title: t("menu.FAQ"), icon: <IoIosHelpBuoy />, url: "/help" }
 	];
 

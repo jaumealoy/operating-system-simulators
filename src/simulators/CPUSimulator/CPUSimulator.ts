@@ -8,7 +8,6 @@ interface Process {
 	id: string;
 	arrival: number;
 	cycles: boolean[];
-	estimatedDuration: number;
 };
 
 interface ProcessSnapshot {

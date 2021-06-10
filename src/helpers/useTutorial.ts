@@ -117,7 +117,6 @@ const useTutorial = (simulator: string, maxSteps: number, forceShow: boolean, ac
 	}, [step]);
 
 	const onStepChange = (step: number) => {
-		console.log("hey")
 		setStep(step);
 	};
 

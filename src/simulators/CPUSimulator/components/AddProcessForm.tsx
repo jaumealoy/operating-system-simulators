@@ -49,7 +49,6 @@ function AddProcessForm(props: AddProcessFormProps) {
         callback({
             id: name,
             arrival: parseInt(arrival),
-            estimatedDuration: 0,
             cycles: cycles
         });
 
