@@ -1,4 +1,5 @@
 import React from "react";
+import Latex from "../../../../components/Latex";
 import { Process, Request, ProcessEntry } from "./../PaginationSimulator";
 
 interface ProcessFrameTable {
@@ -29,13 +30,16 @@ function ProcessFrameTable(props: ProcessFrameTable) {
 
 				<div className="frame-content">
 					{i < props.entry.loadedPages.length ?
-						<>
-							{props.entry.loadedPages[i]}
-							{props.accessBit && props.entry.pages[props.entry.loadedPages[i]].data.accessBit &&
-								<sup>A</sup>}
-							{props.modifiedBit && props.entry.pages[props.entry.loadedPages[i]].data.modifiedBit &&
-								<sub>M</sub>}
-						</>
+						<div className="frame-content-value">
+							<Latex>
+								{props.entry.loadedPages[i].toString()
+									+ (props.accessBit && props.entry.pages[props.entry.loadedPages[i]].data.accessBit ?
+										"^{A}" : "")
+									+ (props.modifiedBit && props.entry.pages[props.entry.loadedPages[i]].data.modifiedBit ?
+										"_{M}" : "")
+								}
+							</Latex>
+						</div>
 						:
 						"-"
 					}

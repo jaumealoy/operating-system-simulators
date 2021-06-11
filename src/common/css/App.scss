@@ -372,9 +372,13 @@ h3 {
 
 .process-frames .frame .frame-content {
     padding: 5px 10px;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
     padding-top: 0px;
     text-align: center;
+}
+
+.frame-content-value {
+    padding-top: 5px;
 }
 
 .process-frames .frame.selected {
