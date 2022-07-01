@@ -62,7 +62,6 @@ const EXAMPLES: PaginationExample[] = [
 	},
 
 	{
-		title: "(Belady)",	
 		frames: 3,
 		processes: [
 			{ id: "A", frames: 3 },

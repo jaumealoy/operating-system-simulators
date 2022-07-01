@@ -504,7 +504,7 @@ function IOSimulatorPage() {
 				
 				<div className="row scrollable-x">
 					{selectedAlgorithms.map((algorithm: string, index: number) => 
-						<Col md={4}>
+						<Col md={8} lg={5} xl={4}>
 							<h4 className="mt-0">{t("io.algorithms." + algorithm)}</h4>
 
 							<Row>

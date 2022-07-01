@@ -164,8 +164,8 @@ function TableOfContent(props: TableOfContentProps) {
 				let box = item.element.getBoundingClientRect();
 				// the closest section to the scroll is that one with maximum .top
 				// below 0
-				if (box.top <= 0 && box.top > minY) {
-					minY = box.top;
+				if (Math.floor(box.top) <= 0 && box.top > minY) {
+					minY = Math.floor(box.top);
 					element = item.id;
 				}
 				

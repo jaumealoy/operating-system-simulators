@@ -140,7 +140,7 @@
 
     "memory": {
         "allocation_menu": "Particiones variables",
-        "pagination_menu": "Paginación: remplazo",
+        "pagination_menu": "Paginación: reemplazo",
 
         "allocation": {
             "capacity": "Capacidad (KB)",
