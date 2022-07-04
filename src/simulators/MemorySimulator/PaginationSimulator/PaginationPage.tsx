@@ -209,7 +209,7 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 	const incrementPageFailures = useMemo(
 		() => 
 			props.simpleView && selectedAlgorithm in results && results[selectedAlgorithm].processTable && requests[results[selectedAlgorithm].currentCycle] && results[selectedAlgorithm].processTable[requests[results[selectedAlgorithm].currentCycle].process] &&
-				results[selectedAlgorithm].processTable[requests[results[selectedAlgorithm].currentCycle].process].loadedPages.indexOf(requests[results[selectedAlgorithm].currentCycle].page) <= 0,
+				results[selectedAlgorithm].processTable[requests[results[selectedAlgorithm].currentCycle].process].loadedPages.indexOf(requests[results[selectedAlgorithm].currentCycle].page) < 0,
 		[selectedAlgorithm, results, processes]
 	);
 
@@ -575,7 +575,7 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 											<>
 												<p>
 													{key} <br/>
-													{t("memory.pagination.page_failures")}: {value.failures}
+													{t("memory.pagination.page_failures")}: {value.failures + (moreRequestsFromThisProcess && ((pageFailure & 0b100) > 0) ? 1 : 0)}
 												</p>
 												<Row className="scrollable-x auto-scroll-end">
 												{(key in results[algorithm].snapshots) &&
