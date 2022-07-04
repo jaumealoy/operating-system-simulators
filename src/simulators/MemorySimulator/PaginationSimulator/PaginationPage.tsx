@@ -1,4 +1,4 @@
-import React, { forwardRef, Ref, useImperativeHandle } from "react";
+import React, { forwardRef, Ref, useImperativeHandle, useMemo } from "react";
 import SimulatorControl from "../../../components/SimulatorControl";
 import { Row, Col, FormCheck, FormGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
@@ -206,6 +206,13 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 		}
 	}));
 
+	const incrementPageFailures = useMemo(
+		() => 
+			props.simpleView && selectedAlgorithm in results && results[selectedAlgorithm].processTable && requests[results[selectedAlgorithm].currentCycle] && results[selectedAlgorithm].processTable[requests[results[selectedAlgorithm].currentCycle].process] &&
+				results[selectedAlgorithm].processTable[requests[results[selectedAlgorithm].currentCycle].process].loadedPages.indexOf(requests[results[selectedAlgorithm].currentCycle].page) <= 0,
+		[selectedAlgorithm, results, processes]
+	);
+
 	return (
 		<>
 			{/* Simulator settings */}
@@ -329,7 +336,7 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 								<tbody>
 									<tr>
 										<th>{t("memory.pagination.page_failures")}</th>
-										<td>{results[selectedAlgorithm].pageFailures}</td>
+										<td>{results[selectedAlgorithm].pageFailures + (incrementPageFailures ? 1 : 0)}</td>
 									</tr>
 
 									<tr>
@@ -437,7 +444,7 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 
 								<Col key={`table_${key}`} md={8}>
 									<h3>{t("memory.pagination.process_name", { name: key })}</h3>
-									{t("memory.pagination.page_failures")}: {value.failures}
+									{t("memory.pagination.page_failures")}: {value.failures + ((incrementPageFailures &&  requests[results[selectedAlgorithm].currentCycle].process === key) ? 1 : 0)}
 									
 									<Row className="scrollable-x auto-scroll-end">
 										{processes.map(process => {
@@ -508,7 +515,12 @@ const PaginationPage = forwardRef((props: PaginationPageProps, ref: Ref<Paginati
 							<tbody>
 								<tr>
 									<th>{t("memory.pagination.page_failures")}</th>
-									<td>{results[algorithm].pageFailures}</td>
+									<td>
+										{results[algorithm].pageFailures + (
+											requests[results[algorithm].currentCycle] &&
+											results[algorithm].processTable[requests[results[algorithm].currentCycle].process].loadedPages.indexOf(requests[results[algorithm].currentCycle].page) < 0 
+										? 1 : 0)}
+									</td>
 								</tr>
 
 								<tr>
